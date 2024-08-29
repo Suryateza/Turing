@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Mood Journal</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css">
+    <style>
+        body { font-family: 'Arial', sans-serif; padding: 20px; }
+        .widget { max-width: 600px; margin: auto; }
+        .mood-selector { display: flex; justify-content: space-around; margin-bottom: 20px; }
+        .mood-selector span { font-size: 2em; cursor: pointer; }
+        .tag-input, .reflection { width: 100%; margin-bottom: 15px; }
+        .tag-input input { width: calc(100% - 20px); padding: 10px; }
+        #moodGraph { width: 100%; height: 300px; }
+        @media (max-width: 480px) {
+            .mood-selector span { font-size: 1.5em; }
+        }
+    </style>
+</head>
+<body>
+<div class="widget">
+    <h2>Daily Mood Journal</h2>
+    <div class="mood-selector">
+        <span role="img" aria-label="Happy" onclick="selectMood('😊')">😊</span>
+        <span role="img" aria-label="Neutral" onclick="selectMood('😐')">😐</span>
+        <span role="img" aria-label="Sad" onclick="selectMood('😢')">😢</span>
+    </div>
+    <div class="tag-input">
+        <input type="text" id="customTag" placeholder="Add custom emotion tag...">
+    </div>
+    <textarea class="reflection" id="dailyReflection" rows="4" placeholder="How was your day?"></textarea>
+    <button onclick="saveEntry()">Save Entry</button>
+    <div id="moodGraph"><canvas id="moodChart"></canvas></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    let moodData = JSON.parse(localStorage.getItem('moodJournal') || '[]');
+    
+    function selectMood(mood) {
+        document.querySelectorAll('.mood-selector span').forEach(el => el.style.transform = '');
+        event.target.style.transform = 'scale(1.2)';
+        moodData.push({date: new Date().toISOString().split('T')[0], mood, tag: document.getElementById('customTag').value, reflection: document.getElementById('dailyReflection').value});
+        updateChart();
+    }
+
+    function saveEntry() {
+        localStorage.setItem('moodJournal', JSON.stringify(moodData));
+        alert('Entry saved!');
+    }
+
+    function updateChart() {
+        const ctx = document.getElementById('moodChart').getContext('2d');
+        const moodLabels = moodData.map(entry => entry.date);
+        const moodValues = moodData.map(entry => ['😢', '😐', '😊'].indexOf(entry.mood));
+        
+        if(window.myChart) window.myChart.destroy();
+        window.myChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: moodLabels,
+                datasets: [{
+                    label: 'Mood Trend',
+                    data: moodValues,
+                    borderColor: 'blue',
+                    fill: false
+                }]
+            },
+            options: {
+                scales: {
+                    yAxes: [{ 
+                        ticks: { 
+                            callback: function(value) {
+                                return ['😢', '😐', '😊'][value];
+                            },
+                            stepSize: 1
+                        }
+                    }]
+                }
+            }
+        });
+    }
+
+    updateChart();
+</script>
+</body>
+</html>

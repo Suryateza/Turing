@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daily Mood Journal</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css">
+<style>
+  body { font-family: Arial, sans-serif; }
+  .mood-option { font-size: 24px; cursor: pointer; }
+  #moodGraph { width: 100%; height: 200px; }
+  @media (max-width: 768px) {
+    .mood-option { font-size: 18px; }
+  }
+</style>
+</head>
+<body>
+<div class="container mt-5">
+  <h2 class="text-center">Daily Mood Journal</h2>
+  <div class="mood-select d-flex justify-content-around">
+    <label class="mood-option">😊 <input type="radio" name="mood" value="happy"></label>
+    <label class="mood-option">😐 <input type="radio" name="mood" value="neutral"></label>
+    <label class="mood-option">☹️ <input type="radio" name="mood" value="sad"></label>
+  </div>
+  <div class="mt-3">
+    <input type="text" id="tagInput" placeholder="Add emotion tag">
+    <button onclick="addTag()">Add Tag</button>
+    <div id="tagsContainer"></div>
+  </div>
+  <textarea class="form-control mt-3" id="reflection" placeholder="Write about your day..."></textarea>
+  <button onclick="saveData()" class="btn btn-primary btn-block mt-3">Save Day</button>
+  <div class="mt-5">
+    <canvas id="moodGraph"></canvas>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  let moodData = JSON.parse(localStorage.getItem('moodData')) || [];
+
+  function addTag() {
+    const tagInput = document.getElementById('tagInput');
+    const tagsContainer = document.getElementById('tagsContainer');
+    if (tagInput.value) {
+      const tagHTML = document.createElement('span');
+      tagHTML.className = 'badge badge-secondary mr-2';
+      tagHTML.textContent = tagInput.value;
+      tagsContainer.appendChild(tagHTML);
+      tagInput.value = '';
+    }
+  }
+
+  function saveData() {
+    const mood = document.querySelector('input[name="mood"]:checked').value;
+    const tags = Array.from(document.getElementById('tagsContainer').children).map(child => child.textContent);
+    const reflection = document.getElementById('reflection').value;
+    const today = new Date().toISOString().split('T')[0];
+    moodData.push({ date: today, mood, tags, reflection });
+    localStorage.setItem('moodData', JSON.stringify(moodData));
+    updateGraph();
+  }
+
+  function updateGraph() {
+    const ctx = document.getElementById('moodGraph').getContext('2d');
+    const labels = moodData.map(entry => entry.date);
+    const data = moodData.map(entry => entry.mood);
+    new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Mood Trend',
+          data: data,
+          backgroundColor: 'rgba(255, 99, 132, 0.2)',
+          borderColor: 'rgba(255, 99, 132, 1)',
+          borderWidth: 1
+        }]
+      },
+      options: {
+        scales: {
+          y: {
+            beginAtZero: true
+          }
+        }
+      }
+    });
+  }
+
+  updateGraph();
+</script>
+</body>
+</html>
