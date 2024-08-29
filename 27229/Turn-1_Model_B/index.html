@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Animated Tic-Tac-Toe</title>
+<style>
+    body { 
+        display: flex; 
+        justify-content: center; 
+        align-items: center; 
+        height: 100vh; 
+        background: #f8f2f2; 
+    }
+    #game {
+        text-align: center;
+        opacity: 0;
+        transform: scale(0.8);
+        transition: all 0.5s;
+    }
+    #board {
+        display: grid;
+        grid-template-columns: repeat(3, 100px);
+        grid-gap: 5px;
+        margin: 20px 0;
+    }
+    .cell {
+        width: 100px;
+        height: 100px;
+        background: #ffffff;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 2em;
+        cursor: pointer;
+        transition: background 0.3s;
+    }
+    .cell:hover { background: #eee; }
+    .cell.x, .cell.o {
+        cursor: not-allowed;
+        animation: scaleIn 0.3s ease-out;
+    }
+    @keyframes scaleIn {
+        from { transform: scale(0); }
+        to { transform: scale(1); }
+    }
+    #status { margin-top: 20px; }
+</style>
+</head>
+<body>
+<div id="game">
+    <h1>Tic-Tac-Toe</h1>
+    <div id="modeSelect">
+        <button onclick="startGame('single')">Single Player</button>
+        <button onclick="startGame('multi')">Multiplayer</button>
+    </div>
+    <div id="board"></div>
+    <div id="status"></div>
+</div>
+<script>
+    const board = document.getElementById('board');
+    const status = document.getElementById('status');
+    let gameActive = false;
+    let currentPlayer = 'X';
+    let gameState = ['', '', '', '', '', '', '', '', ''];
+    let mode = 'multi'; // Default mode
+    let scores = {X: 0, O: 0, Ties: 0};
+
+    function startGame(gameMode) {
+        mode = gameMode;
+        document.getElementById('game').style.opacity = 1;
+        document.getElementById('game').style.transform = 'scale(1)';
+        resetGame();
+    }
+
+    function cellClicked(cellIndex) {
+        if (gameState[cellIndex] === '' && gameActive) {
+            gameState[cellIndex] = currentPlayer;
+            document.getElementById(`cell-${cellIndex}`).classList.add(currentPlayer.toLowerCase());
+            checkGameStatus();
+            currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+            if (mode === 'single' && currentPlayer === 'O' && gameActive) {
+                setTimeout(aiMove, 500);
+            }
+        }
+    }
+
+    function aiMove() {
+        // Simple AI: choose a random available spot
+        let availableSpots = gameState.reduce((acc, val, idx) => (val === '' ? acc.concat(idx) : acc), []);
+        if (availableSpots.length > 0) {
+            let move = availableSpots[Math.floor(Math.random() * availableSpots.length)];
+            cellClicked(move);
+        }
+    }
+
+    function checkGameStatus() {
+        const winPatterns = [
+            [0,1,2], [3,4,5], [6,7,8], // rows
+            [0,3,6], [1,4,7], [2,5,8], // columns
+            [0,4,8], [2,4,6] // diagonals
+        ];
+
+        for (let pattern of winPatterns) {
+            const [a, b, c] = pattern;
+            if (gameState[a] && gameState[a] === gameState[b] && gameState[a] === gameState[c]) {
+                gameActive = false;
+                announceWinner(gameState[a]);
+                return;
+            }
+        }
+
+        if (!gameState.includes('')) {
+            gameActive = false;
+            announceWinner('Tie');
+        }
+    }
+
+    function announceWinner(winner) {
+        if (winner === 'Tie') {
+            status.textContent = "It's a Tie!";
+            scores.Ties++;
+        } else {
+            status.textContent = `Player ${winner} wins!`;
+            scores[winner] += 2;
+        }
+        updateScoreDisplay();
+        // Here you would animate the win or tie, perhaps by highlighting cells or shaking the board
+    }
+
+    function resetGame() {
+        gameState = ['', '', '', '', '', '', '', '', ''];
+        gameActive = true;
+        currentPlayer = 'X';
+        status.textContent = '';
+        Array.from(document.querySelectorAll('.cell')).forEach(cell => {
+            cell.classList.remove('x', 'o');
+        });
+    }
+
+    function updateScoreDisplay() {
+        status.textContent += ` | X: ${scores.X}, O: ${scores.O}, Ties: ${scores.Ties}`;
+    }
+
+    // Initialize board
+    for(let i = 0; i < 9; i++) {
+        let cell = document.createElement('div');
+        cell.className = 'cell';
+        cell.id = `cell-${i}`;
+        cell.onclick = function() { cellClicked(i); };
+        board.appendChild(cell);
+    }
+</script>
+</body>
+</html>
