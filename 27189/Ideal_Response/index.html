@@ -14,7 +14,7 @@
   
   <!-- User Input -->
   <input type="text" id="destination" placeholder="Enter destination" class="w-full p-2 pl-10 text-sm text-gray-700">
-<button onclick="getWeatherAndSuggestions()" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Get Packing Suggestions</button>
+  <button onclick="getWeatherAndSuggestions()" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Get Packing Suggestions</button>
 
   <!-- Weather Display -->
   <div id="weatherInfo" class="mt-4 hidden">
@@ -38,10 +38,9 @@
 </div>
 
 <script>
-
 async function getWeatherAndSuggestions() {
   const destination = document.getElementById('destination').value.trim();
-  const apiKey = 'YOUR_ACTUAL_API_KEY';  // Replace with your actual API key
+  const apiKey = 'YOUR_VALID_API_KEY';  // Replace with your actual API key
 
   if (!destination) {
     alert('Please enter a destination.');
