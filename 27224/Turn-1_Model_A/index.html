@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+    <div id="social-analytics-widget">
+        <div class="controls">
+          <select id="timePeriod">
+            <option value="week">Last Week</option>
+            <option value="month">Last Month</option>
+            <option value="year">Last Year</option>
+          </select>
+          <select id="platforms" multiple>
+            <option value="facebook">Facebook</option>
+            <option value="twitter">Twitter</option>
+            <option value="instagram">Instagram</option>
+          </select>
+          <button id="compareBtn">Compare</button>
+          <button id="generateReportBtn">Generate Report</button>
+        </div>
+        <div class="visualization" id="chartContainer">
+          <!-- Chart will be rendered here -->
+        </div>
+        <div id="reportSection" style="display:none;">
+          <!-- Custom report details will appear here -->
+        </div>
+      </div>
+      <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/moment"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('chartContainer').getContext('2d');
+    let myChart = null;
+
+    function updateChart(data, labels) {
+        if (myChart) {
+            myChart.destroy();
+        }
+
+        myChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: data
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    }
+
+    document.getElementById('compareBtn').addEventListener('click', function() {
+        const selectedPlatforms = Array.from(document.getElementById('platforms').selectedOptions).map(option => option.value);
+        const timePeriod = document.getElementById('timePeriod').value;
+        // Here you would fetch data for selected platforms and time period
+        // For this example, we'll simulate data
+        const data = selectedPlatforms.map(platform => ({
+            label: platform,
+            data: Array.from({length: 7}, () => Math.floor(Math.random() * 1000)),
+            borderColor: '#' + Math.floor(Math.random()*16777215).toString(16),
+            fill: false
+        }));
+        const labels = Array.from({length: 7}, (_, i) => moment().subtract(6 - i, 'days').format('MM/DD'));
+
+        updateChart(data, labels);
+    });
+
+    // Initial chart render or fetch data from server
+    // document.getElementById('compareBtn').click();
+});
+</script>
+</body>
+</html>
