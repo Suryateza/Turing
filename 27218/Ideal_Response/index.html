@@ -46,24 +46,17 @@
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 <script>
-    const weatherAPIKey = 'b6907d289e10d714a6e88b30761fae22'; // Dummy API key for testing
+   const weatherAPIKey = 'b6907d289e10d714a6e88b30761fae22'; // Dummy API key for testing
+  //  Replace with your actual OpenWeatherMap API key
 
-    function getWeather(destination, startDate, endDate) {
+function getWeather(destination, startDate, endDate) {
         return $.ajax({
-            url: `https://api.openweathermap.org/data/2.5/weather?q=${destination}&appid=${weatherAPIKey}`,
+            url: `https://api.openweathermap.org/data/2.5/weather?lat=44.34&lon=10.99&appid=${weatherAPIKey}`,
             method: 'GET',
             dataType: 'json',
         }).fail(function(jqXHR) {
             if (jqXHR.status === 401) {
-                // Simulate weather data for testing purposes
-                return {
-                    main: {
-                        temp: 295 // Dummy temperature in Kelvin (e.g., warm weather)
-                    },
-                    weather: [{
-                        main: 'Clear' // Dummy weather condition
-                    }]
-                };
+                alert('Unauthorized: Please check your API key.');
             } else if (jqXHR.status === 404) {
                 alert('City not found: Please check the destination name.');
             } else {
@@ -127,20 +120,11 @@
     $('#tripForm').on('submit', function(e) {
         e.preventDefault();
         let destination = $('#destination').val();
-        let weatherResponse = getWeather(destination);
-        
-        // If getWeather returned a simulated response (in case of 401 error)
-        if (typeof weatherResponse === 'object' && !weatherResponse.then) {
-            let items = suggestItems(weatherResponse);
+        getWeather(destination).then(function(response) {
+            let items = suggestItems(response);
             displayList(items);
             $('#packingList').show();
-        } else {
-            weatherResponse.then(function(response) {
-                let items = suggestItems(response);
-                displayList(items);
-                $('#packingList').show();
-            });
-        }
+        });
     });
 </script>
 
