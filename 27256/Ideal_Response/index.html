@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>2D Platformer Camera System</title>
+<style>
+    #gameCanvas {
+        position: relative;
+        width: 800px;
+        height: 400px;
+        overflow: hidden;
+        border: 1px solid black;
+    }
+    #level, #player {
+        position: absolute;
+    }
+</style>
+</head>
+<body>
+<div id="gameCanvas">
+    <div id="level" style="width: 2000px; height: 500px; background: #87CEEB;"></div>
+    <div id="player" style="width: 30px; height: 30px; background: red; position: absolute;"></div>
+</div>
+<script>
+    const player = document.getElementById('player');
+    const level = document.getElementById('level');
+    const gameCanvas = document.getElementById('gameCanvas');
+
+    const camera = {
+        x: 0,
+        y: 0,
+        width: gameCanvas.offsetWidth,
+        height: gameCanvas.offsetHeight,
+        zoom: 1,
+        targetX: 0,
+        targetY: 0,
+        targetZoom: 1,
+        speed: 0.05, // Camera movement and zoom speed
+        update: function() {
+            // Smooth follow
+            this.x += (this.targetX - this.x) * this.speed;
+            this.y += (this.targetY - this.y) * this.speed;
+            this.zoom += (this.targetZoom - this.zoom) * this.speed;
+
+            // Apply camera transform
+            level.style.transform = `translate(${-this.x}px, ${-this.y}px) scale(${this.zoom})`;
+        }
+    };
+
+    function gameLoop() {
+        // Player movement logic would go here
+        const playerSpeed = 5; // Example speed
+        camera.targetX = player.offsetLeft + player.offsetWidth / 2 - camera.width / 2 / camera.zoom;
+        camera.targetY = player.offsetTop + player.offsetHeight / 2 - camera.height / 2 / camera.zoom;
+
+        // Zoom based on player's speed or other game dynamics
+        camera.targetZoom = 1 + (playerSpeed / 100); // Adjust divisor for sensitivity
+
+        // Keep camera within bounds
+        camera.targetX = Math.max(0, Math.min(camera.targetX, level.offsetWidth - camera.width / camera.zoom));
+        camera.targetY = Math.max(0, Math.min(camera.targetY, level.offsetHeight - camera.height / camera.zoom));
+
+        camera.update();
+        
+        requestAnimationFrame(gameLoop);
+    }
+
+    // Start the game loop
+    gameLoop();
+
+    // Example player movement - you'll need to handle real input
+    document.addEventListener('keydown', function(e) {
+        if(e.key === 'ArrowRight') player.style.left = (player.offsetLeft + 5) + 'px';
+        if(e.key === 'ArrowLeft') player.style.left = (player.offsetLeft - 5) + 'px';
+    });
+</script>
+</body>
+</html>

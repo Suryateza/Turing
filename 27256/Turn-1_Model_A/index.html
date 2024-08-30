@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        #game-container {
+            position: relative;
+            width: 800px;
+            height: 600px;
+            overflow: hidden;
+            border: 1px solid black;
+        }
+        #game-world {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 2000px; /* Example wide level */
+            height: 600px;
+            background: #f0f0f0;
+        }
+        .player {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            background-color: red;
+            border-radius: 50%;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <div id="game-world">
+            <div class="player"></div>
+        </div>
+    </div>
+
+    <script>
+        const gameContainer = document.getElementById('game-container');
+        const gameWorld = document.getElementById('game-world');
+        const player = document.querySelector('.player');
+
+        const camera = {
+            x: 0,
+            y: 0,
+            scale: 1,
+            speed: 0.1, // Smoothness of camera movement
+            minScale: 0.5,
+            maxScale: 2
+        };
+
+        const playerData = {
+            x: 100,
+            y: 100,
+            velocityX: 0,
+            velocityY: 0,
+            speed: 5
+        };
+
+        function updateCamera() {
+            // Adjust camera focus based on player speed
+            camera.x += (playerData.x - camera.x - gameContainer.offsetWidth / 2) * camera.speed;
+            camera.y += (playerData.y - camera.y - gameContainer.offsetHeight / 2) * camera.speed;
+
+            // Simple zoom logic based on player's horizontal speed
+            const targetScale = 1 + (Math.abs(playerData.velocityX) / 10);
+            camera.scale += (targetScale - camera.scale) * camera.speed;
+
+            // Clamp zoom
+            camera.scale = Math.min(Math.max(camera.scale, camera.minScale), camera.maxScale);
+
+            // Apply transformation
+            gameWorld.style.transform = `translate(${camera.x}px, ${camera.y}px) scale(${camera.scale})`;
+        }
+
+        function updatePlayer() {
+            playerData.x += playerData.velocityX;
+            playerData.y += playerData.velocityY;
+            player.style.left = `${playerData.x}px`;
+            player.style.top = `${playerData.y}px`;
+        }
+
+        function gameLoop() {
+            updatePlayer();
+            updateCamera();
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Initialize game loop
+        gameLoop();
+    </script>
+</body>
+</html>
