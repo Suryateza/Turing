@@ -1,78 +1,143 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>2D Platformer Camera System</title>
-<style>
-    #gameCanvas {
-        position: relative;
-        width: 800px;
-        height: 400px;
-        overflow: hidden;
-        border: 1px solid black;
-    }
-    #level, #player {
-        position: absolute;
-    }
-</style>
+    <meta charset="UTF-8">
+    <title>2D Platformer Camera System</title>
+    <style>
+        #gameCanvas {
+            position: relative;
+            width: 800px;
+            height: 400px;
+            overflow: hidden;
+            border: 1px solid black;
+        }
+        #level, #player {
+            position: absolute;
+        }
+        #level {
+            width: 2000px;
+            height: 500px;
+            background: #87CEEB; /* Sky blue background for the level */
+        }
+        #player {
+            width: 30px;
+            height: 30px;
+            background: red; /* Player color */
+        }
+    </style>
 </head>
 <body>
-<div id="gameCanvas">
-    <div id="level" style="width: 2000px; height: 500px; background: #87CEEB;"></div>
-    <div id="player" style="width: 30px; height: 30px; background: red; position: absolute;"></div>
-</div>
-<script>
-    const player = document.getElementById('player');
-    const level = document.getElementById('level');
-    const gameCanvas = document.getElementById('gameCanvas');
+    <div id="gameCanvas">
+        <div id="level">
+            <div id="player"></div>
+        </div>
+    </div>
+    <script>
+        const player = document.getElementById('player');
+        const level = document.getElementById('level');
+        const gameCanvas = document.getElementById('gameCanvas');
 
-    const camera = {
-        x: 0,
-        y: 0,
-        width: gameCanvas.offsetWidth,
-        height: gameCanvas.offsetHeight,
-        zoom: 1,
-        targetX: 0,
-        targetY: 0,
-        targetZoom: 1,
-        speed: 0.05, // Camera movement and zoom speed
-        update: function() {
-            // Smooth follow
-            this.x += (this.targetX - this.x) * this.speed;
-            this.y += (this.targetY - this.y) * this.speed;
-            this.zoom += (this.targetZoom - this.zoom) * this.speed;
+        // Player properties
+        const playerState = {
+            x: 50,
+            y: level.offsetHeight - 50, // Start near the bottom
+            width: 30,
+            height: 30,
+            speedX: 0,
+            speedY: 0,
+            maxSpeed: 10,
+            acceleration: 1,
+            friction: 0.9,
+            gravity: 1,
+            isJumping: false,
+            jumpPower: 15
+        };
 
-            // Apply camera transform
-            level.style.transform = `translate(${-this.x}px, ${-this.y}px) scale(${this.zoom})`;
+        // Camera properties
+        const camera = {
+            x: 0,
+            y: 0,
+            width: gameCanvas.offsetWidth,
+            height: gameCanvas.offsetHeight,
+            zoom: 1,
+            targetX: 0,
+            targetY: 0,
+            targetZoom: 1,
+            speed: 0.05, // Camera movement and zoom speed
+            update: function() {
+                // Smooth follow
+                this.x += (this.targetX - this.x) * this.speed;
+                this.y += (this.targetY - this.y) * this.speed;
+                this.zoom += (this.targetZoom - this.zoom) * this.speed;
+
+                // Apply camera transform
+                level.style.transform = `translate(${-this.x}px, ${-this.y}px) scale(${this.zoom})`;
+            }
+        };
+
+        function updatePlayer() {
+            // Apply gravity
+            playerState.speedY += playerState.gravity;
+
+            // Apply friction to horizontal movement
+            playerState.speedX *= playerState.friction;
+
+            // Update player position
+            playerState.x += playerState.speedX;
+            playerState.y += playerState.speedY;
+
+            // Boundary checks to keep player within level
+            if (playerState.x < 0) playerState.x = 0;
+            if (playerState.x + playerState.width > level.offsetWidth) playerState.x = level.offsetWidth - playerState.width;
+            if (playerState.y + playerState.height > level.offsetHeight) {
+                playerState.y = level.offsetHeight - playerState.height;
+                playerState.isJumping = false; // Allow jumping again
+                playerState.speedY = 0; // Reset vertical speed on landing
+            }
+
+            // Update player DOM element position
+            player.style.left = playerState.x + 'px';
+            player.style.top = playerState.y + 'px';
         }
-    };
 
-    function gameLoop() {
-        // Player movement logic would go here
-        const playerSpeed = 5; // Example speed
-        camera.targetX = player.offsetLeft + player.offsetWidth / 2 - camera.width / 2 / camera.zoom;
-        camera.targetY = player.offsetTop + player.offsetHeight / 2 - camera.height / 2 / camera.zoom;
+        function updateCamera() {
+            // Focus camera on player
+            camera.targetX = playerState.x + playerState.width / 2 - camera.width / 2 / camera.zoom;
+            camera.targetY = playerState.y + playerState.height / 2 - camera.height / 2 / camera.zoom;
 
-        // Zoom based on player's speed or other game dynamics
-        camera.targetZoom = 1 + (playerSpeed / 100); // Adjust divisor for sensitivity
+            // Zoom based on player's speed
+            const playerSpeed = Math.abs(playerState.speedX) + Math.abs(playerState.speedY);
+            camera.targetZoom = 1 + (playerSpeed / 50); // Adjust divisor for zoom sensitivity
 
-        // Keep camera within bounds
-        camera.targetX = Math.max(0, Math.min(camera.targetX, level.offsetWidth - camera.width / camera.zoom));
-        camera.targetY = Math.max(0, Math.min(camera.targetY, level.offsetHeight - camera.height / camera.zoom));
+            // Boundary checks to keep camera within level
+            camera.targetX = Math.max(0, Math.min(camera.targetX, level.offsetWidth - camera.width / camera.zoom));
+            camera.targetY = Math.max(0, Math.min(camera.targetY, level.offsetHeight - camera.height / camera.zoom));
 
-        camera.update();
-        
-        requestAnimationFrame(gameLoop);
-    }
+            camera.update();
+        }
 
-    // Start the game loop
-    gameLoop();
+        function gameLoop() {
+            updatePlayer();
+            updateCamera();
+            requestAnimationFrame(gameLoop);
+        }
 
-    // Example player movement - you'll need to handle real input
-    document.addEventListener('keydown', function(e) {
-        if(e.key === 'ArrowRight') player.style.left = (player.offsetLeft + 5) + 'px';
-        if(e.key === 'ArrowLeft') player.style.left = (player.offsetLeft - 5) + 'px';
-    });
-</script>
+        // Example player movement
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowRight') {
+                playerState.speedX = Math.min(playerState.speedX + playerState.acceleration, playerState.maxSpeed);
+            }
+            if (e.key === 'ArrowLeft') {
+                playerState.speedX = Math.max(playerState.speedX - playerState.acceleration, -playerState.maxSpeed);
+            }
+            if (e.key === 'ArrowUp' && !playerState.isJumping) {
+                playerState.speedY = -playerState.jumpPower;
+                playerState.isJumping = true;
+            }
+        });
+
+        // Start the game loop
+        gameLoop();
+    </script>
 </body>
 </html>
