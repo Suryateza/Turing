@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Packing List Generator</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        .packing-widget {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .item-list {
+            list-style-type: none;
+            padding: 0;
+        }
+        .item-list li {
+            padding: 5px 10px;
+            background: #f4f4f4;
+            margin: 5px 0;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container packing-widget">
+    <h2 class="text-center">Travel Packing List</h2>
+    <form id="tripForm">
+        <input type="text" id="destination" class="form-control mb-2" placeholder="Destination" required>
+        <input type="date" id="startDate" class="form-control mb-2" required>
+        <input type="date" id="endDate" class="form-control mb-2" required>
+        <button type="submit" class="btn btn-primary">Generate List</button>
+    </form>
+    
+    <div id="packingList" style="display:none;">
+        <h3>Your Packing List</h3>
+        <div id="categories"></div>
+        <button class="btn btn-success mt-3" onclick="saveList()">Save List</button>
+        <button class="btn btn-info mt-3" onclick="shareList()">Share List</button>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script>
+    const weatherAPIKey = 'YOUR_API_KEY_HERE'; // Replace with your OpenWeatherMap API key
+
+    function getWeather(destination, startDate, endDate) {
+        // Simplified; you'd typically fetch a forecast for the whole date range
+        return $.ajax({
+            url: `https://api.openweathermap.org/data/2.5/weather?q=${destination}&appid=${weatherAPIKey}`,
+            method: 'GET'
+        });
+    }
+
+    function suggestItems(weatherData) {
+        let items = { 
+            'clothing': ['Shirts', 'Pants'], 
+            'electronics': ['Phone Charger'], 
+            'toiletries': ['Toothbrush', 'Soap']
+        };
+        
+        if (weatherData.main.temp > 293) { // If warm
+            items['clothing'].push('Shorts', 'Sunscreen');
+        } else if (weatherData.main.temp < 283) { // If cold
+            items['clothing'].push('Jacket', 'Scarf');
+        }
+        // Add rain gear if there's a chance of rain, etc.
+        return items;
+    }
+
+    function displayList(items) {
+        let categoriesDiv = $('#categories');
+        categoriesDiv.empty();
+        for (let category in items) {
+            let list = $('<ul class="item-list"></ul>');
+            items[category].forEach(item => list.append(`<li>${item} <button onclick="removeItem(this)">X</button></li>`));
+            categoriesDiv.append(`<h4>${category}</h4>`).append(list);
+        }
+    }
+
+    function removeItem(btn) {
+        $(btn).parent().remove();
+    }
+
+    function saveList() {
+        let list = {};
+        $('#categories ul').each(function() {
+            let category = $(this).prev('h4').text();
+            list[category] = $(this).find('li').map(function() { 
+                return $(this).text().replace('X', '').trim(); 
+            }).get();
+        });
+        localStorage.setItem('packingList', JSON.stringify(list));
+        alert('List saved!');
+    }
+
+    function shareList() {
+        let list = JSON.parse(localStorage.getItem('packingList'));
+        // Here you would implement actual sharing functionality, like sending an email or creating a shareable link
+        alert('Sharing functionality would be implemented here.');
+    }
+
+    $('#tripForm').on('submit', function(e) {
+        e.preventDefault();
+        let destination = $('#destination').val();
+        getWeather(destination).then(function(response) {
+            let items = suggestItems(response);
+            displayList(items);
+            $('#packingList').show();
+        });
+    });
+</script>
+
+</body>
+</html>
