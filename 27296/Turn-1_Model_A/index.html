@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Virtual Fashion Show</title>
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+<style>
+    .design-interface, .runway, .voting-system { padding: 20px; }
+    .clothing-item { cursor: move; }
+    .avatar { width: 200px; height: 400px; background: #f0f0f0; border: 1px solid #ccc; }
+    .runway { background: #333; color: #fff; text-align: center; }
+</style>
+</head>
+<body>
+
+<div class="container">
+    <div class="design-interface">
+        <h4>Design Your Outfit</h4>
+        <div id="clothing-options">
+            <!-- Clothing items will be listed here -->
+            <img src="path-to-clothing-image1.png" class="clothing-item" draggable="true" data-item="top1">
+            <!-- More items... -->
+        </div>
+        <div class="avatar" id="avatar">
+            <!-- Avatar or model goes here -->
+        </div>
+    </div>
+
+    <div class="runway">
+        <h4>Runway</h4>
+        <!-- Runway display will be here -->
+        <div id="runway-display">
+            <!-- Outfit will be showcased here -->
+        </div>
+    </div>
+
+    <div class="voting-system">
+        <h4>Vote for this Design</h4>
+        <button class="btn btn-like">Like</button>
+        <span id="like-count">0</span>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/interactjs@1.10.11/dist/interact.min.js"></script>
+<script>
+    interact('.clothing-item').draggable({
+        inertia: true,
+        modifiers: [
+            interact.modifiers.restrictRect({
+                restriction: 'parent',
+                endOnly: true
+            })
+        ],
+        autoScroll: true,
+        listeners: {
+            move: dragMoveListener,
+            end (event) { console.log('dropped'); }
+        }
+    });
+
+    function dragMoveListener (event) {
+        var target = event.target,
+            x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx,
+            y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy;
+
+        target.style.transform = 'translate(' + x + 'px, ' + y + 'px)';
+        target.setAttribute('data-x', x);
+        target.setAttribute('data-y', y);
+    }
+
+    // Voting system
+    document.querySelector('.btn-like').addEventListener('click', function() {
+        let count = parseInt(document.getElementById('like-count').textContent, 10);
+        document.getElementById('like-count').textContent = count + 1;
+    });
+
+    // TO DO: 
+    // 1. Implement saving the outfit design.
+    // 2. Display designed outfits on the runway.
+    // 3. E-commerce integration for purchasing designed outfits.
+</script>
+
+</body>
+</html>

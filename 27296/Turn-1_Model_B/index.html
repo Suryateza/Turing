@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Virtual Fashion Show</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+<style>
+    body { font-family: 'Arial', sans-serif; }
+    #fashionWidget {
+        display: flex; 
+        justify-content: space-around;
+        padding: 20px;
+    }
+    #designArea, #runway {
+        border: 1px solid #ccc;
+        width: 45%;
+        min-height: 500px;
+        padding: 10px;
+    }
+    .clothingItem {
+        cursor: move;
+        margin: 5px;
+        padding: 10px;
+        background: #f4f4f4;
+        border: 1px solid #ddd;
+    }
+    #model { 
+        width: 200px; 
+        height: 400px; 
+        background: url('model.png') no-repeat center; /* Placeholder for model image */
+        margin: 20px auto;
+    }
+    #votingSystem { text-align: center; margin-top: 20px; }
+    #votingSystem .star { font-size: 2em; color: #ddd; cursor: pointer; }
+    #votingSystem .star:hover, #votingSystem .star.active { color: #FFD700; }
+</style>
+</head>
+<body>
+
+<div id="fashionWidget">
+    <div id="designArea">
+        <h2>Design Your Outfit</h2>
+        <div id="clothingItems">
+            <div class="clothingItem" draggable="true">Shirt</div>
+            <div class="clothingItem" draggable="true">Pants</div>
+            <!-- More items here -->
+        </div>
+        <div id="model"></div>
+    </div>
+    <div id="runway">
+        <h2>Runway</h2>
+        <div id="runwayModel"></div>
+        <div id="votingSystem">
+            <span class="star" data-vote="1">★</span>
+            <span class="star" data-vote="2">★</span>
+            <span class="star" data-vote="3">★</span>
+            <span class="star" data-vote="4">★</span>
+            <span class="star" data-vote="5">★</span>
+        </div>
+        <button onclick="buyOutfit()">Buy this Outfit</button>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+<script>
+$(document).ready(function() {
+    // Drag and Drop functionality
+    new Sortable(document.getElementById('clothingItems'), {
+        group: 'shared',
+        animation: 150
+    });
+
+    new Sortable(document.getElementById('model'), {
+        group: 'shared',
+        onAdd: function (/**Event*/ evt) {
+            // Here you could change the model's outfit based on what's dropped
+            console.log('Item added to model:', evt.item.textContent);
+        }
+    });
+
+    // Voting system
+    $('.star').on('click', function() {
+        $('.star').removeClass('active');
+        $(this).addClass('active');
+        $(this).prevAll().addClass('active');
+        let vote = $(this).data('vote');
+        console.log('Voted ' + vote + ' stars');
+        // Here you would send the vote to your server
+    });
+
+    // Simple runway animation - this would need more work for a real animation
+    $('#runwayModel').click(function() {
+        $(this).animate({left: '+=100px'}, 1000, function() {
+            $(this).animate({left: '-=100px'}, 1000);
+        });
+    });
+
+    // E-commerce integration
+    window.buyOutfit = function() {
+        alert('Redirecting to purchase page...');
+        // In a real scenario, you would redirect to the e-commerce page or open a modal
+    };
+});
+</script>
+
+</body>
+</html>
