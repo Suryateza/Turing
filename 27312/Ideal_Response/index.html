@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Project</title>
+</head>
+<body>
+    <script>
+        // Example JavaScript code
+        const secretKey = 'your_secret_key';
+        const yourData = { travelPlans: "Example data" };
+
+        // Simple encryption (not a real encryption, for illustration only)
+        function encrypt(key, data) {
+            // Implement actual encryption here
+            return btoa(data); // This is a placeholder
+        }
+
+        const encryptedData = encrypt(secretKey, JSON.stringify(yourData));
+        localStorage.setItem('travelPlans', encryptedData);
+
+        console.log('Data stored:', localStorage.getItem('travelPlans'));
+    </script>
+</body>
+</html>
