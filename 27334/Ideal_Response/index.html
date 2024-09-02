@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Health Data Report Generator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.3.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+    <button onclick="exportToCSV()">Export to CSV</button>
+    <button onclick="exportToPDF()">Export to PDF</button>
+    <div id="reportContent">
+        <!-- This is where your report content goes -->
+    </div>
+    <script>
+        // Assume this function fetches user's health data
+        function fetchHealthData() {
+            return {
+                medications: [{name: 'Aspirin', date: '2023-10-01', notes: '100mg'}, /* Add more records as needed */],
+                doctorVisits: [{doctor: 'Dr. Smith', date: '2023-09-25', notes: 'Routine checkup'}, /* Add more records as needed */],
+                symptoms: [{severity: 5, date: '2023-10-01', notes: 'Headache'}, /* Add more records as needed */]
+            };
+        }
+
+        function exportToCSV() {
+            const healthData = fetchHealthData();
+            const csvRows = [];
+
+            // Headers
+            csvRows.push('Name,Date,Notes\n');
+
+            // Data for medications
+            healthData.medications.forEach(medication => {
+                csvRows.push(`${medication.name},${medication.date},${medication.notes}\n`);
+            });
+
+            // Data for doctor visits
+            healthData.doctorVisits.forEach(visit => {
+                csvRows.push(`${visit.doctor},${visit.date},${visit.notes}\n`);
+            });
+
+            // Data for symptoms
+            healthData.symptoms.forEach(symptom => {
+                csvRows.push(`${symptom.severity},${symptom.date},${symptom.notes}\n`);
+            });
+
+            const csvString = csvRows.join('');
+            const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'health_report.csv';
+            link.click();
+        }
+
+        function exportToPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            const healthData = fetchHealthData();
+            const reportHTML = document.getElementById('reportContent').innerHTML;
+
+            doc.text('Health Report', 10, 10);
+            let yPos = 20;
+
+            // Add data to PDF
+            doc.text('Medications:', 10, yPos);
+            yPos += 10;
+            healthData.medications.forEach(med => {
+                doc.text(`Name: ${med.name}, Date: ${med.date}, Notes: ${med.notes}`, 10, yPos);
+                yPos += 10;
+            });
+
+            doc.text('Doctor Visits:', 10, yPos);
+            yPos += 10;
+            healthData.doctorVisits.forEach(visit => {
+                doc.text(`Doctor: ${visit.doctor}, Date: ${visit.date}, Notes: ${visit.notes}`, 10, yPos);
+                yPos += 10;
+            });
+
+            doc.text('Symptoms:', 10, yPos);
+            yPos += 10;
+            healthData.symptoms.forEach(symptom => {
+                doc.text(`Severity: ${symptom.severity}, Date: ${symptom.date}, Notes: ${symptom.notes}`, 10, yPos);
+                yPos += 10;
+            });
+
+            doc.save('health_report.pdf');
+        }
+    </script>
+</body>
+</html>
