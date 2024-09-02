@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Symptom Tracker Progress Report</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        .chart-container { width: 80vw; height: 40vh; margin: 20px auto; }
+    </style>
+</head>
+<body>
+    <div class="chart-container">
+        <canvas id="symptomChart"></canvas>
+    </div>
+    <script>
+        // Initial Data
+        let symptomsData = {
+            labels: [],
+            datasets: [{
+                label: 'Symptom Severity',
+                backgroundColor: 'rgba(255,99,132,0.2)',
+                borderColor: 'rgba(255,99,132,1)',
+                data: [],
+                fill: true,
+            }]
+        };
+
+        // State Management
+        let appState = {
+            lastUpdate: new Date(),
+            history: []
+        };
+
+        // Chart Initialization
+        const ctx = document.getElementById('symptomChart').getContext('2d');
+        let chart = new Chart(ctx, {
+            type: 'line',
+            data: symptomsData,
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        // Function to add new data and update chart
+        function logSymptom(severity) {
+            appState.history.push({ date: new Date(), severity: severity });
+            updateChart();
+        }
+
+        // Function to update chart with new data
+        function updateChart() {
+            // Prepare new data
+            const newData = appState.history.map(entry => entry.severity);
+            const newLabels = appState.history.map(entry => entry.date.toLocaleDateString());
+
+            // Update chart data
+            chart.data.labels = newLabels;
+            chart.data.datasets[0].data = newData;
+            chart.update();
+        }
+
+        // Simulate adding new data
+        document.addEventListener('DOMContentLoaded', function() {
+            setInterval(() => {
+                // Simulating new data entry
+                let randomSeverity = Math.floor(Math.random() * 10) + 1;
+                logSymptom(randomSeverity);
+            }, 2000); // Every 2 seconds for demo
+        });
+
+    </script>
+</body>
+</html>

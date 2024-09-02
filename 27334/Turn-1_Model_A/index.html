@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Symptom Tracker</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.min.css">
+    <style>
+        body { font-family: Arial, sans-serif; }
+        .tracker { max-width: 800px; margin: auto; padding: 20px; }
+        canvas { max-width: 100%; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="tracker">
+        <h1>Chronic Illness Symptom Tracker</h1>
+        <!-- Assume other inputs for logging data are here -->
+        <div>
+            <canvas id="symptomChart" width="400" height="200"></canvas>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.min.js"></script>
+    <script>
+        // Sample data structure
+        let trackerData = {
+            symptoms: [],
+            medications: [],
+            visits: []
+        };
+
+        // Function to add new data
+        function logData(type, data) {
+            trackerData[type].push({...data, date: new Date()});
+            updateChart();
+        }
+
+        // Function to update or initialize chart
+        function updateChart() {
+            const ctx = document.getElementById('symptomChart').getContext('2d');
+            
+            // Preparing data for chart
+            const dates = trackerData.symptoms.map(s => s.date.toLocaleDateString());
+            const severity = trackerData.symptoms.map(s => s.severity);
+
+            if(window.myChart) {
+                window.myChart.data.labels = dates;
+                window.myChart.data.datasets[0].data = severity;
+                window.myChart.update();
+            } else {
+                window.myChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: dates,
+                        datasets: [{
+                            label: 'Symptom Severity',
+                            data: severity,
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            fill: false
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            xAxes: [{ type: 'time', time: { unit: 'day' } }],
+                            yAxes: [{ ticks: { beginAtZero: true, max: 10 } }]
+                        }
+                    }
+                });
+            }
+        }
+
+        // Simulate data logging
+        function simulateLog(severity) {
+            logData('symptoms', {severity: severity});
+        }
+
+        // Initial chart setup with mock data
+        for(let i = 0; i < 10; i++) {
+            simulateLog(Math.floor(Math.random() * 10) + 1);
+        }
+    </script>
+</body>
+</html>
