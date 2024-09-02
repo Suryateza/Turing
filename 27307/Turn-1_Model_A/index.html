@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Team Building Activity Widget</title>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/socket.io@4.5.1/dist/socket.io.js"></script>
+<style>
+    .game-container, .team-management { margin: 20px; padding: 20px; border: 1px solid #ddd; border-radius: 10px; }
+    .game-button { margin: 5px; }
+</style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Remote Team Building</h1>
+    <div class="game-container">
+        <h2>Choose a Game</h2>
+        <button class="btn btn-primary game-button" data-game="trivia">Trivia</button>
+        <button class="btn btn-primary game-button" data-game="puzzle">Collaborative Puzzle</button>
+    </div>
+
+    <div class="team-management">
+        <h2>Team Management</h2>
+        <input type="text" id="team-name" placeholder="Enter team name">
+        <button class="btn btn-success" id="create-team">Create Team</button>
+        <div id="team-list"></div>
+    </div>
+
+    <div id="game-interface"></div>
+    <div id="progress-tracker"></div>
+    <div id="reward-system"></div>
+</div>
+
+<script>
+    $(document).ready(function() {
+        let socket = io();
+
+        $(".game-button").on("click", function() {
+            let gameType = $(this).data('game');
+            $("#game-interface").load(`./games/${gameType}.html`);
+            // Initialize game logic here
+        });
+
+        $("#create-team").on("click", function() {
+            let teamName = $("#team-name").val();
+            if (teamName) {
+                // Here you would typically make an AJAX call or use Socket.IO to save the team
+                $("#team-list").append(`<div>${teamName} <button class="btn btn-info join-team">Join</button></div>`);
+                $("#team-name").val('');
+            }
+        });
+
+        // Real-time updates would typically be handled with Socket.IO events
+        socket.on('updateProgress', function(data) {
+            $("#progress-tracker").html(`Team ${data.team}: ${data.score}`);
+        });
+
+        // Simulate reward system updates
+        socket.on('updateRewards', function(data) {
+            $("#reward-system").html(`Team ${data.team} earned ${data.badge}`);
+        });
+
+        // More complex logic for managing team joins, game states, etc., would go here
+    });
+</script>
+</body>
+</html>

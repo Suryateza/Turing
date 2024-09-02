@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Team Building Widget</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { padding: 20px; }
+        .game, .team { cursor: pointer; margin: 10px; }
+        .progress-bar { transition: width 0.5s ease; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Remote Team Building</h1>
+    
+    <!-- Game Selection -->
+    <div id="gameSelection">
+        <h2>Choose a Game</h2>
+        <div class="btn-group">
+            <button class="btn btn-primary game" data-game="trivia">Trivia</button>
+            <button class="btn btn-primary game" data-game="collaborative">Collaborative Challenge</button>
+        </div>
+    </div>
+
+    <!-- Team Management -->
+    <div id="teamManagement">
+        <h2>Manage Teams</h2>
+        <form id="teamForm">
+            <input type="text" id="teamName" placeholder="Team Name" class="form-control mb-2">
+            <button type="button" class="btn btn-success" onclick="createTeam()">Create Team</button>
+        </form>
+        <div id="teamsList"></div>
+    </div>
+
+    <!-- Game Area -->
+    <div id="gameArea" style="display:none;">
+        <h2>Game in Progress</h2>
+        <div id="gameContent"></div>
+    </div>
+
+    <!-- Progress Tracking -->
+    <div id="progressTracking">
+        <h2>Team Progress</h2>
+        <div id="progressBars"></div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script>
+    let teams = {};
+    
+    function createTeam() {
+        let name = $('#teamName').val();
+        if(name && !teams[name]) {
+            teams[name] = {score: 0, members: []};
+            updateTeamDisplay();
+            $('#teamName').val('');
+        }
+    }
+
+    function updateTeamDisplay() {
+        $('#teamsList').html('');
+        for(let team in teams) {
+            $('#teamsList').append(`<div class="team" onclick="selectTeam('${team}')">${team}</div>`);
+        }
+        updateProgress();
+    }
+
+    function selectTeam(teamName) {
+        // Here you would implement team selection logic for games
+        console.log('Selected team:', teamName);
+    }
+
+    function startGame(gameType) {
+        $('#gameArea').show();
+        $('#gameContent').html(`<p>Playing ${gameType}...</p>`);
+        // Here would go the actual game logic, possibly loaded dynamically
+    }
+
+    function updateProgress() {
+        $('#progressBars').html('');
+        for(let team in teams) {
+            $('#progressBars').append(`
+                <h4>${team}</h4>
+                <div class="progress">
+                    <div class="progress-bar" role="progressbar" style="width: ${teams[team].score}%;" aria-valuenow="${teams[team].score}" aria-valuemin="0" aria-valuemax="100">${teams[team].score}%</div>
+                </div>
+            `);
+        }
+    }
+
+    // Event listeners for game selection
+    $('.game').on('click', function() {
+        startGame($(this).data('game'));
+    });
+
+    // Simulate score update (would be part of game logic)
+    function simulateScoreUpdate(team, score) {
+        if(teams[team]) {
+            teams[team].score += score;
+            updateProgress();
+        }
+    }
+
+    // Initial setup
+    updateTeamDisplay();
+</script>
+
+</body>
+</html>
