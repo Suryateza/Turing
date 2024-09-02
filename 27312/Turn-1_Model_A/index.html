@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Travel Safety Guide</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+    <style>
+        /* Custom styles here */
+        .widget {
+            width: 300px;
+            font-family: Arial, sans-serif;
+        }
+    </style>
+</head>
+<body>
+
+<div id="safetyWidget" class="widget">
+    <h2>Travel Safety Guide</h2>
+    <div id="locationInfo"></div>
+    <button id="getSafetyInfo">Get Safety Info</button>
+    <div id="safetyInfo"></div>
+    <div id="emergencyContacts"></div>
+</div>
+
+<script>
+    // CDN for JavaScript libraries
+    document.write('<script src="https://unpkg.com/axios/dist/axios.min.js"></scr' + 'ipt>');
+    
+    // Function to get current location
+    function getCurrentLocation() {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(showPosition, showError);
+        } else {
+            alert("Geolocation is not supported by this browser.");
+        }
+    }
+
+    function showPosition(position) {
+        localStorage.setItem('lastKnownLocation', JSON.stringify({
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude
+        }));
+        document.getElementById('locationInfo').innerHTML = `Location: ${position.coords.latitude}, ${position.coords.longitude}`;
+        fetchSafetyData(position.coords);
+    }
+
+    function showError(error) {
+        switch(error.code) {
+            case error.PERMISSION_DENIED:
+                alert("User denied the request for Geolocation.");
+                break;
+            case error.POSITION_UNAVAILABLE:
+                alert("Location information is unavailable.");
+                break;
+            case error.TIMEOUT:
+                alert("The request to get user location timed out.");
+                break;
+            case error.UNKNOWN_ERROR:
+                alert("An unknown error occurred.");
+                break;
+        }
+    }
+
+    // Fetch safety data from API or cache
+    function fetchSafetyData(coords) {
+        const cacheKey = `safetyData_${coords.latitude}_${coords.longitude}`;
+        const cachedData = localStorage.getItem(cacheKey);
+        if (cachedData) {
+            displaySafetyInfo(JSON.parse(cachedData));
+        } else {
+            axios.get(`https://your-api-endpoint.com/safety?lat=${coords.latitude}&lon=${coords.longitude}`)
+            .then(response => {
+                localStorage.setItem(cacheKey, JSON.stringify(response.data));
+                displaySafetyInfo(response.data);
+            }).catch(error => console.error('Error fetching safety data:', error));
+        }
+    }
+
+    function displaySafetyInfo(data) {
+        document.getElementById('safetyInfo').innerHTML = `<p>Safety Tips: ${data.tips}</p>`;
+        document.getElementById('emergencyContacts').innerHTML = `<p>Emergency: ${data.emergencyContacts}</p>`;
+    }
+
+    // Initialize
+    document.getElementById('getSafetyInfo').addEventListener('click', getCurrentLocation);
+
+    // Service Worker for offline functionality
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/sw.js').then(registration => {
+                console.log('SW registered: ', registration);
+            }).catch(registrationError => {
+                console.log('SW registration failed: ', registrationError);
+            });
+        });
+    }
+</script>
+
+<script src="./sw.js"></script> <!-- Path to your service worker file -->
+</body>
+</html>
