@@ -1,27 +1,28 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Travel Safety Guide</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css">
-<style>
-    body { padding: 20px; }
-    #safety-info, #destination-safety { margin-top: 20px; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Travel Safety Guide</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.7.1/dist/leaflet.css" />
+    <style>
+        #map { width: 800px; height: 600px; border: 1px solid black; }
+    </style>
 </head>
 <body>
-    <h1 class="title">Travel Safety Guide</h1>
-    <div id="current-location">
-        <button class="button is-primary" onclick="getLocation()">Get Safety Info for Current Location</button>
-        <div id="safety-info"></div>
-    </div>
-    <div id="destination-safety">
-        <input class="input" type="text" id="destination" placeholder="Search destination">
-        <button class="button is-info" onclick="searchDestination()">Search</button>
-        <div id="search-results"></div>
-    </div>
-
-    <script src="safetyWidget.js"></script>
+    <div id="map"></div>
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script>
+        // Basic check for map container existence
+        if (document.getElementById('map')) {
+            var map = L.map('map').setView([51.505, -0.09], 13); // Example location
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a>',
+                subdomains: ['a', 'b', 'c']
+            }).addTo(map);
+        } else {
+            document.write('Map container not found.');
+        }
+    </script>
 </body>
 </html>
