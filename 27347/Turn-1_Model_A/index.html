@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DJ Mixer Game</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/howler.js/2.2.1/howler.min.js"></script> <!-- For audio playback -->
+<style>
+  body { font-family: 'Roboto', sans-serif; background-color: #f4f4f4; }
+  #djConsole { width: 80%; margin: 40px auto; text-align: center; }
+  .control { margin: 20px; }
+</style>
+</head>
+<body>
+<div id="djConsole">
+  <input type="file" id="sampleUpload" accept="audio/*">
+  <button onclick="uploadSample()">Upload Sample</button>
+  <div class="control">
+    <label>Tempo: </label><input type="range" min="0.5" max="2" value="1" step="0.1" oninput="adjustTempo(this.value)">
+  </div>
+  <!-- Additional controls like pitch, effects -->
+  <button onclick="startChallengeMode()">Start Challenge Mode</button>
+  <div id="leaderboard"></div>
+</div>
+
+<script>
+  let sound, userSample;
+  
+  function uploadSample() {
+    const fileInput = document.getElementById('sampleUpload');
+    const file = fileInput.files[0];
+    const reader = new FileReader();
+    reader.onload = function(event) {
+      const audioContext = new AudioContext();
+      audioContext.decodeAudioData(event.target.result, function(buffer) {
+        userSample = buffer;
+      });
+    };
+    reader.readAsArrayBuffer(file);
+  }
+  
+  function adjustTempo(tempo) {
+    if (sound) {
+      sound.rate(tempo);
+    }
+  }
+  
+  function startChallengeMode() {
+    // Logic to start challenge mode, randomize samples, etc.
+  }
+  
+  function init() {
+    sound = new Howl({
+      src: ['baseTrack.mp3'], // Preloaded track
+      autoplay: false,
+      loop: true,
+      volume: 0.5,
+    });
+  }
+  
+  init();
+</script>
+</body>
+</html>
