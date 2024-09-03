@@ -1,28 +1,97 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Travel Safety Guide</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.7.1/dist/leaflet.css" />
-    <style>
-        #map { width: 800px; height: 600px; border: 1px solid black; }
-    </style>
+<meta charset="UTF-8">
+<title>Virtual Pet Game</title>
+<!-- Using Bootstrap for quick styling and responsiveness -->
+<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+<style>
+    #pet-area {
+        height: 400px;
+        background: url('default_background.jpg') no-repeat center center;
+        background-size: cover;
+        position: relative;
+    }
+    #pet {
+        position: absolute;
+        bottom: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 100px;
+        transition: all 0.3s;
+    }
+    .action:hover {
+        transform: scale(1.1);
+    }
+    .customizable {
+        cursor: pointer;
+    }
+</style>
 </head>
 <body>
-    <div id="map"></div>
-    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.7.1/dist/leaflet.js"></script>
-    <script>
-        // Basic check for map container existence
-        if (document.getElementById('map')) {
-            var map = L.map('map').setView([51.505, -0.09], 13); // Example location
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a>',
-                subdomains: ['a', 'b', 'c']
-            }).addTo(map);
-        } else {
-            document.write('Map container not found.');
+
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-8">
+            <div id="pet-area">
+                <img id="pet" src="./download.jpg" alt="Your Pet">
+            </div>
+        </div>
+        <div class="col-md-4">
+            <h2>Pet Controls</h2>
+            <button class="btn btn-primary action" onclick="feedPet()">Feed</button>
+            <button class="btn btn-success action" onclick="playWithPet()">Play</button>
+            <div class="mt-3 customizable" onclick="changeBackground()">Change Background</div>
+            <div id="petStats">
+                <p>Hunger: <span id="hunger">50</span></p>
+                <p>Happiness: <span id="happiness">50</span></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const pet = document.getElementById('pet');
+    let hunger = 50, happiness = 50;
+
+    function feedPet() {
+        if (hunger < 100) {
+            hunger += 10;
+            updateStats();
+            pet.src = 'pet_eating.png';
+            setTimeout(() => pet.src = 'pet_happy.png', 2000);
         }
-    </script>
+    }
+
+    function playWithPet() {
+        if (happiness < 100) {
+            happiness += 15;
+            updateStats();
+            pet.style.transform = 'translateX(-50%) scaleX(-1)'; // Flip pet for play
+            setTimeout(() => pet.style.transform = 'translateX(-50%)', 2000);
+        }
+    }
+
+    function updateStats() {
+        document.getElementById('hunger').textContent = hunger;
+        document.getElementById('happiness').textContent = happiness;
+    }
+
+    function changeBackground() {
+        const backgrounds = ['forest.jpg', 'beach.jpg', 'space.jpg'];
+        let currentBg = document.getElementById('pet-area').style.backgroundImage;
+        let currentIndex = backgrounds.indexOf(currentBg.slice(currentBg.indexOf('(') + 2, -2));
+        let nextIndex = (currentIndex + 1) % backgrounds.length;
+        document.getElementById('pet-area').style.backgroundImage = `url('${backgrounds[nextIndex]}')`;
+    }
+
+    // Simple animation for pet idle state
+    function petIdleAnimation() {
+        pet.style.top = Math.sin(Date.now() * 0.005) * 10 + 'px';
+        requestAnimationFrame(petIdleAnimation);
+    }
+    petIdleAnimation();
+</script>
+
 </body>
 </html>

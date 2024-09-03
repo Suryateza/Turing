@@ -1,40 +1,87 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interactive Map</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.7.1/dist/leaflet.css" />
-    <style>
-        #map {
-            height: 100vh; /* Full height map */
-            width: 100%;   /* Full width map */
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Virtual Pet Dashboard</title>
+<link href="https://fonts.googleapis.com/css?family=Open+Sans&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js"></script>
+<style>
+  body {
+    font-family: 'Open Sans', sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    background-color: #f3f3f3;
+  }
+  #pet-dashboard {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  }
+  #pet-image {
+    width: 200px;
+    height: 200px;
+    background: url('pet-image.png'); /* Placeholder */
+    background-size: cover;
+    border-radius: 50%;
+    margin: 20px auto;
+  }
+  .action-button {
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    background-color: #5cb85c;
+    color: white;
+    cursor: pointer;
+  }
+  .action-button:hover {
+    background-color: #4cae4c;
+  }
+  /* Additional styles for animations and customization options will be added here */
+</style>
 </head>
 <body>
-    <div id="map"></div>
+  <div id="pet-dashboard">
+    <div id="pet-image"></div>
+    <div id="care-panel">
+      <button class="action-button" onclick="feedPet()">Feed</button>
+      <button class="action-button" onclick="playWithPet()">Play</button>
+      <!-- Additional care options -->
+    </div>
+    <div id="customization-panel">
+      <!-- Customization options will go here -->
+    </div>
+  </div>
+  <script>
+    function feedPet() {
+  anime({
+    targets: '#pet-image',
+    scale: [1, 1.1, 1],
+    duration: 1500,
+    easing: 'easeInOutQuad',
+    complete: function(anim) {
+      // Update pet's health or hunger status here
+    }
+  });
+}
 
-    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.7.1/dist/leaflet.js"></script>
-    <script>
-        if ('geolocation' in navigator && typeof L !== 'undefined') {
-            // Initialize the map
-            const map = L.map('map').setView([51.505, -0.09], 13);
+function playWithPet() {
+  anime({
+    targets: '#pet-image',
+    rotate: '1turn',
+    duration: 2000,
+    easing: 'easeInOutSine',
+    complete: function(anim) {
+      // Update pet's happiness status here
+    }
+  });
+}
 
-            // Add a tile layer to the map
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                maxZoom: 19,
-                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            }).addTo(map);
-
-            // Add a marker
-            L.marker([51.5, -0.09]).addTo(map)
-                .bindPopup('A pretty CSS3 popup.<br> Easily customizable.')
-                .openPopup();
-        } else {
-            // Provide an alternative or message
-            document.body.innerHTML = '<p>Geolocation or Leaflet library not supported.</p>';
-        }
-    </script>
+// Additional functions for pet customization and status updates will be added here
+  </script>
 </body>
 </html>
