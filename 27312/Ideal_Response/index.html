@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Virtual Pet Game</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f0f8ff;
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+        }
+        #pet-area {
+            height: 400px;
+            background-color: #ffe4b5;
+            position: relative;
+            border-radius: 15px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+        }
+        #pet {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 80px;
+            transition: all 0.3s;
+        }
+        .action:hover {
+            transform: scale(1.1);
+        }
+        .customizable {
+            cursor: pointer;
+            color: #ff4500;
+            font-weight: bold;
+        }
+        #petStats {
+            font-size: 18px;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-8">
+            <div id="pet-area">
+                <div id="pet">🐱</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <h2>Pet Controls</h2>
+            <button class="btn btn-primary action" onclick="feedPet()">Feed 🍲</button>
+            <button class="btn btn-success action" onclick="playWithPet()">Play 🎾</button>
+            <div class="mt-3 customizable" onclick="changeBackground()">Change Background</div>
+            <div id="petStats">
+                <p>Hunger: <span id="hunger">50</span></p>
+                <p>Happiness: <span id="happiness">50</span></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const pet = document.getElementById('pet');
+    let hunger = 50, happiness = 50;
+
+    function feedPet() {
+        if (hunger < 100) {
+            hunger += 10;
+            updateStats();
+            pet.textContent = '🍖'; // Eating animation
+            setTimeout(() => pet.textContent = '😸', 2000);
+        }
+    }
+
+    function playWithPet() {
+        if (happiness < 100) {
+            happiness += 15;
+            updateStats();
+            pet.style.transform = 'translateX(-50%) scaleX(-1)'; // Flip pet for play
+            pet.textContent = '🏃‍♂️'; // Playing animation
+            setTimeout(() => {
+                pet.style.transform = 'translateX(-50%)';
+                pet.textContent = '😸';
+            }, 2000);
+        }
+    }
+
+    function updateStats() {
+        document.getElementById('hunger').textContent = hunger;
+        document.getElementById('happiness').textContent = happiness;
+    }
+
+    function changeBackground() {
+        const colors = ['#ffebcd', '#add8e6', '#98fb98', '#ffe4e1', '#afeeee'];
+        const randomColor = colors[Math.floor(Math.random() * colors.length)];
+        document.getElementById('pet-area').style.backgroundColor = randomColor;
+    }
+
+    function petIdleAnimation() {
+        pet.style.top = Math.sin(Date.now() * 0.005) * 10 + 'px';
+        requestAnimationFrame(petIdleAnimation);
+    }
+    petIdleAnimation();
+</script>
+
+</body>
+</html>
