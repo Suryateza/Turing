@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>DJ Mix Master</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css">
+<style>
+  body {
+    background-color: #1e1e1e;
+    color: #ffffff;
+    font-family: Arial, sans-serif;
+  }
+  #dj-console {
+    text-align: center;
+    padding: 20px;
+  }
+  #controls, #userSamples {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin: 20px 0;
+  }
+  button {
+    margin: 10px;
+    padding: 10px 20px;
+    background-color: #ff5722;
+    border: none;
+    color: #ffffff;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  button:hover {
+    background-color: #e64a19;
+  }
+  #controls label {
+    margin: 10px;
+  }
+  canvas {
+    display: block;
+    margin: 20px auto;
+    background: #121212;
+    border: 2px solid #ffffff;
+  }
+  #leaderboard {
+    margin-top: 20px;
+  }
+  .sample-button {
+    background-color: #4caf50;
+    border: none;
+    color: #ffffff;
+    border-radius: 5px;
+    padding: 10px;
+    cursor: pointer;
+    margin: 5px;
+  }
+  .sample-button:hover {
+    background-color: #388e3c;
+  }
+</style>
+</head>
+<body>
+<div id="dj-console">
+  <h1 class="title">DJ Mix Master</h1>
+  <input type="file" id="sampleUpload" accept="audio/*" multiple>
+  <div id="controls">
+    <button id="play">Play</button>
+    <button id="stop">Stop</button>
+    <button id="crossfade">Crossfade</button>
+    <label>Tempo: <input type="range" id="tempoControl" min="0.5" max="2" value="1" step="0.1"></label>
+  </div>
+  <div id="userSamples"></div>
+  <button id="startChallenge">Start Challenge</button>
+  <div id="leaderboard"></div>
+  <canvas id="visualizer"></canvas>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.1/howler.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const AudioContext = window.AudioContext || window.webkitAudioContext;
+  const audioContext = new AudioContext();
+  const sampleUpload = document.getElementById('sampleUpload');
+  const userSamplesDiv = document.getElementById('userSamples');
+  const playButton = document.getElementById('play');
+  const stopButton = document.getElementById('stop');
+  const crossfadeButton = document.getElementById('crossfade');
+  const tempoControl = document.getElementById('tempoControl');
+  const startChallengeButton = document.getElementById('startChallenge');
+  const visualizerCanvas = document.getElementById('visualizer');
+  const visualizerCtx = visualizerCanvas.getContext('2d');
+  
+  let userSamples = [];
+  let audioSource;
+  let analyser;
+  let dataArray;
+
+  function handleFiles(files) {
+    for (let file of files) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        audioContext.decodeAudioData(e.target.result, function(buffer) {
+          userSamples.push(buffer);
+          const sampleButton = document.createElement('button');
+          sampleButton.textContent = file.name;
+          sampleButton.className = 'sample-button';
+          sampleButton.onclick = function() { playSample(buffer); };
+          userSamplesDiv.appendChild(sampleButton);
+        }, function(err) {
+          console.error('Error decoding audio data:', err);
+          alert('Failed to decode audio file.');
+        });
+      };
+      reader.readAsArrayBuffer(file);
+    }
+  }
+
+  function playSample(buffer) {
+    if (audioSource) {
+      audioSource.stop();
+    }
+    audioSource = audioContext.createBufferSource();
+    audioSource.buffer = buffer;
+    analyser = audioContext.createAnalyser();
+    audioSource.connect(analyser);
+    analyser.connect(audioContext.destination);
+    audioSource.start();
+    visualize();
+  }
+
+  function visualize() {
+    analyser.fftSize = 256;
+    const bufferLength = analyser.frequencyBinCount;
+    dataArray = new Uint8Array(bufferLength);
+
+   
+    visualizerCanvas.width = window.innerWidth;
+    visualizerCanvas.height = 200;
+
+    function draw() {
+      requestAnimationFrame(draw);
+
+      analyser.getByteFrequencyData(dataArray);
+
+      visualizerCtx.fillStyle = 'rgb(30, 30, 30)';
+      visualizerCtx.fillRect(0, 0, visualizerCanvas.width, visualizerCanvas.height);
+
+      const barWidth = (visualizerCanvas.width / bufferLength) * 2.5;
+      let barHeight;
+      let x = 0;
+
+      for (let i = 0; i < bufferLength; i++) {
+        barHeight = dataArray[i];
+        visualizerCtx.fillStyle = `rgb(${barHeight + 100}, 50, 50)`;
+        visualizerCtx.fillRect(x, visualizerCanvas.height - barHeight / 2, barWidth, barHeight / 2);
+        x += barWidth + 1;
+      }
+    }
+
+    draw();
+  }
+
+  playButton.addEventListener('click', () => {
+    if (userSamples.length > 0) {
+      playSample(userSamples[0]); // Play the first sample for simplicity
+    }
+  });
+
+  stopButton.addEventListener('click', () => {
+    if (audioSource) {
+      audioSource.stop();
+      audioSource = null;
+      visualizerCtx.clearRect(0, 0, visualizerCanvas.width, visualizerCanvas.height);
+    }
+  });
+
+  crossfadeButton.addEventListener('click', () => {
+    // Implement crossfading logic here
+  });
+
+  tempoControl.addEventListener('input', function() {
+    if (audioSource) {
+      audioSource.playbackRate.value = parseFloat(this.value);
+    }
+  });
+
+  startChallengeButton.addEventListener('click', () => {
+  // Example challenge data
+  const challengeSamples = [
+    { name: 'Sample 1', file: 'sample1.mp3' },
+    { name: 'Sample 2', file: 'sample2.mp3' },
+    { name: 'Sample 3', file: 'sample3.mp3' }
+  ];
+
+  // Display challenge samples
+  userSamplesDiv.innerHTML = '';
+  challengeSamples.forEach(sample => {
+    const sampleButton = document.createElement('button');
+    sampleButton.textContent = sample.name;
+    sampleButton.className = 'sample-button';
+    sampleButton.onclick = function() {
+      fetch(sample.file)
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(`Failed to fetch ${sample.file}: ${response.statusText}`);
+          }
+          return response.arrayBuffer();
+        })
+        .then(arrayBuffer => audioContext.decodeAudioData(arrayBuffer))
+        .then(decodedBuffer => playSample(decodedBuffer))
+        .catch(error => {
+          console.error('Error playing sample:', error);
+          alert('Failed to load or decode audio file. Please ensure the file is in a supported format and not corrupted.');
+        });
+    };
+    userSamplesDiv.appendChild(sampleButton);
+  });
+
+  // Example leaderboard update
+  const leaderboardDiv = document.getElementById('leaderboard');
+  leaderboardDiv.innerHTML = '<p>Top Scores:</p><ol><li>Player 1 - 1000 Points</li><li>Player 2 - 900 Points</li></ol>';
+});
+
+
+  sampleUpload.addEventListener('change', function() {
+    handleFiles(this.files);
+  });
+
+});
+</script>
+</body>
+</html>
