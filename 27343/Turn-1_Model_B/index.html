@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fitness Tracker</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css">
+    <link rel="stylesheet" href="style.css"> <!-- Custom CSS -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.socket.io/4.0.1/socket.io.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+</head>
+<body>
+    <div id="app">
+        <header>
+            <h1>Fitness Tracker</h1>
+        </header>
+        <main>
+            <div id="dashboard">
+                <canvas id="activityChart"></canvas>
+                <div id="heartRate">Heart Rate: <span id="hrValue"></span></div>
+                <div id="calories">Calories Burned: <span id="calValue"></span></div>
+            </div>
+            <button id="startSync">Start Real-Time Sync</button>
+            <div id="goals">
+                <input type="text" id="goalInput" placeholder="Set a new goal">
+                <button onclick="setGoal()">Set Goal</button>
+            </div>
+        </main>
+    </div>
+    <script>
+        const socket = io('your-server-url'); // Replace with your server URL
+        const ctx = document.getElementById('activityChart').getContext('2d');
+        let myChart;
+
+        // Initialize Chart
+        function initChart(data) {
+            if(myChart) myChart.destroy();
+            myChart = new Chart(ctx, {
+                type: 'line',
+                data: data,
+                options: {
+                    responsive: true,
+                    scales: {
+                        x: {
+                            type: 'time',
+                            time: {
+                                unit: 'day'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Real-time data update
+        document.getElementById('startSync').addEventListener('click', function() {
+            socket.emit('startDataStream');
+        });
+
+        socket.on('deviceData', function(data) {
+            document.getElementById('hrValue').textContent = data.heartRate;
+            document.getElementById('calValue').textContent = data.calories;
+            // Update chart or other UI elements here
+        });
+
+        // Goal setting
+        function setGoal() {
+            const goal = document.getElementById('goalInput').value;
+            // Here you would send this goal to your server or store locally
+            console.log('Goal Set:', goal);
+        }
+
+        // Initial data for chart - this should come from your server or local storage
+        const initialData = {
+            datasets: [{
+                label: 'Calories Burned',
+                data: [{x: moment().subtract(1, 'days').toDate(), y: 200}, {x: moment().toDate(), y: 300}],
+                borderColor: 'red',
+                fill: false
+            }]
+        };
+        initChart(initialData);
+
+    </script>
+    <script src="app.js"></script> 
+</body>
+</html>
