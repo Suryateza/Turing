@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>DJ Mix Master</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css">
+
+<style>
+    body {
+  background-color: #121212;
+  color: #ffffff;
+}
+
+#dj-console {
+  text-align: center;
+  padding: 20px;
+}
+
+#controls, #userSamples {
+  display: flex;
+  justify-content: center;
+  margin: 20px 0;
+}
+
+button {
+  margin: 10px;
+  padding: 10px 20px;
+}
+</style>
+</head>
+<body>
+<div id="dj-console">
+  <h1 class="title">DJ Mix Master</h1>
+  <input type="file" id="sampleUpload" accept="audio/*" multiple>
+  <div id="controls">
+    <!-- DJ Controls will go here -->
+  </div>
+  <div id="userSamples"></div>
+  <button id="startChallenge">Start Challenge</button>
+  <div id="leaderboard">Leaderboard</div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.1/howler.min.js"></script>
+<script>document.addEventListener('DOMContentLoaded', (event) => {
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    const audioContext = new AudioContext();
+    const sampleUpload = document.getElementById('sampleUpload');
+    const userSamplesDiv = document.getElementById('userSamples');
+    let userSamples = [];
+
+    // Function to handle file uploads
+    function handleFiles(files) {
+        for (let file of files) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                audioContext.decodeAudioData(e.target.result, function(buffer) {
+                    userSamples.push(buffer);
+                    const sampleButton = document.createElement('button');
+                    sampleButton.textContent = file.name;
+                    sampleButton.onclick = function() { playSample(buffer); };
+                    userSamplesDiv.appendChild(sampleButton);
+                });
+            };
+            reader.readAsArrayBuffer(file);
+        }
+    }
+
+    // Play sample function
+    function playSample(buffer) {
+        const source = audioContext.createBufferSource();
+        source.buffer = buffer;
+        source.connect(audioContext.destination);
+        source.start();
+    }
+
+    // Event listener for file upload
+    sampleUpload.addEventListener('change', function() {
+        handleFiles(this.files);
+    });
+
+    // Challenge mode setup - this is a basic structure
+    document.getElementById('startChallenge').addEventListener('click', function() {
+        // Here you would fetch or generate random samples for the challenge
+        // For simplicity, let's assume we have predefined samples
+        const challengeSamples = ['sample1.mp3', 'sample2.mp3', 'sample3.mp3'];
+        // Display challenge samples or integrate them into the UI
+        // Update leaderboard logic would go here
+    });
+
+    // Basic Leaderboard setup
+    const leaderboardDiv = document.getElementById('leaderboard');
+    // Function to update leaderboard would fetch and display scores
+    // This would typically involve server interaction
+
+    // Initialize Howler for easier sound management if needed
+    Howler.volume(1.0);
+});
+</script>
+</body>
+</html>
