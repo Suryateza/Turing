@@ -1,103 +1,263 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Virtual Fashion Show</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-<style>
-    body { font-family: 'Arial', sans-serif; }
-    #fashionWidget {
-        display: flex; 
-        justify-content: space-around;
-        padding: 20px;
-    }
-    #designArea, #runway {
-        border: 1px solid #ccc;
-        width: 45%;
-        min-height: 500px;
-        padding: 10px;
-    }
-    .clothingItem {
-        cursor: move;
-        margin: 5px;
-        padding: 10px;
-        background: #f4f4f4;
-        border: 1px solid #ddd;
-    }
-    #model { 
-        width: 200px; 
-        height: 400px; 
-        background: url('https://via.placeholder.com/200x400') no-repeat center; /* Placeholder for model image */
-        margin: 20px auto;
-    }
-    #votingSystem { text-align: center; margin-top: 20px; }
-    #votingSystem .star { font-size: 2em; color: #ddd; cursor: pointer; }
-    #votingSystem .star:hover, #votingSystem .star.active { color: #FFD700; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Outfit Designer Checkout</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        .checkout-modal, .wishlist-modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+        }
+        .checkout-content, .wishlist-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 500px;
+        }
+        .close-btn {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .close-btn:hover,
+        .close-btn:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .item-list, .wishlist-list {
+            max-width: 1000px;
+            margin: 2rem auto;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem; /* Adjust space between items */
+        }
+        .item, .wishlist-item {
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 8px;
+            width: 300px; /* Fixed width for items */
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            position: relative;
+        }
+        .item img, .wishlist-item img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 4px;
+        }
+        .like-btn {
+            background: none;
+            border: none;
+            color: #e74c3c;
+            font-size: 24px;
+            cursor: pointer;
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+        .like-btn:hover {
+            color: #c0392b;
+        }
+        #itemsContainer{
+            display: flex;
+            gap:12px;
+        }
+    </style>
 </head>
 <body>
 
-<div id="fashionWidget">
-    <div id="designArea">
-        <h2>Design Your Outfit</h2>
-        <div id="clothingItems">
-            <div class="clothingItem" draggable="true">Shirt</div>
-            <div class="clothingItem" draggable="true">Pants</div>
-            <!-- More items here -->
-        </div>
-        <div id="model"></div>
-    </div>
-    <div id="runway">
-        <h2>Runway</h2>
-        <div id="runwayModel"></div>
-        <div id="votingSystem">
-            <span class="star" data-vote="1">★</span>
-            <span class="star" data-vote="2">★</span>
-            <span class="star" data-vote="3">★</span>
-            <span class="star" data-vote="4">★</span>
-            <span class="star" data-vote="5">★</span>
-        </div>
-        <button onclick="buyOutfit()">Buy this Outfit</button>
-    </div>
+<!-- Display Items -->
+<div class="item-list">
+    <h2>Items for Sale</h2>
+    <div id="itemsContainer"></div>
 </div>
 
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+<!-- Display Wishlist -->
+<div class="wishlist-list">
+    <h2>Your Wishlist</h2>
+    <button id="viewWishlistBtn" class="btn btn-secondary">View Wishlist</button>
+</div>
+
+<!-- Trigger/Open The Modal -->
+<button id="checkoutBtn" class="btn btn-primary">Checkout</button>
+
+<!-- The Checkout Modal -->
+<div id="checkoutModal" class="checkout-modal">
+  <div class="checkout-content">
+    <span class="close-btn">&times;</span>
+    <h2>Checkout</h2>
+    <form id="checkoutForm">
+      <!-- Customer Information -->
+      <div class="form-group">
+        <label for="name">Name:</label>
+        <input type="text" class="form-control" id="name" required>
+      </div>
+      <div class="form-group">
+        <label for="email">Email:</label>
+        <input type="email" class="form-control" id="email" required>
+      </div>
+      <!-- Shipping Address -->
+      <div class="form-group">
+        <label for="address">Address:</label>
+        <input type="text" class="form-control" id="address" required>
+      </div>
+      <!-- Payment Information (simplified for example) -->
+      <div class="form-group">
+        <label for="cardNumber">Card Number:</label>
+        <input type="text" class="form-control" id="cardNumber" placeholder="1234 5678 9012 3456" required>
+      </div>
+      <button type="submit" class="btn btn-success">Place Order</button>
+    </form>
+  </div>
+</div>
+
+<!-- The Wishlist Modal -->
+<div id="wishlistModal" class="wishlist-modal">
+  <div class="wishlist-content">
+    <span class="close-btn">&times;</span>
+    <h2>Your Wishlist</h2>
+    <div id="wishlistModalContainer"></div>
+  </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 <script>
 $(document).ready(function() {
-    // Drag and Drop functionality
-    new Sortable(document.getElementById('clothingItems'), {
-        group: 'shared',
-        animation: 150
+    const checkoutModal = $("#checkoutModal");
+    const wishlistModal = $("#wishlistModal");
+    const checkoutBtn = $("#checkoutBtn");
+    const viewWishlistBtn = $("#viewWishlistBtn");
+    const closeBtns = $(".close-btn");
+
+    // Mock items data
+    const items = [
+        { id: 1, name: 'Stylish Jacket', price: '$99.99', imageUrl: 'https://up.yimg.com/ib/th?id=OIP.cLERRdBKpJDxnlGbF15gHwHaLF&pid=Api&rs=1&c=1&qlt=95&w=74&h=111', description: 'A trendy jacket for any occasion.' },
+        { id: 2, name: 'Casual T-Shirt', price: '$29.99', imageUrl: 'https://up.yimg.com/ib/th?id=OIP.5WvAF8_qM3DHT3rFkMQmNgHaHa&pid=Api&rs=1&c=1&qlt=95&w=118&h=118', description: 'Comfortable and casual t-shirt.' },
+        { id: 3, name: 'Formal Pants', price: '$79.99', imageUrl: 'https://up.yimg.com/ib/th?id=OIP.bCxVRdVVd6Mopg2AZdi7zQHaHa&pid=Api&rs=1&c=1&qlt=95&w=113&h=113', description: 'Elegant pants for formal events.' }
+    ];
+
+    let wishlist = [];
+
+    // Display items
+    function loadItems() {
+        const container = $('#itemsContainer');
+        container.empty(); // Clear previous items
+        items.forEach(item => {
+            container.append(`
+                <div class="item">
+                    <img src="${item.imageUrl}" alt="${item.name}">
+                    <h3>${item.name}</h3>
+                    <p>${item.description}</p>
+                    <p><strong>Price: ${item.price}</strong></p>
+                    <button class="btn btn-info add-to-cart" data-id="${item.id}">Add to Cart</button>
+                    <button class="btn btn-warning add-to-wishlist" data-id="${item.id}">Add to Wishlist</button>
+                    <button class="like-btn" data-id="${item.id}">❤️</button>
+                </div>
+            `);
+        });
+    }
+
+    // Display wishlist items
+    function loadWishlist() {
+        const container = $('#wishlistModalContainer');
+        container.empty(); // Clear previous wishlist
+        wishlist.forEach(item => {
+            container.append(`
+                <div class="wishlist-item">
+                    <img src="${item.imageUrl}" alt="${item.name}">
+                    <h3>${item.name}</h3>
+                    <p>${item.description}</p>
+                    <p><strong>Price: ${item.price}</strong></p>
+                </div>
+            `);
+        });
+    }
+
+    // Open modals
+    checkoutBtn.click(function() {
+        checkoutModal.css('display', 'block');
     });
 
-    new Sortable(document.getElementById('model'), {
-        group: 'shared',
-        onAdd: function (evt) {
-            console.log('Item added to model:', evt.item.textContent);
+    viewWishlistBtn.click(function() {
+        loadWishlist();
+        wishlistModal.css('display', 'block');
+    });
+
+    closeBtns.click(function() {
+        $(this).closest('.modal').css('display', 'none');
+    });
+
+    // Close if outside click
+    window.onclick = function(event) {
+        if (event.target == checkoutModal[0] || event.target == wishlistModal[0]) {
+            $(event.target).css('display', 'none');
         }
-    });
+    };
 
-    // Voting system
-    $('.star').on('click', function() {
-        $('.star').removeClass('active');
-        $(this).addClass('active');
-        $(this).prevAll().addClass('active');
-        let vote = $(this).data('vote');
-        console.log('Voted ' + vote + ' stars');
-    });
+    // Handle form submission
+    $("#checkoutForm").on('submit', function(e) {
+        e.preventDefault();
+        const formData = {
+            name: $("#name").val(),
+            email: $("#email").val(),
+            address: $("#address").val(),
+            cardNumber: $("#cardNumber").val(),
+            // Add more fields as necessary
+        };
 
-    // Simple runway animation
-    $('#runwayModel').click(function() {
-        $(this).animate({left: '+=100px'}, 1000, function() {
-            $(this).animate({left: '-=100px'}, 1000);
+        // Mock API call to process the order
+        $.ajax({
+            type: 'POST',
+            url: 'your-ecommerce-api-endpoint',
+            data: JSON.stringify(formData),
+            contentType: "application/json",
+            success: function(response) {
+                alert('Order placed successfully!');
+                checkoutModal.css('display', 'none');
+                // Reset form or redirect
+            },
+            error: function(error) {
+                alert('Error placing order. Please try again.');
+                console.error('Error:', error);
+            }
         });
     });
 
-    // E-commerce integration
-    window.buyOutfit = function() {
-        alert('Redirecting to purchase page...');
-    };
+    // Add item to wishlist
+    $(document).on('click', '.add-to-wishlist', function() {
+        const itemId = $(this).data('id');
+        const item = items.find(i => i.id === itemId);
+        if (item && !wishlist.find(i => i.id === itemId)) {
+            wishlist.push(item);
+            alert('Item added to wishlist!');
+        } else {
+            alert('Item already in wishlist or not found.');
+        }
+    });
+
+    // Like item
+    $(document).on('click', '.like-btn', function() {
+        const itemId = $(this).data('id');
+        const item = items.find(i => i.id === itemId);
+        if (item) {
+            alert(`You liked ${item.name}!`);
+        }
+    });
+
+    loadItems();
 });
 </script>
 
