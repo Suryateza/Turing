@@ -12,6 +12,7 @@
         .integration-buttons { margin-top: 20px; }
         .daily-charts { margin-top: 20px; }
         .daily-chart { margin-bottom: 30px; }
+        .chart{height: 20px;}
     </style>
 </head>
 <body>
@@ -71,155 +72,155 @@
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const ctxLine = document.getElementById('activityChart').getContext('2d');
-            const userDataTable = document.getElementById('userDataTable');
-            const dailyChartsContainer = document.getElementById('dailyCharts');
+       document.addEventListener('DOMContentLoaded', function () {
+    const ctxLine = document.getElementById('activityChart').getContext('2d');
+    const userDataTable = document.getElementById('userDataTable');
+    const dailyChartsContainer = document.getElementById('dailyCharts');
 
-            const MAX_DATA_POINTS = 20; // Limit the number of data points for the line chart
-            const DAILY_CHARTS_LIMIT = 2; // Number of daily charts to display (e.g., Today and Yesterday)
+    const MAX_DATA_POINTS = 20; // Limit the number of data points for the line chart
+    const DAILY_CHARTS_LIMIT = 2; // Number of daily charts to display (e.g., Today and Yesterday)
 
-            let activityChart = new Chart(ctxLine, {
-                type: 'line',
-                data: {
-                    labels: [],
-                    datasets: [{
-                        label: 'Activity Progress',
-                        data: [],
-                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
-                        borderColor: 'rgba(255, 99, 132, 1)',
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    scales: {
-                        y: {
-                            beginAtZero: true
-                        }
-                    }
-                }
-            });
-
-            let dailyCharts = {}; // Store daily pie charts by date
-
-            function createPieChart(date) {
-                const div = document.createElement('div');
-                div.classList.add('daily-chart');
-                div.innerHTML = `<h3>${date}</h3><canvas id="pieChart_${date}"></canvas>`;
-                dailyChartsContainer.appendChild(div);
-
-                return new Chart(document.getElementById(`pieChart_${date}`).getContext('2d'), {
-                    type: 'pie',
-                    data: {
-                        labels: [],
-                        datasets: [{
-                            label: `Activity Distribution (${date})`,
-                            data: [],
-                            backgroundColor: [
-                                'rgba(255, 99, 132, 0.2)',
-                                'rgba(54, 162, 235, 0.2)',
-                                'rgba(255, 206, 86, 0.2)',
-                                'rgba(75, 192, 192, 0.2)',
-                                'rgba(153, 102, 255, 0.2)'
-                            ],
-                            borderColor: [
-                                'rgba(255, 99, 132, 1)',
-                                'rgba(54, 162, 235, 1)',
-                                'rgba(255, 206, 86, 1)',
-                                'rgba(75, 192, 192, 1)',
-                                'rgba(153, 102, 255, 1)'
-                            ],
-                            borderWidth: 1
-                        }]
-                    }
-                });
-            }
-
-            function updateChart(data) {
-                // Update Line Chart
-                if (activityChart.data.labels.length >= MAX_DATA_POINTS) {
-                    activityChart.data.labels.shift(); // Remove the oldest label
-                    activityChart.data.datasets[0].data.shift(); // Remove the oldest data point
-                }
-                activityChart.data.labels.push(data.date);
-                activityChart.data.datasets[0].data.push(data.value);
-                activityChart.update();
-
-                // Update Daily Pie Charts
-                const dailyLabels = Array.from(new Set(activityChart.data.labels.map(date => date.split('T')[0])));
-                dailyLabels.forEach(date => {
-                    if (!dailyCharts[date]) {
-                        dailyCharts[date] = createPieChart(date);
-                    }
-                });
-
-                dailyLabels.forEach(date => {
-                    const chart = dailyCharts[date];
-                    const labels = Array.from(new Set(activityChart.data.labels.filter(l => l.startsWith(date))));
-                    const values = labels.map(label => {
-                        const index = activityChart.data.labels.indexOf(label);
-                        return activityChart.data.datasets[0].data[index];
-                    });
-                    chart.data.labels = labels;
-                    chart.data.datasets[0].data = values;
-                    chart.update();
-                });
-
-                // Limit the number of daily charts displayed
-                if (Object.keys(dailyCharts).length > DAILY_CHARTS_LIMIT) {
-                    const keys = Object.keys(dailyCharts);
-                    for (let i = 0; i < keys.length - DAILY_CHARTS_LIMIT; i++) {
-                        dailyChartsContainer.removeChild(dailyChartsContainer.querySelector(`#pieChart_${keys[i]}`).parentElement);
-                        delete dailyCharts[keys[i]];
-                    }
+    let activityChart = new Chart(ctxLine, {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: [{
+                label: 'Activity Progress',
+                data: [],
+                backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                borderColor: 'rgba(255, 99, 132, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true
                 }
             }
+        }
+    });
 
-            function addRowToTable(data) {
-                const row = document.createElement('tr');
-                const activityNameCell = document.createElement('td');
-                const activityValueCell = document.createElement('td');
-                
-                activityNameCell.textContent = data.date;
-                activityValueCell.textContent = data.value;
-                
-                row.appendChild(activityNameCell);
-                row.appendChild(activityValueCell);
-                
-                userDataTable.appendChild(row);
+    let dailyCharts = {}; // Store daily pie charts by date
+
+    function createPieChart(date) {
+        const div = document.createElement('div');
+        div.classList.add('daily-chart');
+        div.innerHTML = `<h3>${date}</h3><canvas id="pieChart_${date}"class="chart"></canvas>`;
+        dailyChartsContainer.appendChild(div);
+
+        return new Chart(document.getElementById(`pieChart_${date}`).getContext('2d'), {
+            type: 'pie',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: `Activity Distribution (${date})`,
+                    data: [],
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.2)',
+                        'rgba(54, 162, 235, 0.2)',
+                        'rgba(255, 206, 86, 0.2)',
+                        'rgba(75, 192, 192, 0.2)',
+                        'rgba(153, 102, 255, 0.2)'
+                    ],
+                    borderColor: [
+                        'rgba(255, 99, 132, 1)',
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(255, 206, 86, 1)',
+                        'rgba(75, 192, 192, 1)',
+                        'rgba(153, 102, 255, 1)'
+                    ],
+                    borderWidth: 1
+                }]
             }
-
-            document.getElementById('userForm').addEventListener('submit', function(event) {
-                event.preventDefault();
-                const activityName = document.getElementById('activityName').value;
-                const activityValue = parseFloat(document.getElementById('activityValue').value);
-
-                const userData = { date: new Date().toISOString(), value: activityValue };
-                updateChart(userData);
-                addRowToTable(userData);
-
-                document.getElementById('userForm').reset();
-            });
-
-            // Example of fetching and updating data (Simulate real-time update)
-            setInterval(() => {
-                const fakeData = { date: new Date().toISOString(), value: Math.random() * 100 };
-                updateChart(fakeData);
-            }, 3000);
-
-            // Integration buttons event listeners
-            document.getElementById('stravaConnect').addEventListener('click', function() {
-                // Placeholder for Strava integration logic
-                alert('Connecting to Strava...');
-                // Implement OAuth or API request here
-            });
-
-            document.getElementById('appleHealthConnect').addEventListener('click', function() {
-                // Placeholder for Apple Health integration logic
-                alert('Connecting to Apple Health...');
-                // Implement OAuth or API request here
-            });
         });
+    }
+
+    function updateChart(data) {
+        // Update Line Chart
+        if (activityChart.data.labels.length >= MAX_DATA_POINTS) {
+            activityChart.data.labels.shift(); // Remove the oldest label
+            activityChart.data.datasets[0].data.shift(); // Remove the oldest data point
+        }
+        activityChart.data.labels.push(data.name); // Use activity name instead of date
+        activityChart.data.datasets[0].data.push(data.value);
+        activityChart.update();
+
+        // Update Daily Pie Charts
+        const dailyLabels = Array.from(new Set(activityChart.data.labels.map((_, i) => data.date.split('T')[0])));
+        dailyLabels.forEach(date => {
+            if (!dailyCharts[date]) {
+                dailyCharts[date] = createPieChart(date);
+            }
+        });
+
+        dailyLabels.forEach(date => {
+            const chart = dailyCharts[date];
+            const labels = Array.from(new Set(activityChart.data.labels.filter(l => l === data.name)));
+            const values = labels.map(label => {
+                const index = activityChart.data.labels.indexOf(label);
+                return activityChart.data.datasets[0].data[index];
+            });
+            chart.data.labels = labels;
+            chart.data.datasets[0].data = values;
+            chart.update();
+        });
+
+        // Limit the number of daily charts displayed
+        if (Object.keys(dailyCharts).length > DAILY_CHARTS_LIMIT) {
+            const keys = Object.keys(dailyCharts);
+            for (let i = 0; i < keys.length - DAILY_CHARTS_LIMIT; i++) {
+                dailyChartsContainer.removeChild(dailyChartsContainer.querySelector(`#pieChart_${keys[i]}`).parentElement);
+                delete dailyCharts[keys[i]];
+            }
+        }
+    }
+
+    function addRowToTable(data) {
+        const row = document.createElement('tr');
+        const activityNameCell = document.createElement('td');
+        const activityValueCell = document.createElement('td');
+
+        activityNameCell.textContent = data.name; // Display the activity name
+        activityValueCell.textContent = data.value;
+
+        row.appendChild(activityNameCell);
+        row.appendChild(activityValueCell);
+
+        userDataTable.appendChild(row);
+    }
+
+    document.getElementById('userForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+        const activityName = document.getElementById('activityName').value;
+        const activityValue = parseFloat(document.getElementById('activityValue').value);
+
+        const userData = { name: activityName, value: activityValue, date: new Date().toISOString() };
+        updateChart(userData);
+        addRowToTable(userData);
+
+        document.getElementById('userForm').reset();
+    });
+
+    // Example of fetching and updating data (Simulate real-time update)
+    setInterval(() => {
+        const fakeData = { name: 'Sample Activity', value: Math.random() * 100, date: new Date().toISOString() };
+        updateChart(fakeData);
+    }, 3000);
+
+    // Integration buttons event listeners
+    document.getElementById('stravaConnect').addEventListener('click', function() {
+        // Improved placeholder for Strava integration logic
+        alert('You clicked "Connect with Strava". Integration coming soon!');
+        // Implement OAuth or API request here
+    });
+
+    document.getElementById('appleHealthConnect').addEventListener('click', function() {
+        // Improved placeholder for Apple Health integration logic
+        alert('You clicked "Connect with Apple Health". Integration coming soon!');
+        // Implement OAuth or API request here
+    });
+});
     </script>
 </body>
 </html>
