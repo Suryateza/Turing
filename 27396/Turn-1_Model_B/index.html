@@ -95,14 +95,7 @@
             renderPuzzle();
             checkWin();
         }
-    }
-
-    function checkWin() {
-        if (tiles.every((tile, i) => tile === i || tile === 8 \&\& i === 8)) {
-            endGame(true);
-        }
-    }
-
+    s}
     function startTimer() {
         gameInterval = setInterval(() => {
             timer++;
