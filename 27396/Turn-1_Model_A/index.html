@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Puzzle Game</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-container">
+        <h1>Puzzle Master</h1>
+        <div id="puzzle-area"></div>
+        <div id="controls">
+            <button id="shuffle">Shuffle</button>
+            <div id="timer">Time: <span id="time">00:00</span></div>
+            <div id="score">Score: <span id="current-score">0</span></div>
+        </div>
+        <div id="difficulty">
+            <label for="level">Difficulty:</label>
+            <select id="level">
+                <option value="easy">Easy</option>
+                <option value="medium">Medium</option>
+                <option value="hard">Hard</option>
+            </select>
+        </div>
+    </div>
+    <div id="leaderboard">
+        <h2>Leaderboard</h2>
+        <ul id="leaderboard-list"></ul>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/firebase@8.6.8/firebase-app.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/firebase@8.6.8/firebase-database.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
