@@ -1,29 +1,101 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tic-Tac-Toe Game</title>
-    <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Outfit Designer Checkout</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<style>
+    body { font-family: 'Arial', sans-serif; }
+    .checkout-form {
+        max-width: 500px;
+        margin: 2rem auto;
+        padding: 20px;
+        background: \#fff;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        border-radius: 8px;
+    }
+    .form-control, .btn {
+        border-radius: 4px;
+    }
+    .btn-purchase {
+        background-color: \#28a745;
+        border-color: \#28a745;
+    }
+    .btn-purchase:hover {
+        background-color: \#218838;
+        border-color: \#1e7e34;
+    }
+</style>
 </head>
 <body>
-    <div id="game-container">
-        <div id="game-board">
-            <!-- Cells will be dynamically created here -->
-        </div>
-        <div id="score-board">
-            <p id="player1-score">Player X: 0</p>
-            <p id="player2-score">Player O: 0</p>
-            <p id="rounds">Rounds: 0/5</p>
-        </div>
-        <div id="game-mode">
-            <button onclick="setMode('single')">Single Player</button>
-            <button onclick="setMode('multi')">Multiplayer</button>
-        </div>
-        <div id="result"></div>
-    </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
-    <script src="script.js"></script>
+<div class="checkout-form">
+    <h2>Checkout</h2>
+    <form id="checkoutForm">
+        <div class="mb-3">
+            <label for="name" class="form-label">Name</label>
+            <input type="text" class="form-control" id="name" required>
+        </div>
+        <div class="mb-3">
+            <label for="email" class="form-label">Email</label>
+            <input type="email" class="form-control" id="email" required>
+        </div>
+        <div class="mb-3">
+            <label for="address" class="form-label">Shipping Address</label>
+            <textarea class="form-control" id="address" required></textarea>
+        </div>
+        <button type="submit" class="btn btn-purchase btn-lg btn-block">Purchase</button>
+    </form>
+    <div id="checkoutStatus" class="mt-3"></div>
+</div>
+
+<script>
+document.getElementById('checkoutForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const name = document.getElementById('name').value;
+    const email = document.getElementById('email').value;
+    const address = document.getElementById('address').value;
+    const checkoutStatus = document.getElementById('checkoutStatus');
+
+    // Show loading state
+    checkoutStatus.innerHTML = '<p>Processing...</p>';
+
+    // Mock API call to add to cart and checkout
+    fetch('/api/addToCart', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({/* Outfit data would go here */})
+    })
+    .then(response => response.json())
+    .then(data => {
+        if(data.success) {
+            return fetch('/api/checkout', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({name, email, address, items: data.cartItems})
+            });
+        } else {
+            throw new Error('Failed to add items to cart');
+        }
+    })
+    .then(checkoutResponse => checkoutResponse.json())
+    .then(checkoutData => {
+        if(checkoutData.success) {
+            checkoutStatus.innerHTML = '<p style="color:green;">Purchase successful! Order number: ' + checkoutData.orderNumber + '</p>';
+        } else {
+            throw new Error('Checkout failed');
+        }
+    })
+    .catch(error => {
+        checkoutStatus.innerHTML = '<p style="color:red;">Error: ' + error.message + '</p>';
+    });
+});
+</script>
+
 </body>
 </html>
