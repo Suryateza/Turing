@@ -17,7 +17,7 @@
         padding: 20px;
         border: 1px solid #e1e1e1;
         border-radius: 8px;
-        background-color: #d35f5f;
+        background-color: #df6b6b;
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         transition: box-shadow 0.3s ease;
     }
@@ -132,15 +132,16 @@ $(document).ready(function() {
         let bookList = $('#bookList');
         bookList.empty();
         books.forEach(book => {
+            let rating = userPreferences.ratings[book.id] || 0;
             let bookDiv = $('<div class="book-item">').html(`
                 <h5>${book.title}</h5>
                 <p>Genre: ${book.genre} | Educational Value: ${book.educationalValue}</p>
                 <div class="star-rating" data-book-id="${book.id}">
-                    <span data-value="1">★</span>
-                    <span data-value="2">★</span>
-                    <span data-value="3">★</span>
-                    <span data-value="4">★</span>
-                    <span data-value="5">★</span>
+                    <span data-value="1" class="${rating >= 1 ? 'active' : ''}">★</span>
+                    <span data-value="2" class="${rating >= 2 ? 'active' : ''}">★</span>
+                    <span data-value="3" class="${rating >= 3 ? 'active' : ''}">★</span>
+                    <span data-value="4" class="${rating >= 4 ? 'active' : ''}">★</span>
+                    <span data-value="5" class="${rating >= 5 ? 'active' : ''}">★</span>
                 </div>
             `);
             bookList.append(bookDiv);
