@@ -3,148 +3,169 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Puzzle Game</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css">
+<title>Dynamic Puzzle Game</title>
 <style>
-    \#gameBoard { width: 300px; height: 300px; margin: auto; display: flex; flex-wrap: wrap; }
-    .piece { width: 100px; height: 100px; background-size: 300px 300px; transition: transform 0.3s; }
-    \#timer, \#score { font-size: 20px; }
-    .animate-move { transition: all 0.3s ease; }
+    body { font-family: 'Arial', sans-serif; background: #f4f4f4; }
+    #game-container {
+        display: flex; 
+        justify-content: center; 
+        align-items: flex-start;
+        padding: 20px;
+    }
+    #puzzle-board {
+        display: grid;
+        grid-template-columns: repeat(4, 100px);
+        gap: 5px;
+        background: #333;
+        padding: 5px;
+        border-radius: 8px;
+    }
+    .tile {
+        width: 100px;
+        height: 100px;
+        background-size: cover;
+        cursor: pointer;
+        transition: transform 0.3s;
+    }
+    .tile:hover { transform: scale(1.05); }
+    #controls, #leaderboard {
+        margin-left: 20px;
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    button {
+        margin: 5px;
+        padding: 10px;
+        cursor: pointer;
+    }
+    @keyframes winAnimation {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+        100% { transform: scale(1); }
+    }
+    .win { animation: winAnimation 0.5s infinite; }
 </style>
 </head>
 <body>
-
-<div class="container mt-5">
-    <h1>Puzzle Game</h1>
-    <div id="gameControls">
-        <button id="startGame">Start Game</button>
-        <span id="timer">Time: 0s</span>
-        <span id="score">Score: 0</span>
+<div id="game-container">
+    <div id="puzzle-board"></div>
+    <div id="controls">
+        <button onclick="startGame()">Start Game</button>
+        <select id="difficulty">
+            <option value="easy">Easy</option>
+            <option value="medium">Medium</option>
+            <option value="hard">Hard</option>
+        </select>
+        <div>Time: <span id="timer">0</span>s</div>
+        <div>Score: <span id="score">0</span></div>
     </div>
-    <div id="gameBoard"></div>
-    <div id="leaderboard" class="mt-3"></div>
+    <div id="leaderboard">
+        <h3>Leaderboard</h3>
+        <ol id="leaderboard-list"></ol>
+    </div>
 </div>
-
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+<script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-    // Initialize Firebase
-    const firebaseConfig = {
-        apiKey: "YOUR\_API\_KEY",
-        authDomain: "YOUR\_AUTH\_DOMAIN",
-        databaseURL: "YOUR\_DATABASE\_URL",
-        projectId: "YOUR\_PROJECT\_ID",
-        storageBucket: "YOUR\_STORAGE\_BUCKET",
-        messagingSenderId: "YOUR\_MESSAGING\_SENDER\_ID",
-        appId: "YOUR\_APP\_ID"
-    };
-    firebase.initializeApp(firebaseConfig);
-
-    const database = firebase.database();
-    const leaderboardRef = database.ref('leaderboard');
-
-    const gameBoard = document.getElementById('gameBoard');
-    const startButton = document.getElementById('startGame');
-    const timerDisplay = document.getElementById('timer');
-    const scoreDisplay = document.getElementById('score');
-
-    let tiles = [];
-    let emptyIndex = 8;
-    let timer = 0;
-    let gameInterval;
-    let isGameActive = false;
+    const board = document.getElementById('puzzle-board');
+    const timerElement = document.getElementById('timer');
+    const scoreElement = document.getElementById('score');
+    let tiles, emptyIndex, timer, moves, imageUrl = 'path/to/your/puzzle-image.jpg';
 
     function shuffle(array) {
         for (let i = array.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
             [array[i], array[j]] = [array[j], array[i]];
         }
+        return array;
     }
 
-    function createPuzzle() {
-        tiles = [...Array(9).keys()];
-        shuffle(tiles);
-        emptyIndex = tiles.indexOf(0);
-        tiles[emptyIndex] = 8;
-        tiles[8] = 0;
-        renderPuzzle();
-    }
-
-    function renderPuzzle() {
-        gameBoard.innerHTML = '';
-        tiles.forEach((tile, index) => {
-            if (tile !== 8) {
-                const piece = document.createElement('div');
-                piece.className = 'piece';
-                piece.style.backgroundPosition = `-\${(tile \% 3) * 100}px -\${Math.floor(tile / 3) * 100}px`;
-                piece.onclick = () => moveTile(index);
-                gameBoard.appendChild(piece);
-            }
-        });
+    function canMove(index) {
+        const emptyRow = Math.floor(emptyIndex / 4);
+        const row = Math.floor(index / 4);
+        const emptyCol = emptyIndex % 4;
+        const col = index % 4;
+        return (Math.abs(emptyRow - row) + Math.abs(emptyCol - col) === 1);
     }
 
     function moveTile(index) {
-        if (!isGameActive) return;
-        const canMove = [index - 1, index + 1, index - 3, index + 3].filter(
-            newIndex => newIndex >= 0 \&\& newIndex < 9 && Math.abs((newIndex \% 3) - (index \% 3)) <= 1
-        ).includes(emptyIndex);
-
-        if (canMove) {
-            [tiles[index], tiles[emptyIndex]] = [tiles[emptyIndex], tiles[index]];
+        if (canMove(index)) {
+            [tiles[emptyIndex], tiles[index]] = [tiles[index], tiles[emptyIndex]];
             emptyIndex = index;
-            renderPuzzle();
+            renderTiles();
+            moves++;
             checkWin();
         }
-    s}
-    function startTimer() {
-        gameInterval = setInterval(() => {
-            timer++;
-            timerDisplay.textContent = `Time: \${timer}s`;
-        }, 1000);
     }
 
-    function endGame(win = false) {
-        clearInterval(gameInterval);
-        isGameActive = false;
-        if (win) {
-            const score = Math.floor(1000 / (timer || 1));
-            scoreDisplay.textContent = `Score: \${score}`;
-            addToLeaderboard(score);
+    function checkWin() {
+        if (tiles.every((tile, i) => tile === i || i === tiles.length - 1)) {
+            clearInterval(timer);
+            Swal.fire({
+                title: 'You Win!',
+                text: `Completed in \${timerElement.textContent} seconds with \${moves} moves!`,
+                icon: 'success'
+            });
+            updateScore();
         }
     }
 
-    function addToLeaderboard(score) {
-        const name = prompt("You won! Enter your name for the leaderboard:");
-        if (name) {
-            leaderboardRef.push({name, score, timestamp: firebase.database.ServerValue.TIMESTAMP});
-        }
+    function updateScore() {
+        const score = Math.floor(10000 / (parseInt(timerElement.textContent) * moves));
+        scoreElement.textContent = score;
+        // Here you would typically send the score to a server or update localStorage for a leaderboard
+        let leaderboard = JSON.parse(localStorage.getItem('leaderboard') || '[]');
+        leaderboard.push({score, time: new Date().toLocaleString()});
+        leaderboard.sort((a, b) => b.score - a.score).splice(5);
+        localStorage.setItem('leaderboard', JSON.stringify(leaderboard));
+        updateLeaderboard();
     }
 
     function updateLeaderboard() {
-        leaderboardRef.orderByChild('score').limitToLast(10).on('value', (snapshot) => {
-            const leaderboard = document.getElementById('leaderboard');
-            leaderboard.innerHTML = '<h2>Leaderboard</h2><ol>' + 
-                Object.entries(snapshot.val() || {})
-                .reverse()
-                .map(([key, {name, score}]) => `<li>\${name}: \${score}</li>`).join('') + 
-                '</ol>';
+        const list = document.getElementById('leaderboard-list');
+        list.innerHTML = '';
+        (JSON.parse(localStorage.getItem('leaderboard')) || []).forEach(item => {
+            const li = document.createElement('li');
+            li.textContent = `Score: \${item.score} - <INLINE_MATH>{item.time}`;
+            list.appendChild(li);
         });
     }
 
-    startButton.onclick = () => {
-        if (!isGameActive) {
-            isGameActive = true;
-            timer = 0;
-            createPuzzle();
-            startTimer();
-        }
-    };
+    function renderTiles() {
+        board.innerHTML = '';
+        tiles.forEach((tile, index) => {
+            const div = document.createElement('div');
+            div.className = 'tile';
+            if (tile !== tiles.length - 1) {
+                div.style.backgroundImage = `url(</INLINE_MATH>{imageUrl})`;
+                div.style.backgroundPosition = `-$ {(tile % 4) * 100}px - ${Math.floor(tile / 4) * 100}px`;
+                div.onclick = () => moveTile(index);
+            } else {
+                emptyIndex = index;
+            }
+            board.appendChild(div);
+        });
+    }
 
-    // Initial leaderboard setup
+    function startGame() {
+        const difficulty = document.getElementById('difficulty').value;
+        const size = difficulty === 'easy' ? 3 : difficulty === 'medium' ? 4 : 5;
+        tiles = Array.from({length: size * size}, (_, i) => i).slice(0, -1);
+        tiles.push(size * size - 1); // Empty tile
+        shuffle(tiles);
+        emptyIndex = tiles.indexOf(size * size - 1);
+        moves = 0;
+        timerElement.textContent = '0';
+        scoreElement.textContent = '0';
+        clearInterval(timer);
+        timer = setInterval(() => {
+            timerElement.textContent = parseInt(timerElement.textContent) + 1;
+        }, 1000);
+        renderTiles();
+    }
+
     updateLeaderboard();
-
-    // Listen for changes to update leaderboard in real-time
-    leaderboardRef.on('value', updateLeaderboard);
 </script>
 </body>
 </html>

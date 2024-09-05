@@ -3,68 +3,142 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Team Building Activity Widget</title>
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
-<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/socket.io@4.5.1/dist/socket.io.js"></script>
+<title>Memory Card Game</title>
+<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
 <style>
-    .game-container, .team-management { margin: 20px; padding: 20px; border: 1px solid #ddd; border-radius: 10px; }
-    .game-button { margin: 5px; }
+    #gameBoard {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 10px;
+        max-width: 800px;
+        margin: 20px auto;
+    }
+    .card {
+        width: 100%;
+        height: 150px;
+        position: relative;
+        transform-style: preserve-3d;
+        transition: transform 0.5s;
+    }
+    .card.flipped, .card.matched {
+        transform: rotateY(180deg);
+    }
+    .front, .back {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        backface-visibility: hidden;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border: 1px solid #ccc;
+        border-radius: 10px;
+    }
+    .front {
+        background-color: #f0f0f0;
+        transform: rotateY(180deg);
+    }
+    .back {
+        background: #007bff;
+        color: white;
+        font-size: 2em;
+    }
+    @media (max-width: 768px) {
+        #gameBoard { grid-template-columns: repeat(3, 1fr); }
+    }
+    @media (max-width: 480px) {
+        #gameBoard { grid-template-columns: repeat(2, 1fr); }
+    }
 </style>
 </head>
 <body>
 
-<div class="container">
-    <h1>Remote Team Building</h1>
-    <div class="game-container">
-        <h2>Choose a Game</h2>
-        <button class="btn btn-primary game-button" data-game="trivia">Trivia</button>
-        <button class="btn btn-primary game-button" data-game="puzzle">Collaborative Puzzle</button>
+<div class="container text-center">
+    <h1>Memory Card Game</h1>
+    <div id="gameInfo">
+        <span>Time: <span id="timer">0</span>s</span> | 
+        <span>Flips: <span id="flips">0</span></span>
+        <button id="restart" class="btn btn-secondary">Restart</button>
     </div>
-
-    <div class="team-management">
-        <h2>Team Management</h2>
-        <input type="text" id="team-name" placeholder="Enter team name">
-        <button class="btn btn-success" id="create-team">Create Team</button>
-        <div id="team-list"></div>
-    </div>
-
-    <div id="game-interface"></div>
-    <div id="progress-tracker"></div>
-    <div id="reward-system"></div>
+    <div id="gameBoard"></div>
 </div>
 
 <script>
-    $(document).ready(function() {
-        let socket = io();
+    const gameBoard = document.getElementById('gameBoard');
+    const timerDisplay = document.getElementById('timer');
+    const flipsDisplay = document.getElementById('flips');
+    const restartButton = document.getElementById('restart');
+    let cardsChosen = [], cardsChosenId = [], cardsWon = [];
+    let time = 0, flips = 0, timerInterval;
 
-        $(".game-button").on("click", function() {
-            let gameType = $(this).data('game');
-            $("#game-interface").load(`./games/${gameType}.html`);
-            // Initialize game logic here
+    const images = ['🐶', '🐱', '🐭', '🐰', '🦊', '🐼', '🐨', '🦁']; // Example images, replace with actual images or icons
+
+    function createBoard() {
+        const cardArray = [...images, ...images].sort(() => 0.5 - Math.random());
+        cardArray.forEach((img, index) => {
+            let card = document.createElement('div');
+            card.className = 'card';
+            card.dataset.id = index;
+            card.innerHTML = `<div class="front">\${img}</div><div class="back">?</div>`;
+            card.addEventListener('click', flipCard);
+            gameBoard.appendChild(card);
         });
+    }
 
-        $("#create-team").on("click", function() {
-            let teamName = $("#team-name").val();
-            if (teamName) {
-                // Here you would typically make an AJAX call or use Socket.IO to save the team
-                $("#team-list").append(`<div>${teamName} <button class="btn btn-info join-team">Join</button></div>`);
-                $("#team-name").val('');
+    function startTimer() {
+        timerInterval = setInterval(() => {
+            time++;
+            timerDisplay.textContent = time;
+        }, 1000);
+    }
+
+    function flipCard() {
+        if (cardsChosen.length < 2 && !this.classList.contains('flipped')) {
+            this.classList.add('flipped');
+            cardsChosen.push(this.innerText);
+            cardsChosenId.push(this.dataset.id);
+            flips++;
+            flipsDisplay.textContent = flips;
+
+            if (cardsChosen.length === 2) {
+                setTimeout(checkForMatch, 500);
             }
-        });
+        }
+    }
 
-        // Real-time updates would typically be handled with Socket.IO events
-        socket.on('updateProgress', function(data) {
-            $("#progress-tracker").html(`Team ${data.team}: ${data.score}`);
-        });
+    function checkForMatch() {
+        const cards = document.querySelectorAll('.card');
+        if (cardsChosen[0] === cardsChosen[1]) {
+            cards[cardsChosenId[0]].classList.add('matched');
+            cards[cardsChosenId[1]].classList.add('matched');
+            cardsWon.push(...cardsChosenId);
+        } else {
+            cards[cardsChosenId[0]].classList.remove('flipped');
+            cards[cardsChosenId[1]].classList.remove('flipped');
+        }
 
-        // Simulate reward system updates
-        socket.on('updateRewards', function(data) {
-            $("#reward-system").html(`Team ${data.team} earned ${data.badge}`);
-        });
+        cardsChosen = [];
+        cardsChosenId = [];
+        if (cardsWon.length === images.length * 2) {
+            clearInterval(timerInterval);
+            alert('Congratulations! You found them all!');
+        }
+    }
 
-        // More complex logic for managing team joins, game states, etc., would go here
-    });
+    function restartGame() {
+        clearInterval(timerInterval);
+        time = flips = 0;
+        timerDisplay.textContent = flipsDisplay.textContent = '0';
+        gameBoard.innerHTML = '';
+        cardsWon = [];
+        createBoard();
+        startTimer();
+    }
+
+    restartButton.addEventListener('click', restartGame);
+    createBoard();
+    startTimer();
 </script>
+
 </body>
 </html>
