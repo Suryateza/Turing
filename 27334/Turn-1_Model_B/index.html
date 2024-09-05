@@ -121,8 +121,8 @@ document.addEventListener('DOMContentLoaded', (event) => {
                     <div class="card">
                         <img src="room.jpg" class="card-img-top" alt="<INLINE_MATH>{room.name}">
                         <div class="card-body">
-                            <h5 class="card-title"></INLINE_MATH>{room.name}</h5>
-                            <p class="card-text">Price: \$\${room.price}/night</p>
+                            <h5 class="card-title"></INLINE_MATH>${room.name}</h5>
+                            <p class="card-text">Price: $${room.price}/night</p>
                             <p>Bed: <INLINE_MATH>{room.bedType}</p>
                             <button onclick="showBookingForm(</INLINE_MATH>{room.id})" class="btn btn-primary">Book Now</button>
                         </div>
@@ -159,7 +159,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
         bookRoomForm.onsubmit = function(e) {
             e.preventDefault();
             // Handle booking logic here, for now just show summary
-            bookingSummary.innerHTML = `Booking confirmed for Room ID: \${roomId}`;
+            bookingSummary.innerHTML = `Booking confirmed for Room ID: ${roomId}`;
             bookingSummary.style.display = 'block';
             bookingForm.style.display = 'none';
         };
