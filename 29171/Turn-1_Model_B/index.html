@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Unpredictable Winner Game</title>
+<style>
+body {
+    height: 100vh;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #f0f0f0;
+}
+
+#gameContainer {
+    position: relative;
+    width: 80vw;
+    height: 80vh;
+    border: 2px dashed #000;
+    overflow: hidden; /* To hide parts of the button when it goes out */
+}
+
+button {
+    position: absolute;
+    padding: 20px 30px;
+    font-size: 1em;
+    cursor: pointer;
+    border: none;
+    color: white;
+    transition: left 0.5s, top 0.5s; /* Intended for smooth movement, but will stutter due to bugs */
+}
+
+#winner {
+    background-color: #4CAF50;
+    left: 50%; /* Bug: Should be adjusted for button width */
+    top: 50%;
+}
+
+#loser {
+    background-color: #f44336;
+    right: 10px;
+    bottom: 10px;
+}
+</style>
+</head>
+<body>
+
+<div id="gameContainer">
+    <button id="winner">I am Winner</button>
+    <button id="loser">I am Loser</button>
+</div>
+
+<script>
+document.getElementById('winner').addEventListener('mouseover', function() {
+    let container = document.getElementById('gameContainer');
+    let button = this;
+    
+    // Bug: Incorrectly calculates container dimensions and button size
+    let maxX = container.clientWidth + button.offsetWidth; // Should subtract
+    let maxY = container.clientHeight + button.offsetHeight; // Should subtract
+    
+    // Bug: Math.random() could return 1, causing position to exceed container
+    let randomX = Math.random() * maxX;
+    let randomY = Math.random() * maxY;
+    
+    // Bug: Sometimes doesn't move due to setTimeout, simulating stutter or delay
+    if (Math.random() > 0.2) { // 20% chance it won't move
+        setTimeout(() => {
+            button.style.left = `${randomX}px`;
+            button.style.top = `${randomY}px`;
+        }, Math.random() * 1000); // Random delay for stutter effect
+    }
+    
+    // Bug: No reset mechanism, so multiple hovers can stack timeouts
+});
+</script>
+
+</body>
+</html>

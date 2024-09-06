@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Unpredictable Winner Game</title>
+<style>
+    #gameContainer {
+        position: relative;
+        width: 90vw;
+        height: 90vh;
+        margin: auto;
+        border: 2px dashed #333;
+        overflow: hidden;
+    }
+    .button {
+        padding: 15px 30px;
+        font-size: 16px;
+        cursor: pointer;
+        border: none;
+        color: white;
+        transition: transform 0.1s;
+    }
+    #winnerBtn {
+        background-color: #4CAF50;
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+    }
+    #loserBtn {
+        background-color: #f44336;
+        position: absolute;
+        left: 50%;
+        top: 70%;
+        transform: translateX(-50%);
+    }
+</style>
+</head>
+<body>
+
+<div id="gameContainer">
+    <button id="winnerBtn" class="button">I am Winner</button>
+    <button id="loserBtn" class="button">I am Loser</button>
+</div>
+
+<script>
+    const container = document.getElementById('gameContainer');
+    const winnerBtn = document.getElementById('winnerBtn');
+    
+    // Intentionally flawed random position function
+    function getRandomPosition() {
+        let x = Math.random() * (container.offsetWidth + 50); // Bug: +50 can push button outside
+        let y = Math.random() * (container.offsetHeight + 50); // Same bug here
+        // Erratic movement bug: sometimes use negative values
+        if (Math.random() < 0.2) x = -x;
+        if (Math.random() < 0.2) y = -y;
+        return {x, y};
+    }
+
+    winnerBtn.addEventListener('mouseover', function() {
+        const newPos = getRandomPosition();
+        // Bug: Not always checking if the new position is within view
+        if (Math.random() > 0.5) { // 50% chance to check boundaries
+            newPos.x = Math.max(0, Math.min(newPos.x, container.offsetWidth - winnerBtn.offsetWidth));
+            newPos.y = Math.max(0, Math.min(newPos.y, container.offsetHeight - winnerBtn.offsetHeight));
+        }
+        winnerBtn.style.left = `${newPos.x}px`;
+        winnerBtn.style.top = `${newPos.y}px`;
+        // Bug: Position might not reset correctly due to inconsistent use of 'px'
+    });
+
+    // This will make the loser button stationary, highlighting the winner's erratic behavior
+</script>
+
+</body>
+</html>
