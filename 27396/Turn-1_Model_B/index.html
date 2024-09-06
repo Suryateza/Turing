@@ -2,170 +2,177 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dynamic Puzzle Game</title>
+<title>Simple Tetris</title>
 <style>
-    body { font-family: 'Arial', sans-serif; background: #f4f4f4; }
-    #game-container {
-        display: flex; 
-        justify-content: center; 
-        align-items: flex-start;
-        padding: 20px;
-    }
-    #puzzle-board {
-        display: grid;
-        grid-template-columns: repeat(4, 100px);
-        gap: 5px;
-        background: #333;
-        padding: 5px;
-        border-radius: 8px;
-    }
-    .tile {
-        width: 100px;
-        height: 100px;
-        background-size: cover;
-        cursor: pointer;
-        transition: transform 0.3s;
-    }
-    .tile:hover { transform: scale(1.05); }
-    #controls, #leaderboard {
-        margin-left: 20px;
-        background: white;
-        padding: 20px;
-        border-radius: 8px;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    }
-    button {
-        margin: 5px;
-        padding: 10px;
-        cursor: pointer;
-    }
-    @keyframes winAnimation {
-        0% { transform: scale(1); }
-        50% { transform: scale(1.1); }
-        100% { transform: scale(1); }
-    }
-    .win { animation: winAnimation 0.5s infinite; }
+    body { background: #202028; color: #fff; font-family: sans-serif; }
+    canvas { background: #000; border: 1px solid #fff; display: block; margin: 0 auto; }
+    #gameOver { display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 2em; }
 </style>
 </head>
 <body>
-<div id="game-container">
-    <div id="puzzle-board"></div>
-    <div id="controls">
-        <button onclick="startGame()">Start Game</button>
-        <select id="difficulty">
-            <option value="easy">Easy</option>
-            <option value="medium">Medium</option>
-            <option value="hard">Hard</option>
-        </select>
-        <div>Time: <span id="timer">0</span>s</div>
-        <div>Score: <span id="score">0</span></div>
-    </div>
-    <div id="leaderboard">
-        <h3>Leaderboard</h3>
-        <ol id="leaderboard-list"></ol>
-    </div>
-</div>
-<script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<canvas id="gameCanvas" width="300" height="600"></canvas>
+<div id="gameOver">Game Over!</div>
 <script>
-    const board = document.getElementById('puzzle-board');
-    const timerElement = document.getElementById('timer');
-    const scoreElement = document.getElementById('score');
-    let tiles, emptyIndex, timer, moves, imageUrl = 'path/to/your/puzzle-image.jpg';
+// Canvas setup
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+const COLS = 10;
+const ROWS = 20;
+const BLOCK_SIZE = 30;
+const COLORS = ['cyan', 'blue', 'orange', 'yellow', 'green', 'purple', 'red'];
 
-    function shuffle(array) {
-        for (let i = array.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [array[i], array[j]] = [array[j], array[i]];
-        }
-        return array;
-    }
+// Tetromino shapes
+const SHAPES = [
+    [[1,1,1,1]],
+    [[1,1],[1,1]],
+    [[0,1,0],[1,1,1]],
+    [[1,1,0],[0,1,1]],
+    [[0,1,1],[1,1,0]],
+    [[1,0,0],[1,1,1]],
+    [[0,0,1],[1,1,1]]
+];
 
-    function canMove(index) {
-        const emptyRow = Math.floor(emptyIndex / 4);
-        const row = Math.floor(index / 4);
-        const emptyCol = emptyIndex % 4;
-        const col = index % 4;
-        return (Math.abs(emptyRow - row) + Math.abs(emptyCol - col) === 1);
-    }
+let board = Array(ROWS).fill().map(() => Array(COLS).fill(0));
+let currentPiece = null;
+let gameOver = false;
 
-    function moveTile(index) {
-        if (canMove(index)) {
-            [tiles[emptyIndex], tiles[index]] = [tiles[index], tiles[emptyIndex]];
-            emptyIndex = index;
-            renderTiles();
-            moves++;
-            checkWin();
-        }
-    }
+function createPiece() {
+    const idx = Math.floor(Math.random() * SHAPES.length);
+    return {
+        shape: SHAPES[idx],
+        color: COLORS[idx],
+        x: Math.floor(COLS / 2) - 1,
+        y: 0
+    };
+}
 
-    function checkWin() {
-        if (tiles.every((tile, i) => tile === i || i === tiles.length - 1)) {
-            clearInterval(timer);
-            Swal.fire({
-                title: 'You Win!',
-                text: `Completed in \${timerElement.textContent} seconds with \${moves} moves!`,
-                icon: 'success'
-            });
-            updateScore();
-        }
-    }
+function drawSquare(x, y, color) {
+    ctx.fillStyle = color;
+    ctx.fillRect(x * BLOCK_SIZE, y * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
+    ctx.strokeStyle = 'black';
+    ctx.strokeRect(x * BLOCK_SIZE, y * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
+}
 
-    function updateScore() {
-        const score = Math.floor(10000 / (parseInt(timerElement.textContent) * moves));
-        scoreElement.textContent = score;
-        // Here you would typically send the score to a server or update localStorage for a leaderboard
-        let leaderboard = JSON.parse(localStorage.getItem('leaderboard') || '[]');
-        leaderboard.push({score, time: new Date().toLocaleString()});
-        leaderboard.sort((a, b) => b.score - a.score).splice(5);
-        localStorage.setItem('leaderboard', JSON.stringify(leaderboard));
-        updateLeaderboard();
-    }
-
-    function updateLeaderboard() {
-        const list = document.getElementById('leaderboard-list');
-        list.innerHTML = '';
-        (JSON.parse(localStorage.getItem('leaderboard')) || []).forEach(item => {
-            const li = document.createElement('li');
-            li.textContent = `Score: \${item.score} - <INLINE_MATH>{item.time}`;
-            list.appendChild(li);
-        });
-    }
-
-    function renderTiles() {
-        board.innerHTML = '';
-        tiles.forEach((tile, index) => {
-            const div = document.createElement('div');
-            div.className = 'tile';
-            if (tile !== tiles.length - 1) {
-                div.style.backgroundImage = `url(</INLINE_MATH>{imageUrl})`;
-                div.style.backgroundPosition = `-$ {(tile % 4) * 100}px - ${Math.floor(tile / 4) * 100}px`;
-                div.onclick = () => moveTile(index);
-            } else {
-                emptyIndex = index;
+function drawBoard() {
+    for (let y = 0; y < ROWS; y++) {
+        for (let x = 0; x < COLS; x++) {
+            if (board[y][x]) {
+                drawSquare(x, y, COLORS[board[y][x] - 1]);
             }
-            board.appendChild(div);
+        }
+    }
+    if (currentPiece) {
+        for (let y = 0; y < currentPiece.shape.length; y++) {
+            for (let x = 0; x < currentPiece.shape[y].length; x++) {
+                if (currentPiece.shape[y][x]) {
+                    drawSquare(currentPiece.x + x, currentPiece.y + y, currentPiece.color);
+                }
+            }
+        }
+    }
+}
+
+function collision(board, piece) {
+    const [m, o] = [piece.shape, piece.x];
+    for (let y = 0; y < m.length; ++y) {
+        for (let x = 0; x < m[y].length; ++x) {
+            if (m[y][x] && 
+                ((board[y + piece.y] && board[y + piece.y][x + o]) !== 0 || 
+                 x + o < 0 || x + o >= COLS || y + piece.y >= ROWS)) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+function merge(board, piece) {
+    piece.shape.forEach((row, y) => {
+        row.forEach((value, x) => {
+            if (value !== 0) {
+                board[y + piece.y][x + piece.x] = value;
+            }
         });
+    });
+}
+
+function rotate(shape) {
+    return shape[0].map((_, index) => 
+        shape.map(row => row[index]).reverse()
+    );
+}
+
+function clearLines() {
+    let linesCleared = 0;
+    outer: for (let y = ROWS - 1; y > 0; --y) {
+        for (let x = 0; x < COLS; ++x) {
+            if (board[y][x] === 0) continue outer;
+        }
+        const row = board.splice(y, 1)[0].fill(0);
+        board.unshift(row);
+        ++y;
+        linesCleared++;
+    }
+    // Here you might want to add scoring based on linesCleared
+}
+
+function gameLoop() {
+    if (gameOver) {
+        document.getElementById('gameOver').style.display = 'block';
+        return;
     }
 
-    function startGame() {
-        const difficulty = document.getElementById('difficulty').value;
-        const size = difficulty === 'easy' ? 3 : difficulty === 'medium' ? 4 : 5;
-        tiles = Array.from({length: size * size}, (_, i) => i).slice(0, -1);
-        tiles.push(size * size - 1); // Empty tile
-        shuffle(tiles);
-        emptyIndex = tiles.indexOf(size * size - 1);
-        moves = 0;
-        timerElement.textContent = '0';
-        scoreElement.textContent = '0';
-        clearInterval(timer);
-        timer = setInterval(() => {
-            timerElement.textContent = parseInt(timerElement.textContent) + 1;
-        }, 1000);
-        renderTiles();
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    if (!currentPiece) {
+        currentPiece = createPiece();
+        if (collision(board, currentPiece)) {
+            gameOver = true;
+        }
     }
 
-    updateLeaderboard();
+    currentPiece.y++;
+    if (collision(board, currentPiece)) {
+        currentPiece.y--;
+        merge(board, currentPiece);
+        currentPiece = null;
+        clearLines();
+    }
+
+    drawBoard();
+    setTimeout(gameLoop, 500); // Basic timing, consider using delta time for better control
+}
+
+document.addEventListener('keydown', event => {
+    if (!currentPiece || gameOver) return;
+    switch(event.key) {
+        case 'ArrowLeft': 
+            currentPiece.x--; 
+            if (collision(board, currentPiece)) currentPiece.x++;
+            break;
+        case 'ArrowRight': 
+            currentPiece.x++; 
+            if (collision(board, currentPiece)) currentPiece.x--;
+            break;
+        case 'ArrowDown': 
+            currentPiece.y++; 
+            if (collision(board, currentPiece)) {
+                currentPiece.y--; 
+                merge(board, currentPiece);
+                currentPiece = null;
+                clearLines();
+            }
+            break;
+        case 'ArrowUp': 
+            const rotated = rotate(currentPiece.shape);
+            const prevShape = currentPiece.shape;
+            currentPiece.shape = rotated;
+            if (collision(board, currentPiece)) currentPiece.shape = prevShape;
+            break;
+    }
+});
+
+gameLoop();
 </script>
 </body>
 </html>

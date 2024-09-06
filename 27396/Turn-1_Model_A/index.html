@@ -2,158 +2,166 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Puzzle Game</title>
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<title>Simple Tetris</title>
 <style>
-    #puzzle-container {
-        display: grid;
-        gap: 1px;
-        background-color: #212121;
-        width: 300px;
-        height: 300px;
-        margin: 20px auto;
+    #gameCanvas {
+        border: 2px solid black;
+        background-color: #f0f0f0;
     }
-    .puzzle-piece {
-        background-image: url('path_to_your_image.jpg');
-        background-size: 300px 300px;
-        border: 1px solid white;
-        transition: transform 0.3s;
-    }
-    #controls, #leaderboard {
-        text-align: center;
-        margin-top: 20px;
-    }
-    .animate-win {
-        animation: winAnimation 1s ease-in-out;
-    }
-    @keyframes winAnimation {
-        0%, 100% { transform: scale(1); }
-        50% { transform: scale(1.1); }
+    body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+        background: #222;
     }
 </style>
 </head>
 <body>
-
-<div class="container">
-    <h1 class="text-center">Puzzle Game</h1>
-    <div id="puzzle-container"></div>
-    <div id="controls">
-        <button id="startBtn" class="btn btn-primary">Start Game</button>
-        <select id="difficulty" class="form-select" style="display:inline-block; width: auto;">
-            <option value="3">Easy (3x3)</option>
-            <option value="4">Medium (4x4)</option>
-            <option value="5">Hard (5x5)</option>
-        </select>
-        <div>Time: <span id="timer">0</span>s | Score: <span id="score">0</span></div>
-    </div>
-    <div id="leaderboard">
-        <h2>Leaderboard</h2>
-        <ul id="leaderboardList"></ul>
-    </div>
-</div>
-
+<canvas id="gameCanvas" width="300" height="600"></canvas>
 <script>
-    const puzzleContainer = document.getElementById('puzzle-container');
-    const startBtn = document.getElementById('startBtn');
-    const difficultySelect = document.getElementById('difficulty');
-    const timerDisplay = document.getElementById('timer');
-    const scoreDisplay = document.getElementById('score');
-    let puzzleSize, tiles, emptyTile, timer, score = 0;
+// Game setup
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+const grid = 30;
+let gameOver = false;
+let score = 0;
 
-    function shuffle(array) {
-        for (let i = array.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [array[i], array[j]] = [array[j], array[i]];
+// Tetromino shapes
+const shapes = [
+    [[1,1,1,1]],
+    [[1,1],[1,1]],
+    [[0,1,0],[1,1,1]],
+    [[1,1,0],[0,1,1]],
+    [[0,1,1],[1,1,0]]
+];
+
+// Colors for shapes
+const colors = ['cyan', 'yellow', 'purple', 'green', 'red'];
+
+// Current piece
+let piece = {
+    x: 4, 
+    y: 0, 
+    shape: shapes[Math.floor(Math.random() * shapes.length)]
+};
+
+function drawSquare(x, y, color) {
+    ctx.fillStyle = color;
+    ctx.fillRect(x * grid, y * grid, grid - 1, grid - 1);
+}
+
+function drawBoard() {
+    for (let y = 0; y < 20; y++) {
+        for (let x = 0; x < 10; x++) {
+            drawSquare(x, y, '#ccc');
         }
     }
+}
 
-    function createPuzzle(size) {
-        puzzleSize = size;
-        puzzleContainer.style.gridTemplateColumns = `repeat(<INLINE_MATH>{size}, 1fr)`;
-        let correctOrder = Array.from({length: size * size}, (_, i) => i + 1);
-        correctOrder[correctOrder.length - 1] = 0; // Empty tile
-        tiles = correctOrder.slice();
-        shuffle(tiles);
-        emptyTile = size * size - 1;
-        renderPuzzle();
-    }
-
-    function renderPuzzle() {
-        puzzleContainer.innerHTML = '';
-        tiles.forEach((tile, index) => {
-            if (tile !== 0) {
-                let piece = document.createElement('div');
-                piece.className = 'puzzle-piece';
-                piece.style.backgroundPosition = `-</INLINE_MATH>{(tile - 1) % puzzleSize * 100}% -<INLINE_MATH>{Math.floor((tile - 1) / puzzleSize) * 100}%`;
-                piece.onclick = () => moveTile(index);
-                puzzleContainer.appendChild(piece);
+function drawPiece(piece, offsetX = 0, offsetY = 0) {
+    piece.shape.forEach((row, y) => {
+        row.forEach((value, x) => {
+            if (value) {
+                drawSquare(piece.x + x + offsetX, piece.y + y + offsetY, colors[shapes.indexOf(piece.shape)]);
             }
         });
-    }
+    });
+}
 
-    function moveTile(index) {
-        if ((index + 1 === emptyTile || index - 1 === emptyTile || 
-             (Math.floor(index / puzzleSize) === Math.floor(emptyTile / puzzleSize) && 
-              Math.abs(index - emptyTile) === puzzleSize)) && 
-            tiles[index] !== 0) {
-            [tiles[index], tiles[emptyTile]] = [tiles[emptyTile], tiles[index]];
-            emptyTile = index;
-            renderPuzzle();
-            checkWin();
+function collision(board, piece) {
+    for (let y = 0; y < piece.shape.length; ++y) {
+        for (let x = 0; x < piece.shape[y].length; ++x) {
+            if (piece.shape[y][x] && 
+                ((board[piece.y + y] && board[piece.y + y][piece.x + x]) !== 0)) {
+                return true;
+            }
         }
     }
+    return false;
+}
 
-    function checkWin() {
-        if (tiles.every((tile, i) => tile === i + 1 || tile === 0)) {
-            puzzleContainer.classList.add('animate-win');
-            setTimeout(() => puzzleContainer.classList.remove('animate-win'), 1000);
-            score += 100; // Example scoring
-            updateScore();
-            stopTimer();
-            updateLeaderboard();
+function mergePieceToBoard(board, piece) {
+    piece.shape.forEach((row, y) => {
+        row.forEach((value, x) => {
+            if (value) {
+                board[piece.y + y][piece.x + x] = colors[shapes.indexOf(piece.shape)];
+            }
+        });
+    });
+}
+
+function clearLines(board) {
+    let linesCleared = 0;
+    for (let y = board.length - 1; y >= 0; y--) {
+        if (board[y].every(cell => cell !== '#ccc')) {
+            board.splice(y, 1);
+            board.unshift(new Array(10).fill('#ccc'));
+            linesCleared++;
+            score += 100;
         }
     }
+    return linesCleared;
+}
 
-    function startGame() {
-        startBtn.disabled = true;
-        createPuzzle(parseInt(difficultySelect.value));
-        startTimer();
+function newPiece() {
+    piece.x = 4;
+    piece.y = 0;
+    piece.shape = shapes[Math.floor(Math.random() * shapes.length)];
+    if (collision([], piece)) {
+        gameOver = true;
+    }
+}
+
+// Game loop
+function gameLoop() {
+    if (gameOver) {
+        ctx.fillStyle = "black";
+        ctx.fillRect(0, canvas.height / 2 - 30, canvas.width, 60);
+        ctx.fillStyle = "white";
+        ctx.font = "30px Arial";
+        ctx.fillText("Game Over", canvas.width / 2 - 70, canvas.height / 2);
+        return;
     }
 
-    let time = 0;
-    function startTimer() {
-        timer = setInterval(() => {
-            time++;
-            timerDisplay.textContent = time;
-        }, 1000);
+    // Clear canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // Draw current state
+    drawBoard();
+    drawPiece(piece);
+
+    // Move piece down
+    piece.y += 1;
+    if (collision([], piece)) {
+        piece.y -= 1;
+        mergePieceToBoard([], piece);
+        clearLines([]);
+        newPiece();
     }
 
-    function stopTimer() {
-        clearInterval(timer);
-    }
+    requestAnimationFrame(gameLoop);
+}
 
-    function updateScore() {
-        scoreDisplay.textContent = score;
+// Controls
+document.addEventListener('keydown', event => {
+    if (gameOver) return;
+    if (event.key === 'ArrowLeft' && piece.x > 0) piece.x -= 1;
+    if (event.key === 'ArrowRight' && piece.x < 9 - piece.shape[0].length) piece.x += 1;
+    if (event.key === 'ArrowDown') piece.y += 1;
+    if (event.key === 'ArrowUp') {
+        // Rotate piece
+        let rotated = piece.shape[0].map((val, index) => piece.shape.map(row => row[index]).reverse());
+        let previousShape = piece.shape;
+        piece.shape = rotated;
+        if (collision([], piece)) piece.shape = previousShape;
     }
+});
 
-    function updateLeaderboard() {
-        let leaderboard = JSON.parse(localStorage.getItem('puzzleLeaderboard') || '[]');
-        leaderboard.push({score: score, time: time});
-        leaderboard.sort((a, b) => b.score - a.score || a.time - b.time);
-        localStorage.setItem('puzzleLeaderboard', JSON.stringify(leaderboard.slice(0, 5)));
-        displayLeaderboard(leaderboard.slice(0, 5));
-    }
-
-    function displayLeaderboard(leaders) {
-        const leaderboardList = document.getElementById('leaderboardList');
-        leaderboardList.innerHTML = leaders.map((leader, index) => 
-            `<li></INLINE_MATH>{index + 1}. Score: \${leader.score}, Time: \${leader.time}s</li>`).join('');
-    }
-
-    startBtn.onclick = startGame;
-    displayLeaderboard(JSON.parse(localStorage.getItem('puzzleLeaderboard') || '[]'));
+// Start game
+newPiece();
+gameLoop();
 </script>
-
 </body>
 </html>
