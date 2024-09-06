@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Catch the Insects</title>
+<style>
+  body {
+    display: flex;
+    justify-content: center;
+    background: #f0f0f0;
+    font-family: 'Arial', sans-serif;
+  }
+  #gameArea {
+    width: 800px;
+    height: 600px;
+    border: 2px solid #000;
+    position: relative;
+    overflow: hidden;
+    background: skyblue;
+  }
+  .insect {
+    position: absolute;
+    width: 50px;
+    height: 50px;
+    background-image: url('insect.png'); /* Assume an insect image exists */
+    background-size: cover;
+  }
+  #basket {
+    position: absolute;
+    bottom: 0;
+    width: 80px;
+    height: 50px;
+    background-image: url('basket.png'); /* Assume a basket image exists */
+    background-size: cover;
+  }
+  #score, #startButton {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 10;
+    background: white;
+    padding: 10px;
+    border: 1px solid black;
+  }
+  #startButton {
+    cursor: pointer;
+  }
+</style>
+</head>
+<body>
+<div id="gameArea">
+  <div id="basket"></div>
+  <div id="score">Score: 0</div>
+  <button id="startButton">Start Game</button>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const gameArea = document.getElementById('gameArea');
+    const basket = document.getElementById('basket');
+    const scoreDisplay = document.getElementById('score');
+    let score = 0;
+    let gameActive = false;
+    let insects = [];
+    let basketPos = 0;
+    const basketSpeed = 10;
+
+    function createInsect() {
+        const insect = document.createElement('div');
+        insect.classList.add('insect');
+        insect.style.left = `${Math.random() * (gameArea.offsetWidth - 50)}px`;
+        insect.style.top = '-50px';
+        gameArea.appendChild(insect);
+        insects.push({element: insect, posY: -50});
+    }
+
+    function moveInsects() {
+        insects = insects.filter(insectObj => {
+            insectObj.posY += 2; // Speed of insects
+            insectObj.element.style.top = `${insectObj.posY}px`;
+            if (insectObj.posY > gameArea.offsetHeight) {
+                gameArea.removeChild(insectObj.element);
+                return false;
+            }
+            return true;
+        });
+    }
+
+    function moveBasket(e) {
+        if (!gameActive) return;
+        if (e.key === "ArrowLeft" && basketPos > 0) {
+            basketPos -= basketSpeed;
+        } else if (e.key === "ArrowRight" && basketPos < gameArea.offsetWidth - basket.offsetWidth) {
+            basketPos += basketSpeed;
+        }
+        basket.style.left = `${basketPos}px`;
+    }
+
+    function checkCollision() {
+        insects.forEach((insect, index) => {
+            if (insect.posY + 50 >= gameArea.offsetHeight - basket.offsetHeight &&
+                insect.posY < gameArea.offsetHeight &&
+                parseInt(insect.element.style.left) < basketPos + basket.offsetWidth &&
+                parseInt(insect.element.style.left) + 50 > basketPos) {
+                score++;
+                scoreDisplay.textContent = `Score: ${score}`;
+                gameArea.removeChild(insect.element);
+                insects.splice(index, 1);
+            }
+        });
+    }
+
+    function gameLoop() {
+        if (!gameActive) return;
+        moveInsects();
+        checkCollision();
+        requestAnimationFrame(gameLoop);
+    }
+
+    document.getElementById('startButton').addEventListener('click', function() {
+        score = 0;
+        scoreDisplay.textContent = 'Score: 0';
+        gameActive = true;
+        insects.forEach(insect => gameArea.removeChild(insect.element));
+        insects = [];
+        this.textContent = 'Restart Game';
+        gameLoop();
+        setInterval(createInsect, 1000); // New insect every second
+    });
+
+    document.addEventListener('keydown', moveBasket);
+});
+</script>
+</body>
+</html>

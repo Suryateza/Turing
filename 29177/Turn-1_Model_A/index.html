@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Catch the Insects</title>
+    <style>
+        body { 
+            background: #87CEEB; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh; 
+            margin: 0; 
+            font-family: 'Arial', sans-serif; 
+        }
+        #game-area {
+            width: 800px;
+            height: 600px;
+            background: #F0E68C;
+            position: relative;
+            overflow: hidden;
+            border: 3px solid #4B0082;
+        }
+        .insect {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background-image: url('insect.png'); /* Assume we have this image */
+            background-size: cover;
+        }
+        #basket {
+            position: absolute;
+            bottom: 10px;
+            width: 100px;
+            height: 50px;
+            background-image: url('basket.png'); /* Assume we have this image */
+            background-size: cover;
+        }
+        #score, #game-over {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 24px;
+            color: #4B0082;
+        }
+        #game-over {
+            display: none;
+            text-align: center;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 20px 0;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+<div id="game-area">
+    <div id="basket"></div>
+    <div id="score">Score: 0</div>
+    <div id="game-over">
+        <h2>Game Over!</h2>
+        <button onclick="startGame()">Restart Game</button>
+    </div>
+</div>
+
+<script>
+    const gameArea = document.getElementById('game-area');
+    const basket = document.getElementById('basket');
+    const scoreDisplay = document.getElementById('score');
+    const gameOverDisplay = document.getElementById('game-over');
+    let score = 0;
+    let insects = [];
+    let gameLoop;
+
+    function startGame() {
+        score = 0;
+        scoreDisplay.textContent = 'Score: 0';
+        gameOverDisplay.style.display = 'none';
+        insects = [];
+        document.addEventListener('mousemove', moveBasket);
+        gameLoop = setInterval(spawnInsect, 1500);
+    }
+
+    function moveBasket(e) {
+        let x = e.clientX - gameArea.getBoundingClientRect().left - (basket.offsetWidth / 2);
+        x = Math.max(0, Math.min(x, gameArea.offsetWidth - basket.offsetWidth));
+        basket.style.left = x + 'px';
+    }
+
+    function spawnInsect() {
+        const insect = document.createElement('div');
+        insect.className = 'insect';
+        insect.style.top = '0px';
+        insect.style.left = `${Math.random() * (gameArea.offsetWidth - 50)}px`;
+        gameArea.appendChild(insect);
+        insects.push({
+            element: insect,
+            position: 0,
+            speed: Math.random() * 2 + 1 // Varying speed
+        });
+        setTimeout(() => insect.remove(), 10000); // Remove insect if not caught
+    }
+
+    function gameLogic() {
+        insects.forEach((insect, index) => {
+            insect.position += insect.speed;
+            insect.element.style.top = `${insect.position}px`;
+            if (insect.position > gameArea.offsetHeight - 50) {
+                // Insect missed
+                insect.element.remove();
+                insects.splice(index, 1);
+            } else if (collision(insect.element, basket)) {
+                // Insect caught
+                score++;
+                scoreDisplay.textContent = `Score: ${score}`;
+                insect.element.style.display = 'none'; // Hide caught insect
+                setTimeout(() => insect.element.remove(), 500);
+                insects.splice(index, 1);
+            }
+        });
+
+        if (Math.random() < 0.001) { // Small chance for game over
+            endGame();
+        }
+    }
+
+    function collision($div1, $div2) {
+        let x1 = $div1.offsetLeft;
+        let y1 = $div1.offsetTop;
+        let h1 = $div1.clientHeight;
+        let w1 = $div1.clientWidth;
+        let b1 = y1 + h1;
+        let r1 = x1 + w1;
+        let x2 = $div2.offsetLeft;
+        let y2 = $div2.offsetTop;
+        let h2 = $div2.clientHeight;
+        let w2 = $div2.clientWidth;
+        let b2 = y2 + h2;
+        let r2 = x2 + w2;
+
+        return !(b1 < y2 || y1 > b2 || r1 < x2 || x1 > r2);
+    }
+
+    function endGame() {
+        clearInterval(gameLoop);
+        document.removeEventListener('mousemove', moveBasket);
+        gameOverDisplay.style.display = 'block';
+    }
+
+    // Start the game when the page loads
+    startGame();
+    // Game loop for logic
+    setInterval(gameLogic, 30);
+</script>
+</body>
+</html>
