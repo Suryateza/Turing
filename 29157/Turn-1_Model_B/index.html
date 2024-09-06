@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>3D Tile Matching Game</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/5.0.0/normalize.min.css">
+<style>
+    body { 
+        display: flex; 
+        justify-content: center; 
+        align-items: center; 
+        height: 100vh; 
+        background: #f0f0f0; 
+    }
+    .game-container {
+        perspective: 1000px;
+    }
+    .board {
+        display: grid;
+        grid-template-columns: repeat(4, 100px);
+        grid-gap: 10px;
+    }
+    .cube {
+        width: 100px;
+        height: 100px;
+        position: relative;
+        transform-style: preserve-3d;
+        transition: transform 1s;
+    }
+    .face {
+        position: absolute;
+        width: 100px;
+        height: 100px;
+        backface-visibility: hidden;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 2em;
+        border: 2px solid #555;
+    }
+    .front {
+        background: #999;
+    }
+    .back {
+        background: #fff;
+        transform: rotateY(180deg);
+    }
+    .cube.show {
+        transform: rotateY(180deg);
+    }
+    #message {
+        text-align: center;
+        font-size: 2em;
+        margin-top: 20px;
+    }
+    #reset {
+        display: block;
+        margin: 20px auto;
+        padding: 10px 20px;
+        font-size: 1em;
+    }
+</style>
+</head>
+<body>
+<div class="game-container">
+    <div id="board" class="board"></div>
+    <div id="message"></div>
+    <button id="reset">Reset Game</button>
+</div>
+
+<script>
+    // Using a CDN for sound effects
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    function playSound(buffer) {
+        const source = audioContext.createBufferSource();
+        source.buffer = buffer;
+        source.connect(audioContext.destination);
+        source.start(0);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const board = document.getElementById('board');
+        const message = document.getElementById('message');
+        const resetButton = document.getElementById('reset');
+        let tiles = ['egg', 'egg', 'dino', 'dino', 'egg', 'egg', 'dino', 'dino', 'egg', 'egg', 'dino', 'dino', 'egg', 'egg', 'dino', 'dino'];
+        let flippedTiles = [];
+        let matchedTiles = 0;
+
+        // Assume these are loaded from a CDN or local files
+        let matchSound, winSound;
+
+        function initSounds() {
+            // Load sounds here, example:
+            // fetch('path/to/sound').then(response => response.arrayBuffer()).then(buffer => audioContext.decodeAudioData(buffer, decoded => matchSound = decoded));
+        }
+
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function createTile(type) {
+            const cube = document.createElement('div');
+            cube.className = 'cube';
+            cube.innerHTML = `<div class="face front"></div><div class="face back">${type}</div>`;
+            cube.dataset.type = type;
+            cube.addEventListener('click', () => flipTile(cube));
+            return cube;
+        }
+
+        function setupBoard() {
+            shuffle(tiles);
+            board.innerHTML = '';
+            tiles.forEach(type => board.appendChild(createTile(type)));
+        }
+
+        function flipTile(tile) {
+            if (flippedTiles.length < 2 && !tile.classList.contains('show')) {
+                tile.classList.add('show');
+                flippedTiles.push(tile);
+                if (flippedTiles.length === 2) {
+                    setTimeout(checkMatch, 1000);
+                }
+            }
+        }
+
+        function checkMatch() {
+            if (flippedTiles[0].dataset.type === flippedTiles[1].dataset.type) {
+                playSound(matchSound);
+                matchedTiles += 2;
+                if (matchedTiles === tiles.length) {
+                    playSound(winSound);
+                    message.textContent = 'YOU WON!';
+                }
+                flippedTiles = [];
+            } else {
+                flippedTiles.forEach(tile => tile.classList.remove('show'));
+                flippedTiles = [];
+            }
+        }
+
+        resetButton.onclick = function() {
+            matchedTiles = 0;
+            message.textContent = '';
+            setupBoard();
+        };
+
+        initSounds();
+        setupBoard();
+    });
+</script>
+</body>
+</html>

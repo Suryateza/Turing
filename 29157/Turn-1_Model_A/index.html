@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3D Dino-Egg Match</title>
+<style>
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background: #f0f0f0;
+    font-family: 'Arial', sans-serif;
+}
+
+.game-container {
+    perspective: 1000px;
+}
+
+.board {
+    width: 400px;
+    height: 400px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+}
+
+.cube {
+    width: 100px;
+    height: 100px;
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 1s;
+}
+
+.face {
+    position: absolute;
+    width: 100px;
+    height: 100px;
+    border: 2px solid black;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    backface-visibility: hidden;
+}
+
+.front { 
+    background: #ccc; 
+    transform: rotateY(0deg);
+}
+
+.back {
+    background: #ffcc00;
+    transform: rotateY(180deg);
+}
+
+.cube.egg .back { background: url('egg.png') center/cover; }
+.cube.dino .back { background: url('dino.png') center/cover; }
+
+.flipped {
+    transform: rotateY(180deg);
+}
+
+button {
+    margin-top: 20px;
+    padding: 10px;
+    font-size: 1em;
+}
+
+#winMessage {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    padding: 20px;
+    border: 2px solid green;
+    font-size: 2em;
+}
+</style>
+</head>
+<body>
+
+<div class="game-container">
+    <div id="board" class="board"></div>
+    <button onclick="startGame()">Start/Restart Game</button>
+    <div id="winMessage">
+        YOU WON!
+        <button onclick="startGame()">Play Again</button>
+    </div>
+</div>
+
+<audio id="matchSound" src="match.wav" preload="auto"></audio>
+<audio id="winSound" src="win.wav" preload="auto"></audio>
+
+<script>
+let tiles = ['egg', 'egg', 'dino', 'dino'].flatMap(t => [t, t]).sort(() => Math.random() - 0.5);
+let board = document.getElementById('board');
+let flippedTiles = [];
+let matchedTiles = 0;
+
+function createTile(type) {
+    let cube = document.createElement('div');
+    cube.className = `cube ${type}`;
+    cube.innerHTML = `
+        <div class="face front"></div>
+        <div class="face back"></div>
+    `;
+    cube.onclick = () => flipTile(cube);
+    return cube;
+}
+
+function flipTile(tile) {
+    if (flippedTiles.length < 2 && !tile.classList.contains('flipped')) {
+        tile.classList.add('flipped');
+        flippedTiles.push(tile);
+        if (flippedTiles.length === 2) {
+            setTimeout(checkMatch, 1000);
+        }
+    }
+}
+
+function checkMatch() {
+    let [tile1, tile2] = flippedTiles;
+    if (tile1.className === tile2.className) {
+        document.getElementById('matchSound').play();
+        matchedTiles += 2;
+        if (matchedTiles === tiles.length) {
+            document.getElementById('winSound').play();
+            document.getElementById('winMessage').style.display = 'block';
+        }
+    } else {
+        tile1.classList.remove('flipped');
+        tile2.classList.remove('flipped');
+    }
+    flippedTiles = [];
+}
+
+function startGame() {
+    tiles = tiles.sort(() => Math.random() - 0.5);
+    board.innerHTML = '';
+    flippedTiles = [];
+    matchedTiles = 0;
+    document.getElementById('winMessage').style.display = 'none';
+    tiles.forEach(type => board.appendChild(createTile(type)));
+}
+
+startGame();
+</script>
+
+</body>
+</html>
