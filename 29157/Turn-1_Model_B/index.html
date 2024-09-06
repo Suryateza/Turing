@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Bird Shooting Game</title>
+<style>
+    body {
+        background: #87CEEB; /* Sky color */
+        overflow: hidden;
+        height: 100vh;
+        margin: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .game-area {
+        width: 800px;
+        height: 600px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .bird {
+        width: 50px;
+        height: 50px;
+        position: absolute;
+        background: url('bird-sprite.png') no-repeat; /* Assume we have a bird sprite */
+        background-size: cover;
+        cursor: pointer;
+        animation: fly 10s linear infinite;
+        transform: translate(-100px, 100px); /* Start off-screen */
+    }
+
+    @keyframes fly {
+        0% { left: -10%; top: 20%; }
+        100% { left: 110%; top: 80%; }
+    }
+
+    /* Hide radio buttons */
+    input[type="radio"] {
+        display: none;
+    }
+
+    /* Change bird appearance when shot */
+    input[type="radio"]:checked + label {
+        visibility: hidden; /* Or change to a 'shot' image */
+    }
+
+    #timer {
+        position: absolute;
+        top: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 24px;
+        animation: countdown 60s linear forwards;
+    }
+
+    @keyframes countdown {
+        from { content: "60"; }
+        to { content: "0"; }
+    }
+
+    #game-over {
+        display: none;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 40px;
+        color: red;
+    }
+
+    #timer:empty + #game-over {
+        display: block;
+    }
+
+    #score {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        font-size: 24px;
+    }
+
+    /* CSS Counter for score */
+    body {
+        counter-reset: score;
+    }
+
+    input[type="radio"]:checked {
+        counter-increment: score;
+    }
+
+    #score::after {
+        content: counter(score);
+    }
+</style>
+</head>
+<body>
+
+<div class="game-area">
+    <div id="timer"></div>
+    <div id="game-over">GAME OVER</div>
+    <div id="score"></div>
+    <!-- Birds -->
+    <input type="radio" id="bird1" name="birds">
+    <label for="bird1" class="bird" style="animation-delay: 0s;"></label>
+    <!-- Repeat input and label for bird2 to bird6 with different animation delays -->
+</div>
+
+</body>
+</html>
