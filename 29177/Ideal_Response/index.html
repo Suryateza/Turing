@@ -3,174 +3,158 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+   
     <title>Catch The Insect</title>
 
-    <style>
-      @import url("https://fonts.googleapis.com/css?family=Press+Start+2P&display=swap");
+   <style>@import url("https://fonts.googleapis.com/css?family=Press+Start+2P&display=swap");
 
-      * {
-        box-sizing: border-box;
-      }
-
-      body {
-        background-color: #516dff;
-        color: #fff;
-        font-family: "Press Start 2P", sans-serif;
-        height: 100vh;
-        overflow: hidden;
-        margin: 0;
-        text-align: center;
-      }
-
-      a {
-        color: #fff;
-      }
-
-      h1 {
-        line-height: 1.4;
-      }
-
-      .btn {
-        border: 0;
-        background-color: #fff;
-        color: #516dff;
-        padding: 15px 20px;
-        font-family: inherit;
-        cursor: pointer;
-      }
-
-      .btn:hover {
-        opacity: 0.9;
-      }
-
-      .btn:focus {
-        outline: none;
-      }
-
-      .screen {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        height: 100vh;
-        width: 100vw;
-        transition: margin 0.5s ease-out;
-      }
-
-      .screen.up {
-        margin-top: -100vh;
-      }
-
-      .insects-list {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: center;
-        list-style-type: none;
-        padding: 0;
-      }
-
-      .insects-list li {
-        margin: 10px;
-      }
-
-      .choose-insect-btn {
-        background-color: transparent;
-        border: 2px solid #fff;
-        color: #fff;
-        cursor: pointer;
-        font-family: inherit;
-        width: 150px;
-        height: 150px;
-      }
-
-      .choose-insect-btn:hover {
-        background-color: #fff;
-        color: #516dff;
-      }
-
-      .choose-insect-btn:active {
-        background-color: rgba(255, 255, 255, 0.7);
-      }
-
-      .choose-insect-btn img {
-        width: 100px;
-        height: 100px;
-        object-fit: contain;
-      }
-
-      .game-container {
-        position: relative;
-      }
-
-      .time,
-      .score {
-        position: absolute;
-        top: 20px;
-      }
-
-      .time {
-        left: 20px;
-      }
-
-      .score {
-        right: 20px;
-      }
-
-      .message {
-        line-height: 1.7;
-        background-color: rgba(0, 0, 0, 0.5);
-        width: 100%;
-        padding: 20px;
-        z-index: 100;
-        text-align: center;
-        opacity: 0;
-        position: absolute;
-        top: 0;
-        left: 50%;
-        transform: translate(-50%, -150%);
-      }
-
-      .message.visible {
-        transform: translate(-50%, 150%);
-        opacity: 1;
-      }
-
-      .insect {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 100px;
-        height: 100px;
-        position: absolute;
-        transform: translate(-50%, -50%) scale(1);
-        transition: transform 0.3s ease-in-out;
-        cursor: pointer;
-      }
-
-      .insect img {
-        width: 100px;
-        height: 100px;
-      }
-
-      .insect.caught {
-        transform: translate(-50%, -50%) scale(0);
-      }
-
-      #pause-btn,
-      #home-btn {
-        position: absolute;
-        bottom: 20px;
-        padding: 10px 20px;
-      }
-
-      #pause-btn {
-        left: 20px;
-      }
-
-      #home-btn {
-        right: 20px;
-      }
-    </style>
+    * {
+      box-sizing: border-box;
+    }
+    
+    body {
+      background-color: #516dff;
+      color: #fff;
+      font-family: "Press Start 2P", sans-serif;
+      height: 100vh;
+      overflow: hidden;
+      margin: 0;
+      text-align: center;
+    }
+    
+    a {
+      color: #fff;
+    }
+    
+    h1 {
+      line-height: 1.4;
+    }
+    
+    .btn {
+      border: 0;
+      background-color: #fff;
+      color: #516dff;
+      padding: 15px 20px;
+      font-family: inherit;
+      cursor: pointer;
+    }
+    
+    .btn:hover {
+      opacity: 0.9;
+    }
+    
+    .btn:focus {
+      outline: none;
+    }
+    
+    .screen {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      width: 100vw;
+      transition: margin 0.5s ease-out;
+    }
+    
+    .screen.up {
+      margin-top: -100vh;
+    }
+    
+    .insects-list {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      list-style-type: none;
+      padding: 0;
+    }
+    
+    .insects-list li {
+      margin: 10px;
+    }
+    
+    .choose-insect-btn {
+      background-color: transparent;
+      border: 2px solid #fff;
+      color: #fff;
+      cursor: pointer;
+      font-family: inherit;
+      width: 150px;
+      height: 150px;
+    }
+    
+    .choose-insect-btn:hover {
+      background-color: #fff;
+      color: #516dff;
+    }
+    
+    .choose-insect-btn:active {
+      background-color: rgba(255, 255, 255, 0.7);
+    }
+    
+    .choose-insect-btn img {
+      width: 100px;
+      height: 100px;
+      object-fit: contain;
+    }
+    
+    .game-container {
+      position: relative;
+    }
+    
+    .time,
+    .score {
+      position: absolute;
+      top: 20px;
+    }
+    
+    .time {
+      left: 20px;
+    }
+    
+    .score {
+      right: 20px;
+    }
+    
+    .message {
+      line-height: 1.7;
+      background-color: rgba(0, 0, 0, 0.5);
+      width: 100%;
+      padding: 20px;
+      z-index: 100;
+      text-align: center;
+      opacity: 0;
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translate(-50%, -150%);
+    }
+    
+    .message.visible {
+      transform: translate(-50%, 150%);
+      opacity: 1;
+    }
+    
+    .insect {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100px;
+      height: 100px;
+      position: absolute;
+      transform: translate(-50%, -50%) scale(1);
+      transition: transform 0.3s ease-in-out;
+      cursor: pointer;
+    }
+    
+    .insect img {
+      width: 100px;
+      height: 100px;
+    }
+    
+    .insect.caught {
+      transform: translate(-50%, -50%) scale(0);
+    }</style>
   </head>
   <body>
     <div class="screen">
@@ -183,7 +167,10 @@
         <li>
           <button class="choose-insect-btn">
             <p>Fly</p>
-            <img src="http://pngimg.com/uploads/fly/fly_PNG3946.png" alt="fly" />
+            <img
+              src="http://pngimg.com/uploads/fly/fly_PNG3946.png"
+              alt="fly"
+            />
           </button>
         </li>
         <li>
@@ -219,134 +206,83 @@
       <h3 id="time" class="time">Time: 00:00</h3>
       <h3 id="score" class="score">Score: 0</h3>
       <h5 id="message" class="message">
-        Are you annoyed yet? <br />
+        Are you annnoyed yet? <br />
         You are playing an impossible game!!
       </h5>
-      <button class="btn" id="pause-btn">Pause</button>
-      <button class="btn" id="home-btn">Home</button>
     </div>
-
-    <script>
-      const screens = document.querySelectorAll(".screen");
-      const chooseInsectButtons = document.querySelectorAll(".choose-insect-btn");
-      const startButton = document.getElementById("start-btn");
-      const gameContainer = document.getElementById("game-container");
-      const timeElement = document.getElementById("time");
-      const scoreElement = document.getElementById("score");
-      const message = document.getElementById("message");
-      const pauseButton = document.getElementById("pause-btn");
-      const homeButton = document.getElementById("home-btn");
-
-      let seconds = 0;
-      let score = 0;
-      let selectedInsect = {};
-      let gameInterval;
-      let paused = false;
-
-      startButton.addEventListener("click", () => screens[0].classList.add("up"));
-
-      const increaseScore = () => {
-        score++;
-        if (score > 19) message.classList.add("visible");
-        scoreElement.innerHTML = `Score: ${score}`;
-      };
-
-      const addInsects = () => {
-        if (!paused) {
+    <script>const screens = document.querySelectorAll(".screen");
+        const chooseInsectButtons = document.querySelectorAll(".choose-insect-btn");
+        const startButton = document.getElementById("start-btn");
+        const gameContainer = document.getElementById("game-container");
+        const timeElement = document.getElementById("time");
+        const scoreElement = document.getElementById("score");
+        const message = document.getElementById("message");
+        let seconds = 0;
+        let score = 0;
+        let selectedInsect = {};
+        
+        startButton.addEventListener("click", () => screens[0].classList.add("up"));
+        
+        const increaseScore = () => {
+          score++;
+          if (score > 19) message.classList.add("visible");
+          scoreElement.innerHTML = `Score: ${score}`;
+        };
+        
+        const addInsects = () => {
           setTimeout(createInsect, 1000);
           setTimeout(createInsect, 1500);
-        }
-      };
-
-      const catchInsect = function () {
-        increaseScore();
-        this.classList.add("caught");
-        setTimeout(() => this.remove(), 2000);
-        addInsects();
-      };
-
-      const getRandomLocation = () => {
-        const width = window.innerWidth;
-        const height = window.innerHeight;
-        const x = Math.random() * (width - 200) + 100;
-        const y = Math.random() * (height - 200) + 100;
-        return { x, y };
-      };
-
-      const createInsect = () => {
-        const insect = document.createElement("div");
-        insect.classList.add("insect");
-        const { x, y } = getRandomLocation();
-        insect.style.top = `${y}px`;
-        insect.style.left = `${x}px`;
-        insect.innerHTML = `<img src="${selectedInsect.src}" 
+        };
+        
+        const catchInsect = function () {
+          increaseScore();
+          this.classList.add("caught");
+          setTimeout(() => this.remove, 2000);
+          addInsects();
+        };
+        
+        const getRandomLocation = () => {
+          const width = window.innerWidth;
+          const height = window.innerHeight;
+          const x = Math.random() * (width - 200) + 100;
+          const y = Math.random() * (height - 200) + 100;
+          return { x, y };
+        };
+        
+        const createInsect = () => {
+          const insect = document.createElement("div");
+          insect.classList.add("insect");
+          const { x, y } = getRandomLocation();
+          insect.style.top = `${y}px`;
+          insect.style.left = `${x}px`;
+          insect.innerHTML = `<img src="${selectedInsect.src}" 
           alt="${selectedInsect.alt}" 
           style="transform: rotate(${Math.random() * 360}deg)" />`;
-        insect.addEventListener("click", catchInsect);
-        gameContainer.appendChild(insect);
-      };
-
-      const increaseTime = () => {
-        if (!paused) {
+          insect.addEventListener("click", catchInsect);
+          gameContainer.appendChild(insect);
+        };
+        
+        const increaseTime = () => {
           let m = Math.floor(seconds / 60);
           let s = seconds % 60;
           m = m < 10 ? `0${m}` : m;
           s = s < 10 ? `0${s}` : s;
           timeElement.innerHTML = `Time: ${m}:${s}`;
           seconds++;
-        }
-      };
-
-      const startGame = () => {
-        gameInterval = setInterval(increaseTime, 1000);
-      };
-
-      const resetGame = () => {
-        score = 0;
-        seconds = 0;
-        scoreElement.innerHTML = "Score: 0";
-        timeElement.innerHTML = "Time: 00:00";
-        message.classList.remove("visible");
-        gameContainer.innerHTML = `
-          <h3 id="time" class="time">Time: 00:00</h3>
-          <h3 id="score" class="score">Score: 0</h3>
-          <h5 id="message" class="message">
-            Are you annoyed yet? <br />
-            You are playing an impossible game!!
-          </h5>
-        `;
-        clearInterval(gameInterval);
-        paused = false;
-      };
-
-      chooseInsectButtons.forEach((button) => {
-        button.addEventListener("click", function () {
-          const img = this.querySelector("img");
-          const src = img.getAttribute("src");
-          const alt = img.getAttribute("alt");
-          selectedInsect = { src, alt };
-          screens[1].classList.add("up");
-          setTimeout(createInsect, 1000);
-          startGame();
-        });
-      });
-
-      pauseButton.addEventListener("click", () => {
-        paused = !paused;
-        if (!paused) {
-          increaseTime();
-          addInsects();
-          pauseButton.innerHTML = "Pause";
-        } else {
-          clearInterval(gameInterval);
-          pauseButton.innerHTML = "Resume";
-        }
-      });
-
-      homeButton.addEventListener("click", () => {
-        resetGame();
-        screens.forEach((screen) => screen.classList.remove("up"));
-      });
-    </script>
+        };
+        
+        const startGame = () => setInterval(increaseTime, 1000);
+        
+        chooseInsectButtons.forEach((button) => {
+          button.addEventListener("click", () => {
+            const image = button.querySelector("img");
+            const src = image.getAttribute("src");
+            const alt = image.getAttribute("alt");
+            selectedInsect = { src, alt };
+            screens[1].classList.add("up");
+            setTimeout(createInsect, 1000);
+            startGame();
+          });
+        });</script>
   </body>
 </html>
