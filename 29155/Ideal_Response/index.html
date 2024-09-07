@@ -2,26 +2,25 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Archery Game</title>
     <style>
-    body {
-        margin: 0;
-        background: #222;
-        color: white;
-    }
-    svg {
-        width: 100%;
-        height: 100%;
-        position: fixed;
-        top: 0;
-        left: 0;
-    }
-    span {
-        color: white;
-        font-family: sans-serif;
-        opacity: .3;
-    }
+        body {
+            margin: 0;
+            background: #222;
+            color: white;
+        }
+        svg {
+            width: 100%;
+            height: 100%;
+            position: fixed;
+            top: 0;
+            left: 0;
+        }
+        span {
+            color: white;
+            font-family: sans-serif;
+            opacity: .3;
+        }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
 </head>
@@ -43,10 +42,10 @@
 
         <!-- Target -->
         <g id="target">
-            <path fill="#FFF" d="M924.2,274.2c-21.5,21.5-45.9,19.9-52,3.2c-4.4-12.1,2.4-29.2,14.2-41c11.8-11.8,29-18.6,41-14.2C944.1,228.3,945.7,252.8,924.2,274.2z"/>
-            <path fill="#F4531C" d="M915.8,265.8c-14.1,14.1-30.8,14.6-36,4.1c-4.1-8.3,0.5-21.3,9.7-30.5s22.2-13.8,30.5-9.7C930.4,235,929.9,251.7,915.8,265.8z"/>
-            <path fill="#FFF" d="M908.9,258.9c-8,8-17.9,9.2-21.6,3.5c-3.2-4.9-0.5-13.4,5.6-19.5c6.1-6.1,14.6-8.8,19.5-5.6C918.1,241,916.9,250.9,908.9,258.9z"/>
-            <path fill="#F4531C" d="M903.2,253.2c-2.9,2.9-6.7,3.6-8.3,1.7c-1.5-1.8-0.6-5.4,2-8c2.6-2.6,6.2-3.6,8-2C906.8,246.5,906.1,250.2,903.2,253.2z"/>
+            <circle cx="900" cy="250" r="30" fill="#F4531C"/>
+            <circle cx="900" cy="250" r="20" fill="#FFF"/>
+            <circle cx="900" cy="250" r="10" fill="#F4531C"/>
+            <circle cx="900" cy="250" r="5" fill="#FFF"/>
         </g>
 
         <!-- Bow -->
@@ -68,7 +67,7 @@
         // Center of the target
         var target = {
             x: 900,
-            y: 249.5
+            y: 250
         };
 
         // Bow pivot point
@@ -135,23 +134,93 @@
             var dx = point.x - pivot.x;
             var dy = point.y - pivot.y;
             var angle = Math.atan2(dy, dx) + randomAngle;
+            var bowAngle = angle - Math.PI;
             var distance = Math.min(Math.sqrt((dx * dx) + (dy * dy)), 50);
-            var velocity = distance * 5; // Adjust velocity for a realistic speed
 
-            // Animate arrow to target
+            // Velocity and flight duration
+            var velocity = distance * 5;
+            var flightDuration = 2;
+
+            // Calculate arrow landing point
+            var arrowEndX = pivot.x + Math.cos(angle) * 1000;
+            var arrowEndY = pivot.y + Math.sin(angle) * 1000;
+
+            // Detect collision with the target
+            var hit = checkCollision(arrowEndX, arrowEndY);
+
+            // Animate arrow to target or miss point
             gsap.to(".arrow-angle use", {
-                duration: 2, // Duration of the flight
-                x: target.x - pivot.x,
-                y: target.y - pivot.y,
+                duration: flightDuration,
+                x: (hit ? target.x : arrowEndX) - pivot.x,
+                y: (hit ? target.y : arrowEndY) - pivot.y,
                 ease: "power2.out",
                 onComplete: function() {
                     gsap.to("#arc", {duration: 0.5, autoAlpha: 0}); // Hide arc after hit
+                    showResult(hit);
                 }
             });
 
             // Reset bow
             gsap.to("#bow", {duration: 0.4, scaleX: 1});
-            gsap.to(".arrow-angle use", {duration: 0.4, opacity: 0});
+            gsap.to(".arrow-angle use", {duration: 0.4, opacity: 0, delay: flightDuration});
+        }
+
+        function checkCollision(x, y) {
+            // Distance from arrow tip to target center
+            var dx = x - target.x;
+            var dy = y - target.y;
+            var distance = Math.sqrt(dx * dx + dy * dy);
+
+            // Radii of the target circles
+            var radii = [30, 20, 10, 5];
+            var hitZone = null;
+
+            // Determine which zone was hit
+            for (var i = 0; i < radii.length; i++) {
+                if (distance <= radii[i]) {
+                    hitZone = i + 1; // Zones 1 (outer) to 4 (bullseye)
+                    break;
+                }
+            }
+
+            return hitZone;
+        }
+
+        function showResult(hitZone) {
+            var resultText;
+            if (hitZone) {
+                switch (hitZone) {
+                    case 4:
+                        resultText = "Bullseye!";
+                        break;
+                    case 3:
+                        resultText = "Great Shot!";
+                        break;
+                    case 2:
+                        resultText = "Good Shot!";
+                        break;
+                    case 1:
+                        resultText = "Hit!";
+                        break;
+                }
+            } else {
+                resultText = "Miss!";
+            }
+
+            // Display result
+            var result = document.createElementNS("http://www.w3.org/2000/svg", "text");
+            result.setAttribute("x", target.x);
+            result.setAttribute("y", target.y - 40);
+            result.setAttribute("fill", "white");
+            result.setAttribute("font-size", "24");
+            result.setAttribute("text-anchor", "middle");
+            result.textContent = resultText;
+            svg.appendChild(result);
+
+            // Fade out the result text
+            gsap.to(result, {duration: 2, opacity: 0, delay: 1, onComplete: function() {
+                svg.removeChild(result);
+            }});
         }
 
         function getMouseSVG(e) {
