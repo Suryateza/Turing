@@ -1,91 +1,112 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Archery Game</title>
-<style>
-    body { margin: 0; background: #f0f0f0; }
-    svg { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
-    #trajectory { stroke: rgba(0,0,0,0.3); stroke-width: 2; fill: none; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pongo Game</title>
+    <style>
+        body { margin: 0; background: #1a1a1a; font-family: 'Arial', sans-serif; }
+        #gameCanvas { background: #000; display: block; margin: 0 auto; }
+        #menu { text-align: center; color: white; padding: 20px; }
+        .btn { padding: 10px 20px; margin: 5px; cursor: pointer; }
+    </style>
 </head>
 <body>
-<svg id="gameCanvas" width="800" height="400" viewBox="0 0 800 400">
-    <rect width="100%" height="100%" fill="#e6f3ff"/>
-    <g id="bow" transform="translate(100, 200)">
-        <path d="M0,0 C50,-50 50,50 0,0" stroke="brown" fill="none" stroke-width="5"/>
-    </g>
-    <g id="arrowGroup">
-        <line id="arrow" x1="100" y1="200" x2="120" y2="200" stroke="black" stroke-width="2"/>
-        <path d="M120,200 L110,195 L110,205 Z" fill="black"/>
-    </g>
-    <circle id="target" cx="700" cy="200" r="50" fill="red"/>
-    <path id="trajectory" visibility="hidden"/>
-</svg>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.10.4/gsap.min.js"></script>
-<script>
-document.addEventListener('DOMContentLoaded', (event) => {
-    const bow = document.getElementById('bow');
-    const arrow = document.getElementById('arrow');
-    const arrowGroup = document.getElementById('arrowGroup');
-    const target = document.getElementById('target');
-    const trajectory = document.getElementById('trajectory');
-    let isDragging = false;
-    let startX, startY;
+    <div id="menu">
+        <button class="btn" onclick="startGame('single')">Single Player</button>
+        <button class="btn" onclick="startGame('multi')">Multiplayer</button>
+        <select id="difficulty" onchange="setDifficulty(this.value)">
+            <option value="easy">Easy</option>
+            <option value="medium">Medium</option>
+            <option value="hard">Hard</option>
+        </select>
+    </div>
+    <canvas id="gameCanvas"></canvas>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.1/howler.min.js"></script>
+    <script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = 800;
+    canvas.height = 600;
 
-    // Mouse events for drawing the bow
-    document.addEventListener('mousedown', (e) => {
-        if (e.target === arrow) {
-            isDragging = true;
-            startX = e.clientX;
-            startY = e.clientY;
+    // Game variables
+    let ball = {x: canvas.width / 2, y: canvas.height / 2, radius: 10, dx: 2, dy: -2, speed: 7};
+    let paddles = [{x: 10, y: canvas.height / 2 - 50, w: 10, h: 100, dy: 0, score: 0}, 
+                   {x: canvas.width - 20, y: canvas.height / 2 - 50, w: 10, h: 100, dy: 0, score: 0}];
+    let aiDifficulty = 'medium';
+    let gameMode = 'single';
+    let powerUps = [];
+
+    function setDifficulty(diff) {
+        aiDifficulty = diff;
+    }
+
+    function startGame(mode) {
+        gameMode = mode;
+        // Reset game state here
+        requestAnimationFrame(gameLoop);
+    }
+
+    function gameLoop() {
+        update();
+        render();
+        requestAnimationFrame(gameLoop);
+    }
+
+    function update() {
+        // Update ball position
+        ball.x += ball.dx;
+        ball.y += ball.dy;
+
+        // AI or player control for right paddle
+        if (gameMode === 'single') {
+            aiMove();
+        } else {
+            paddles[1].y += paddles[1].dy;
         }
-    });
 
-    document.addEventListener('mousemove', (e) => {
-        if (!isDragging) return;
-        const dx = e.clientX - startX;
-        const dy = e.clientY - startY;
-        const angle = Math.atan2(dy, dx);
-        const distance = Math.min(Math.hypot(dx, dy), 100); // Limit the draw distance
-        
-        gsap.to(bow, {rotation: angle * (180/Math.PI), transformOrigin:"0% 50%", duration:0.1});
-        gsap.to(arrowGroup, {x: distance, rotation: angle * (180/Math.PI), transformOrigin:"0% 50%", duration:0.1});
-    });
-
-    document.addEventListener('mouseup', (e) => {
-        if (isDragging) {
-            isDragging = false;
-            const endX = arrow.getAttribute('x2');
-            const endY = arrow.getAttribute('y2');
-            const startX = arrow.getAttribute('x1');
-            const startY = arrow.getAttribute('y1');
-
-            // Calculate trajectory
-            const controlX = (parseInt(startX) + parseInt(endX)) / 2;
-            const controlY = parseInt(startY) - 100; // Adjust for arc height
-            
-            trajectory.setAttribute('d', `M${startX},${startY} Q${controlX},${controlY} ${target.cx.baseVal.value},${target.cy.baseVal.value}`);
-            trajectory.setAttribute('visibility', 'visible');
-
-            // Animate arrow along path
-            gsap.to(arrowGroup, {
-                motionPath: {
-                    path: trajectory,
-                    align: trajectory,
-                    alignOrigin: [0.5, 0.5],
-                    autoRotate: true
-                },
-                duration: 1.5,
-                ease: "power1.out",
-                onComplete: () => {
-                    trajectory.setAttribute('visibility', 'hidden');
-                    gsap.set(arrowGroup, {x: 0, rotation: 0}); // Reset arrow for next shot
-                }
-            });
+        // Ball collision with top and bottom
+        if(ball.y + ball.radius > canvas.height || ball.y - ball.radius < 0) {
+            ball.dy *= -1;
         }
+
+        // Check for paddle collision and score
+        // ... (collision logic here)
+
+        // Power-up logic
+        // ... (spawn and apply power-ups)
+
+        // Limit paddle movement
+        paddles.forEach(paddle => {
+            paddle.y = Math.max(Math.min(paddle.y, canvas.height - paddle.h), 0);
+        });
+    }
+
+    function render() {
+        // Clear canvas
+        ctx.fillStyle = 'black';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Draw paddles, ball, score, and power-ups
+        // ... (rendering logic)
+    }
+
+    function aiMove() {
+        let targetY = ball.y - (paddles[1].h / 2);
+        if (aiDifficulty === 'easy') targetY += Math.random() * 50 - 25;
+        // More sophisticated AI for medium and hard
+        paddles[1].y += (targetY - paddles[1].y) * 0.03 * (aiDifficulty === 'hard' ? 2 : 1);
+    }
+
+    // Event listeners for controls
+    // ... (mouse/keyboard event handlers)
+
+    // Sound effects
+    const sound = new Howl({
+        src: ['path_to_sound_effects.mp3']
     });
-});
-</script>
+
+    // Initial setup and leaderboard logic would go here
+    </script>
 </body>
 </html>

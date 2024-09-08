@@ -1,29 +1,247 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="styles.css">
-    <title>Game</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pong Game with Scoring, Controls, and Animations</title>
+  <style>
+    canvas {
+      background: black;
+      display: block;
+      margin: 0 auto;
+    }
+    #scoreBoard, #controls {
+      text-align: center;
+      margin: 20px;
+      color: white;
+      font-size: 20px;
+    }
+    .score, button {
+      display: inline-block;
+      margin: 0 10px;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+    }
+    #pointsMessage {
+      margin: 10px 0;
+      font-size: 18px;
+      animation: fadeInOut 1.5s ease-in-out;
+    }
+
+    /* Paddle movement animation */
+    canvas {
+      transition: all 0.1s ease-in-out;
+    }
+
+    /* Ball glowing animation */
+    @keyframes ballGlow {
+      0%, 100% {
+        box-shadow: 0 0 10px 2px white;
+      }
+      50% {
+        box-shadow: 0 0 20px 4px white;
+      }
+    }
+
+    /* Points message fade-in and fade-out animation */
+    @keyframes fadeInOut {
+      0% {
+        opacity: 0;
+      }
+      50% {
+        opacity: 1;
+      }
+      100% {
+        opacity: 0;
+      }
+    }
+    body{background-color: blue;}
+  </style>
 </head>
 <body>
-    <div class="container">
-        <p>Click Me</p>
-        <div class="box">
-            <div id="btn-block">
-                <div id="final">
-                    <p id="message"></p>
-                    <p id="countdown"></p>
-                </div>
-                <button id = 'winner'>I am Winner</button>
-                <button id="loser">I am Loser</button>
-            </div>
-           
-            
-        </div>
-    </div>
+  <div id="scoreBoard">
+    <span class="score">Player Score: <span id="playerScore">0</span></span>
+    <span class="score">Computer Score: <span id="computerScore">0</span></span>
+  </div>
 
-    <script src="script.js"></script>
+  <div id="pointsMessage"></div>
+
+  <div id="controls">
+    <button id="pauseBtn">Pause</button>
+    <button id="resumeBtn" disabled>Resume</button>
+  </div>
+  
+  <canvas id="pong" width="800" height="400"></canvas>
+  
+  <script>
+    const canvas = document.getElementById("pong");
+    const ctx = canvas.getContext("2d");
+
+    // Paddle variables
+    const paddleWidth = 10;
+    const paddleHeight = 100;
+    let playerY = canvas.height / 2 - paddleHeight / 2;
+    let computerY = canvas.height / 2 - paddleHeight / 2;
+
+    // Ball variables
+    const ballSize = 10;
+    let ballX = canvas.width / 2;
+    let ballY = canvas.height / 2;
+    let ballSpeedX = 7;
+    let ballSpeedY = 7;
+
+    // Score variables
+    let playerScore = 0;
+    let computerScore = 0;
+
+    // Points message
+    const pointsMessage = document.getElementById("pointsMessage");
+
+    // Pause/Resume variables
+    let isPaused = false;
+    let animationFrameId;
+
+    // Draw a rectangle (paddles)
+    function drawRect(x, y, width, height, color) {
+      ctx.fillStyle = color;
+      ctx.fillRect(x, y, width, height);
+    }
+
+    // Draw the ball with glowing animation
+    function drawBall(x, y, size, color) {
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.arc(x, y, size, 0, Math.PI * 2);
+      ctx.closePath();
+      ctx.fill();
+
+      // Apply ball glow effect
+      canvas.style.boxShadow = "0 0 15px white";
+      canvas.style.animation = "ballGlow 1s infinite";
+    }
+
+    // Update the score on the UI
+    function updateScore() {
+      document.getElementById("playerScore").innerText = playerScore;
+      document.getElementById("computerScore").innerText = computerScore;
+    }
+
+    // Show points message
+    function showPointsMessage(message, isPositive) {
+      pointsMessage.innerText = message;
+      pointsMessage.style.color = isPositive ? "lightgreen" : "red";
+      pointsMessage.style.animation = "fadeInOut 1.5s ease-in-out";
+    }
+
+    // Draw the game
+    function draw() {
+      // Clear the canvas
+      drawRect(0, 0, canvas.width, canvas.height, "black");
+
+      // Draw the paddles
+      drawRect(0, playerY, paddleWidth, paddleHeight, "white"); // Player (Left)
+      drawRect(canvas.width - paddleWidth, computerY, paddleWidth, paddleHeight, "white"); // Computer (Right)
+
+      // Draw the ball
+      drawBall(ballX, ballY, ballSize, "white");
+    }
+
+    // Move the computer paddle
+    function moveComputerPaddle() {
+      const computerYCenter = computerY + paddleHeight / 2;
+      if (computerYCenter < ballY - 35) {
+        computerY += 7;
+      } else if (computerYCenter > ballY + 35) {
+        computerY -= 7;
+      }
+    }
+
+    // Update the game state
+    function update() {
+      if (!isPaused) {
+        moveComputerPaddle();
+
+        // Update ball position
+        ballX += ballSpeedX;
+        ballY += ballSpeedY;
+
+        // Ball collision with top and bottom walls
+        if (ballY - ballSize < 0 || ballY + ballSize > canvas.height) {
+          ballSpeedY = -ballSpeedY;
+        }
+
+        // Ball out of bounds (Player misses)
+        if (ballX - ballSize < 0) {
+          computerScore++;  // Computer scores a point
+          updateScore();
+          showPointsMessage("-1 point for player (missed)", false);
+          resetBall();
+        } 
+        // Ball out of bounds (Computer misses)
+        else if (ballX + ballSize > canvas.width) {
+          playerScore++;  // Player scores a point
+          updateScore();
+          showPointsMessage("+1 point for player (scored)", true);
+          resetBall();
+        }
+
+        // Ball collision with player's paddle
+        if (
+          ballX - ballSize < paddleWidth &&
+          ballY > playerY &&
+          ballY < playerY + paddleHeight
+        ) {
+          ballSpeedX = -ballSpeedX;
+        } 
+        // Ball collision with computer's paddle
+        else if (
+          ballX + ballSize > canvas.width - paddleWidth &&
+          ballY > computerY &&
+          ballY < computerY + paddleHeight
+        ) {
+          ballSpeedX = -ballSpeedX;
+        }
+      }
+    }
+
+    // Reset the ball to the center
+    function resetBall() {
+      ballX = canvas.width / 2;
+      ballY = canvas.height / 2;
+      ballSpeedX = -ballSpeedX; // Reverse ball direction after each point
+    }
+
+    // Game loop
+    function gameLoop() {
+      draw();
+      update();
+      animationFrameId = requestAnimationFrame(gameLoop);
+    }
+
+    // Move player paddle with mouse
+    canvas.addEventListener("mousemove", (event) => {
+      playerY = event.clientY - canvas.getBoundingClientRect().top - paddleHeight / 2;
+    });
+
+    // Pause and Resume functionality
+    document.getElementById("pauseBtn").addEventListener("click", () => {
+      isPaused = true;
+      cancelAnimationFrame(animationFrameId);
+      document.getElementById("pauseBtn").disabled = true;
+      document.getElementById("resumeBtn").disabled = false;
+    });
+
+    document.getElementById("resumeBtn").addEventListener("click", () => {
+      isPaused = false;
+      gameLoop();
+      document.getElementById("pauseBtn").disabled = false;
+      document.getElementById("resumeBtn").disabled = true;
+    });
+
+    // Start the game loop
+    gameLoop();
+  </script>
 </body>
 </html>

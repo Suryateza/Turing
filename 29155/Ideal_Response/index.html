@@ -1,233 +1,168 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Archery Game</title>
-    <style>
-        body {
-            margin: 0;
-            background: #222;
-            color: white;
-        }
-        svg {
-            width: 100%;
-            height: 100%;
-            position: fixed;
-            top: 0;
-            left: 0;
-        }
-        span {
-            color: white;
-            font-family: sans-serif;
-            opacity: .3;
-        }
-    </style>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pong Game with Scoring</title>
+  <style>
+    canvas {
+      background: black;
+      display: block;
+      margin: 0 auto;
+    }
+    #scoreBoard {
+      text-align: center;
+      margin: 20px;
+      color: white;
+      font-size: 20px;
+    }
+    .score {
+      display: inline-block;
+      margin: 0 20px;
+    }
+    body{
+        background-color: blue;
+    }
+  </style>
 </head>
 <body>
-    <svg id="game" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 400" overflow="visible">
-        <linearGradient id="ArcGradient">
-            <stop offset="0" stop-color="#fff" stop-opacity=".2"/>
-            <stop offset="50%" stop-color="#fff" stop-opacity="0"/>
-        </linearGradient>
-        <path id="arc" fill="none" stroke="url(#ArcGradient)" stroke-width="4" d="M100,250c250-400,550-400,800,0" pointer-events="none"/>
-        
-        <defs>
-            <g id="arrow">
-                <line x2="60" fill="none" stroke="#888" stroke-width="2"/>
-                <polygon fill="#888" points="64 0 58 2 56 0 58 -2"/>
-                <polygon fill="#88ce02" points="2 -3 -4 -3 -1 0 -4 3 2 3 5 0"/>
-            </g>
-        </defs>
+  <div id="scoreBoard">
+    <span class="score">Player Score: <span id="playerScore">0</span></span>
+    <span class="score">Computer Score: <span id="computerScore">0</span></span>
+  </div>
+  
+  <canvas id="pong" width="800" height="400"></canvas>
+  
+  <script>
+    const canvas = document.getElementById("pong");
+    const ctx = canvas.getContext("2d");
 
-        <!-- Target -->
-        <g id="target">
-            <circle cx="900" cy="250" r="30" fill="#F4531C"/>
-            <circle cx="900" cy="250" r="20" fill="#FFF"/>
-            <circle cx="900" cy="250" r="10" fill="#F4531C"/>
-            <circle cx="900" cy="250" r="5" fill="#FFF"/>
-        </g>
+    // Paddle variables
+    const paddleWidth = 10;
+    const paddleHeight = 100;
+    let playerY = canvas.height / 2 - paddleHeight / 2;
+    let computerY = canvas.height / 2 - paddleHeight / 2;
 
-        <!-- Bow -->
-        <g id="bow" fill="none" stroke-linecap="round" vector-effect="non-scaling-stroke" pointer-events="none">
-            <polyline fill="none" stroke="#ddd" stroke-linecap="round" points="88,200 88,250 88,300"/>
-            <path fill="none" stroke="#88ce02" stroke-width="3" stroke-linecap="round" d="M88,300c0-10.1,12-25.1,12-50s-12-39.9-12-50"/>
-        </g>
+    // Ball variables
+    const ballSize = 10;
+    let ballX = canvas.width / 2;
+    let ballY = canvas.height / 2;
+    let ballSpeedX = 7;
+    let ballSpeedY = 7;
 
-        <!-- Arrow group -->
-        <g class="arrow-angle"><use x="100" y="250" xlink:href="#arrow"/></g>
-    </svg>
+    // Score variables
+    let playerScore = 0;
+    let computerScore = 0;
 
-    <span>Draw back an arrow and launch it!</span>
-    <script>
-        var svg = document.querySelector("svg");
-        var cursor = svg.createSVGPoint();
-        var randomAngle = 0;
+    // Draw a rectangle (paddles)
+    function drawRect(x, y, width, height, color) {
+      ctx.fillStyle = color;
+      ctx.fillRect(x, y, width, height);
+    }
 
-        // Center of the target
-        var target = {
-            x: 900,
-            y: 250
-        };
+    // Draw the ball
+    function drawBall(x, y, size, color) {
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.arc(x, y, size, 0, Math.PI * 2);
+      ctx.closePath();
+      ctx.fill();
+    }
 
-        // Bow pivot point
-        var pivot = {
-            x: 100,
-            y: 250
-        };
+    // Update the score on the UI
+    function updateScore() {
+      document.getElementById("playerScore").innerText = playerScore;
+      document.getElementById("computerScore").innerText = computerScore;
+    }
 
-        // Initial aim setup
-        aim({
-            clientX: 320,
-            clientY: 300
-        });
+    // Draw the game
+    function draw() {
+      // Clear the canvas
+      drawRect(0, 0, canvas.width, canvas.height, "black");
 
-        // Start dragging event
-        window.addEventListener("mousedown", draw);
+      // Draw the paddles
+      drawRect(0, playerY, paddleWidth, paddleHeight, "white"); // Player (Left)
+      drawRect(canvas.width - paddleWidth, computerY, paddleWidth, paddleHeight, "white"); // Computer (Right)
 
-        function draw(e) {
-            // Pull back the arrow
-            randomAngle = (Math.random() * Math.PI * 0.03) - 0.015;
-            gsap.to(".arrow-angle use", {duration: 0.3, opacity: 1});
-            window.addEventListener("mousemove", aim);
-            window.addEventListener("mouseup", loose);
-            aim(e);
-        }
+      // Draw the ball
+      drawBall(ballX, ballY, ballSize, "white");
+    }
 
-        function aim(e) {
-            // Get mouse position relative to SVG
-            var point = getMouseSVG(e);
-            point.x = Math.min(point.x, pivot.x - 7);
-            point.y = Math.max(point.y, pivot.y + 7);
-            var dx = point.x - pivot.x;
-            var dy = point.y - pivot.y;
+    // Move the computer paddle
+    function moveComputerPaddle() {
+      const computerYCenter = computerY + paddleHeight / 2;
+      if (computerYCenter < ballY - 35) {
+        computerY += 7;
+      } else if (computerYCenter > ballY + 35) {
+        computerY -= 7;
+      }
+    }
 
-            // Add randomness to aiming
-            var angle = Math.atan2(dy, dx) + randomAngle;
-            var bowAngle = angle - Math.PI;
-            var distance = Math.min(Math.sqrt((dx * dx) + (dy * dy)), 50);
-            var scale = Math.min(Math.max(distance / 30, 1), 2);
+    // Update the game state
+    function update() {
+      moveComputerPaddle();
 
-            // Bow and arrow animation
-            gsap.to("#bow", {duration: 0.3, scaleX: scale, rotation: bowAngle + "rad", transformOrigin: "right center"});
-            gsap.to(".arrow-angle", {duration: 0.3, rotation: bowAngle + "rad", svgOrigin: "100 250"});
-            gsap.to(".arrow-angle use", {duration: 0.3, x: -distance});
-            gsap.to("#bow polyline", {duration: 0.3, attr: { points: "88,200 " + Math.min(pivot.x - ((1 / scale) * distance), 88) + ",250 88,300" }});
+      // Update ball position
+      ballX += ballSpeedX;
+      ballY += ballSpeedY;
 
-            // Arc path
-            var radius = distance * 9;
-            var offset = {
-                x: (Math.cos(bowAngle) * radius),
-                y: (Math.sin(bowAngle) * radius)
-            };
-            var arcWidth = offset.x * 3;
-            gsap.to("#arc", {duration: 0.3, attr: { d: "M100,250c" + offset.x + "," + offset.y + "," + (arcWidth - offset.x) + "," + (offset.y + 50) + "," + arcWidth + ",50" }, autoAlpha: distance / 60});
-        }
+      // Ball collision with top and bottom walls
+      if (ballY - ballSize < 0 || ballY + ballSize > canvas.height) {
+        ballSpeedY = -ballSpeedY;
+      }
 
-        function loose(e) {
-            // Release the arrow and animate to target
-            window.removeEventListener("mousemove", aim);
-            window.removeEventListener("mouseup", loose);
+      // Ball out of bounds (Player misses)
+      if (ballX - ballSize < 0) {
+        computerScore++;  // Computer scores a point
+        resetBall();
+      } 
+      // Ball out of bounds (Computer misses)
+      else if (ballX + ballSize > canvas.width) {
+        playerScore++;  // Player scores a point
+        resetBall();
+      }
 
-            // Calculate arrow trajectory
-            var point = getMouseSVG(e);
-            var dx = point.x - pivot.x;
-            var dy = point.y - pivot.y;
-            var angle = Math.atan2(dy, dx) + randomAngle;
-            var bowAngle = angle - Math.PI;
-            var distance = Math.min(Math.sqrt((dx * dx) + (dy * dy)), 50);
+      // Ball collision with player's paddle
+      if (
+        ballX - ballSize < paddleWidth &&
+        ballY > playerY &&
+        ballY < playerY + paddleHeight
+      ) {
+        ballSpeedX = -ballSpeedX;
+      } 
+      // Ball collision with computer's paddle
+      else if (
+        ballX + ballSize > canvas.width - paddleWidth &&
+        ballY > computerY &&
+        ballY < computerY + paddleHeight
+      ) {
+        ballSpeedX = -ballSpeedX;
+      }
 
-            // Velocity and flight duration
-            var velocity = distance * 5;
-            var flightDuration = 2;
+      updateScore(); // Update the scores on the UI
+    }
 
-            // Calculate arrow landing point
-            var arrowEndX = pivot.x + Math.cos(angle) * 1000;
-            var arrowEndY = pivot.y + Math.sin(angle) * 1000;
+    // Reset the ball to the center
+    function resetBall() {
+      ballX = canvas.width / 2;
+      ballY = canvas.height / 2;
+      ballSpeedX = -ballSpeedX; // Reverse ball direction after each point
+    }
 
-            // Detect collision with the target
-            var hit = checkCollision(arrowEndX, arrowEndY);
+    // Game loop
+    function gameLoop() {
+      draw();
+      update();
+      requestAnimationFrame(gameLoop);
+    }
 
-            // Animate arrow to target or miss point
-            gsap.to(".arrow-angle use", {
-                duration: flightDuration,
-                x: (hit ? target.x : arrowEndX) - pivot.x,
-                y: (hit ? target.y : arrowEndY) - pivot.y,
-                ease: "power2.out",
-                onComplete: function() {
-                    gsap.to("#arc", {duration: 0.5, autoAlpha: 0}); // Hide arc after hit
-                    showResult(hit);
-                }
-            });
+    // Move player paddle with mouse
+    canvas.addEventListener("mousemove", (event) => {
+      playerY = event.clientY - canvas.getBoundingClientRect().top - paddleHeight / 2;
+    });
 
-            // Reset bow
-            gsap.to("#bow", {duration: 0.4, scaleX: 1});
-            gsap.to(".arrow-angle use", {duration: 0.4, opacity: 0, delay: flightDuration});
-        }
-
-        function checkCollision(x, y) {
-            // Distance from arrow tip to target center
-            var dx = x - target.x;
-            var dy = y - target.y;
-            var distance = Math.sqrt(dx * dx + dy * dy);
-
-            // Radii of the target circles
-            var radii = [30, 20, 10, 5];
-            var hitZone = null;
-
-            // Determine which zone was hit
-            for (var i = 0; i < radii.length; i++) {
-                if (distance <= radii[i]) {
-                    hitZone = i + 1; // Zones 1 (outer) to 4 (bullseye)
-                    break;
-                }
-            }
-
-            return hitZone;
-        }
-
-        function showResult(hitZone) {
-            var resultText;
-            if (hitZone) {
-                switch (hitZone) {
-                    case 4:
-                        resultText = "Bullseye!";
-                        break;
-                    case 3:
-                        resultText = "Great Shot!";
-                        break;
-                    case 2:
-                        resultText = "Good Shot!";
-                        break;
-                    case 1:
-                        resultText = "Hit!";
-                        break;
-                }
-            } else {
-                resultText = "Miss!";
-            }
-
-            // Display result
-            var result = document.createElementNS("http://www.w3.org/2000/svg", "text");
-            result.setAttribute("x", target.x);
-            result.setAttribute("y", target.y - 40);
-            result.setAttribute("fill", "white");
-            result.setAttribute("font-size", "24");
-            result.setAttribute("text-anchor", "middle");
-            result.textContent = resultText;
-            svg.appendChild(result);
-
-            // Fade out the result text
-            gsap.to(result, {duration: 2, opacity: 0, delay: 1, onComplete: function() {
-                svg.removeChild(result);
-            }});
-        }
-
-        function getMouseSVG(e) {
-            cursor.x = e.clientX;
-            cursor.y = e.clientY;
-            return cursor.matrixTransform(svg.getScreenCTM().inverse());
-        }
-    </script>
+    // Start the game loop
+    gameLoop();
+  </script>
 </body>
 </html>
