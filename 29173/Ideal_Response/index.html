@@ -5,44 +5,61 @@
  
     <style>@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700&display=swap");
 
-        body {
-          font-family: "Poppins", sans-serif;
-          background: #b9b3a9;
-          display: flex;
-          justify-content: center;
-        }
-        
-        .container {
-          width: 450px;
-          padding: 20px;
-          margin-top: 80px;
-          background-color: #fff;
-          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-          border-radius: 20px;
-        }
-        
-        h1 {
+body {
+  font-family: "Poppins", sans-serif;
+  background: url('./2384073.webp') no-repeat center center fixed;
+  background-size: cover;
+  display: flex;
+  justify-content: center;
+  margin: 0;
+  height: 100vh; /* Ensure body takes full height */
+}
+
+.container {
+  width: 450px;
+  padding: 20px;
+  color: azure;
+  margin-top: 80px;
+  background: url('https://in.images.search.yahoo.com/images/view;_ylt=AwrKAD5cYN1mrc43Bpa9HAx.;_ylu=c2VjA3NyBHNsawNpbWcEb2lkA2QyZWQxOWI0MDFjYTNmYTc2MzlhYjEyZTk1ZmRiZDY4BGdwb3MDNgRpdANiaW5n?back=https%3A%2F%2Fin.images.search.yahoo.com%2Fsearch%2Fimages%3Fp%3Dquiz%2Bimages%26type%3DE210IN826G0%26fr%3Dmcafee%26h%3D1152%26tt%3DQuiz%2BWallpapers%2B-%2BTop%2BFree%2BQuiz%2BBackgrounds%2B-%2BWallpaperAccess%26w%3D2048%26imgurl%3Dhttps%253A%252F%252Fwallpaperaccess.com%252Ffull%252F2384073.jpg%26rurl%3Dhttps%253A%252F%252Fwallpaperaccess.com%252Fquiz%26turl%3Dhttps%253A%252F%252Ftse1.mm.bing.net%252Fth%253Fid%253DOIP.7RUENRo42_f7Hx-9bYM_hgHaEK%2526pid%253DApi%26tw%3D474%26th%3D266%26sigr%3Dq.Y0t8sOpjuU%26sigi%3DCOqVnEQ02eBg%26sigt%3D_PEX2wabzOc.%26sigit%3DQDePZgeTbAM4%26tab%3Dorganic%26ri%3D6&w=1600&h=1508&imgurl=thumbs.dreamstime.com%2Fz%2Fquiz-time-card-colorful-confetti-quiz-time-card-colorful-paper-confetti-vector-background-125413603.jpg&rurl=https%3A%2F%2Fcartoondealer.com%2Fimage%2F193953676%2Fquiz-time-color-speech-bubble-blue-background-vector-illustration-quizzes-questionnaires.html&size=148.7KB&p=quiz+images&oid=d2ed19b401ca3fa7639ab12e95fdbd68&fr2=&fr=mcafee&tt=Quiz+Time.+Color+Speech+Bubble+On+Blue+Background.+Vector+Illustration+...&b=0&ni=90&no=6&ts=&tab=organic&sigr=a759IUieSU66&sigb=FrP7brPkbKmc&sigi=yxKuCLm.PtzQ&sigt=Dxfyhu_4RjG9&.crumb=VSQMu/N6Plx&fr=mcafee&type=E210IN826G0') no-repeat center center fixed;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border-radius: 20px;
+  opacity: 0; /* Initially hide the container */
+  animation: fadeIn 1s ease-out forwards; /* Apply animation */
+}
+
+/* Keyframe animation for fade-in effect */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px); /* Slightly move up */
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0); /* Return to original position */
+  }
+}    
+      h1 {
           text-align: center;
         }
-        h4 {
+      h4 {
           text-align: center;
         }
         
-        .question {
+      .question {
           font-weight: bold;
           margin-bottom: 10px;
         }
         
-        .options {
+     .options {
           margin-bottom: 20px;
         }
         
-        .option {
+      .option {
           display: block;
           margin-bottom: 10px;
         }
         
-        .button {
+      .button {
           display: inline-block;
           padding: 10px 20px;
           background-color: #428bca;
