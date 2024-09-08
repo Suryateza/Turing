@@ -1,148 +1,171 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>CoinFlip</title>
-    <style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coin Flip Game</title>
+     <style>/* Import fonts */
         @import url('https://fonts.googleapis.com/css2?family=Balsamiq+Sans&family=Josefin+Sans:wght@300&family=Kalam&family=Montserrat:wght@100&display=swap');
-
+        
         * {
             padding: 0;
             margin: 0;
+            box-sizing: border-box;
             font-family: 'Balsamiq Sans', cursive;
             background-color: #E7F2F8;
         }
-
-        .title {
-            width: 100%;
-            font-size: 55px;
+        
+        .container {
+            width: 80%;
+            margin: 0 auto;
             text-align: center;
-            padding-top: 80px;
         }
-
-        .position {
+        
+        .title {
+            font-size: 55px;
+            margin-top: 50px;
+            color: #333;
+        }
+        
+        .coin-container {
+            margin: 20px auto;
+            width: 150px;
+            height: 150px;
+            position: relative;
+            perspective: 1000px; /* Add perspective for 3D effect */
+        }
+        
+        .coin {
             width: 100%;
-            display: flex;
-            justify-content: center;
-            margin-top: 40px;
+            height: 100%;
+            background: url('head.jpg') no-repeat center center;
+            background-size: cover;
+            transition: transform 0.5s ease, background-image 0.5s ease;
+            transform-style: preserve-3d; /* Enable 3D transformations */
         }
-
+        
+        .buttons {
+            margin: 20px 0;
+        }
+        
         .button {
-            width: 100px;
+            width: 120px;
             height: 50px;
             font-size: 20px;
             text-align: center;
             border: 2px solid #74BDCB;
             border-radius: 25px;
             cursor: pointer;
-            -webkit-touch-callout: none;
-            -webkit-user-select: none;
-            -khtml-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
-            user-select: none;
-            transition: 0.3s ease 0s;
-            margin-right: 10px;
+            background-color: #E7F2F8;
+            margin: 0 10px;
+            transition: background-color 0.3s ease;
         }
-
-        .button p {
-            margin-top: 13px;
-            background-color: transparent;
-        }
-
+        
         .button:hover {
             background-color: #74BDCB;
         }
-
+        
         .button:active {
             background-color: #5885AF;
-            transition: none;
         }
-
-        .reset {
-            width: 100px;
-            height: 50px;
-            font-size: 20px;
-            text-align: center;
-            border: 2px solid #74BDCB;
-            border-radius: 25px;
-            cursor: pointer;
-            -webkit-touch-callout: none;
-            -webkit-user-select: none;
-            -khtml-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
-            user-select: none;
-            transition: 0.3s ease 0s;
-            margin-left: 10px;
-        }
-
-        .reset p {
-            margin-top: 13px;
-            background-color: transparent;
-        }
-
-        .reset:hover {
-            background-color: #74BDCB;
-        }
-
-        .reset:active {
-            background-color: #5885AF;
-            transition: none;
-        }
-
+        
         .display {
-            width: 100%;
-            text-align: center;
             font-size: 20px;
-            margin-top: 40px;
-            height: auto;
-            line-height: 25px;
+            margin: 20px 0;
         }
-    </style>
+        
+        .history, .rewards {
+            margin-top: 30px;
+            font-size: 20px;
+        }
+        
+        ul {
+            list-style-type: none;
+        }
+        
+        ul li {
+            margin: 5px 0;
+        }
+        
+        .coin-flip {
+            margin-top: 20px;
+        }
+        </style>
 </head>
 <body>
-    <p class="title">CoinFlip</p>
-    <div class="position">
-        <div class="button">
-            <p>Roll!</p>
+    <div class="container">
+        <h1 class="title">Coin Flip Game</h1>
+        <div class="coin-container">
+            <div class="coin" id="coin"></div>
         </div>
-        <div class="reset">
-            <p>Reset</p>
+        <div class="buttons">
+            <button class="button" id="flip-button">Flip Coin</button>
+            <button class="button" id="reset-button">Reset</button>
+        </div>
+        <div class="display">
+            <p id="result">Flip the coin to get started!</p>
+        </div>
+        <div class="history">
+            <h2>Play History</h2>
+            <ul id="history-list"></ul>
+        </div>
+        <div class="rewards">
+            <h2>Rewards</h2>
+            <p id="rewards-count">Coins Collected: 0</p>
         </div>
     </div>
-    <div class="display">
-        <p></p>
-    </div>
-    <script>
-        const display = document.querySelector(".display");
-        const button = document.querySelector(".button");
-        const reset = document.querySelector(".reset");
-
-        let x = 0;
-        let text = [];
-        let count = 0;
-
-        function randomNum() {
-            x = Math.random() * 2;
-            x = Math.floor(x);
-            console.log(x);
-            if (x == 0) {
-                text[count] = "Heads<br>";
-            } else {
-                text[count] = "Tails<br>";
-            }
-            display.innerHTML = text.join(" ");
-            count++;
+    <script> const resultElement = document.getElementById('result');
+        const coinElement = document.getElementById('coin');
+        const flipButton = document.getElementById('flip-button');
+        const resetButton = document.getElementById('reset-button');
+        const historyList = document.getElementById('history-list');
+        const rewardsCount = document.getElementById('rewards-count');
+        
+        let flipHistory = [];
+        let rewards = 0;
+        const flipSound = new Audio('flip_Sound.mp3');
+        
+        function playSound() {
+            flipSound.play().catch(error => {
+                console.error('Audio playback failed:', error);
+            });
         }
-
-        function resetDisplay() {
-            display.innerHTML = " ";
-            text = [];
-            count = 0;
+        
+        function flipCoin() {
+            playSound();
+            const isHeads = Math.random() < 0.5;
+            const result = isHeads ? 'Heads' : 'Tails';
+            const coinImage = isHeads ? 'head.jpg' : 'tail.jpg';
+            
+            coinElement.style.backgroundImage = `url(${coinImage})`;
+            coinElement.style.transform = `rotateY(${Math.random() * 720}deg)`;
+            
+            resultElement.innerHTML = `Result: ${result}`;
+            flipHistory.push(result);
+            updateHistory();
+            updateRewards();
         }
-
-        button.addEventListener("click", randomNum);
-        reset.addEventListener("click", resetDisplay);
-    </script>
+        
+        function resetGame() {
+            coinElement.style.backgroundImage = 'url(head.jpg)';
+            resultElement.innerHTML = 'Flip the coin to get started!';
+            flipHistory = [];
+            rewards = 0;
+            updateHistory();
+            updateRewards();
+        }
+        
+        function updateHistory() {
+            historyList.innerHTML = flipHistory.map(result => `<li>${result}</li>`).join('');
+        }
+        
+        function updateRewards() {
+            rewards += 1;
+            rewardsCount.innerHTML = `Coins Collected: ${rewards}`;
+        }
+        
+        flipButton.addEventListener('click', flipCoin);
+        resetButton.addEventListener('click', resetGame);
+        </script>
 </body>
 </html>
