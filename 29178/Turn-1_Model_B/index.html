@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Maze Game</title>
+<style>
+    #maze {
+        display: table;
+        border-collapse: collapse;
+    }
+    .cell {
+        width: 20px;
+        height: 20px;
+        display: table-cell;
+        border: 1px solid #eee;
+    }
+    .wall {
+        background-color: black;
+    }
+    .player {
+        background-color: red;
+        border-radius: 50%;
+    }
+    .path {
+        background-color: white;
+    }
+</style>
+</head>
+<body>
+<div id="maze"></div>
+<script>
+// Maze generation and game logic
+const width = 20;
+const height = 20;
+let maze = [];
+let player = {x: 1, y: 1};
+
+// Initialize maze with walls
+for(let y = 0; y < height; y++) {
+    maze[y] = [];
+    for(let x = 0; x < width; x++) {
+        maze[y][x] = 1; // 1 for wall, 0 for path
+    }
+}
+
+// Recursive backtracker for maze generation
+function carvePath(x, y) {
+    const directions = [[0, 1], [1, 0], [0, -1], [-1, 0]];
+    directions.sort(() => Math.random() - 0.5);
+
+    for (let dir of directions) {
+        const nx = x + dir[0] * 2, ny = y + dir[1] * 2;
+        if (nx > 0 && ny > 0 && nx < width - 1 && ny < height - 1 && maze[ny][nx] === 1) {
+            maze[y + dir[1]][x + dir[0]] = 0; // Carve path between cells
+            maze[ny][nx] = 0; // Carve the new cell
+            carvePath(nx, ny);
+        }
+    }
+}
+
+// Start carving from (1,1)
+carvePath(1, 1);
+
+// Draw maze
+function drawMaze() {
+    const mazeDiv = document.getElementById('maze');
+    mazeDiv.innerHTML = '';
+    for(let y = 0; y < height; y++) {
+        for(let x = 0; x < width; x++) {
+            const cell = document.createElement('div');
+            cell.className = `cell ${(maze[y][x] ? 'wall' : 'path')}`;
+            if(x === player.x && y === player.y) cell.classList.add('player');
+            mazeDiv.appendChild(cell);
+        }
+    }
+}
+
+// Movement and collision detection
+function movePlayer(dx, dy) {
+    const newX = player.x + dx;
+    const newY = player.y + dy;
+    
+    if (newX >= 0 && newY >= 0 && newX < width && newY < height && maze[newY][newX] === 0) {
+        player.x = newX;
+        player.y = newY;
+        drawMaze();
+    }
+}
+
+// Key events
+document.onkeydown = function(e) {
+    switch (e.keyCode) {
+        case 37: movePlayer(-1, 0); break; // Left
+        case 38: movePlayer(0, -1); break; // Up
+        case 39: movePlayer(1, 0); break; // Right
+        case 40: movePlayer(0, 1); break; // Down
+    }
+};
+
+// Initial draw
+drawMaze();
+</script>
+</body>
+</html>
