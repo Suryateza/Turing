@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css" />
+  <style>
+    @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@200;400&display=swap");
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      background-color: #7bdaf3;
+      font-family: "Poppins", sans-serif;
+      display: flex;
+      flex-wrap: wrap;
+      margin: 0;
+      padding-top: 3rem;
+    }
+
+    .dark-mode {
+      background-color: #2c2c2c;
+      color: white;
+    }
+
+    .add {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      background-color: #9ec862;
+      color: #fff;
+      border: none;
+      border-radius: 3px;
+      padding: 0.5rem 1rem;
+      cursor: pointer;
+    }
+
+    .toggle-mode {
+      position: fixed;
+      top: 1rem;
+      left: 1rem;
+      background-color: #444;
+      color: white;
+      padding: 0.5rem;
+      cursor: pointer;
+    }
+
+    .note {
+      background-color: #fff;
+      box-shadow: 0 0 10px 4px rgba(0, 0, 0, 0.1);
+      margin: 30px 20px;
+      height: 400px;
+      width: 400px;
+      overflow-y: scroll;
+      position: relative;
+    }
+
+    .note .tools {
+      background-color: #9ec862;
+      display: flex;
+      justify-content: flex-end;
+      padding: 0.5rem;
+    }
+
+    .note .tools button {
+      background-color: transparent;
+      border: none;
+      color: #fff;
+      cursor: pointer;
+      font-size: 1rem;
+      margin-left: 0.5rem;
+    }
+
+    .note textarea {
+      outline: none;
+      font-family: inherit;
+      font-size: 1.2rem;
+      border: none;
+      height: 300px;
+      width: 100%;
+      padding: 20px;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .title {
+      font-weight: bold;
+      font-size: 1.4rem;
+      text-align: center;
+      padding: 0.5rem;
+    }
+
+    .timestamp {
+      position: absolute;
+      bottom: 5px;
+      right: 10px;
+      font-size: 0.8rem;
+      color: gray;
+    }
+
+    .character-count {
+      position: absolute;
+      bottom: 5px;
+      left: 10px;
+      font-size: 0.8rem;
+      color: gray;
+    }
+
+    .pinned {
+      border-left: 4px solid gold;
+    }
+
+    .search-bar {
+      position: fixed;
+      top: 1rem;
+      left: 10rem;
+      padding: 0.5rem;
+    }
+
+    .color-picker {
+      margin-left: 0.5rem;
+      padding: 0.5rem;
+    }
+
+    .archive-section {
+      margin: 20px;
+    }
+
+    .archive-section h2 {
+      margin-bottom: 10px;
+    }
+
+  </style>
+  <title>Enhanced Notes App</title>
+</head>
+<body>
+
+  <button class="toggle-mode" id="toggleMode">Dark Mode</button>
+  <input class="search-bar" type="text" placeholder="Search notes" id="searchBar">
+  <button class="add" id="add"><i class="fas fa-plus"></i> Add note</button>
+
+  <div class="archive-section">
+    <h2>Archived Notes</h2>
+    <div id="archivedNotes"></div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/1.2.7/marked.min.js"></script>
+  <script>
+    const addButton = document.getElementById("add");
+    const searchBar = document.getElementById("searchBar");
+    const archivedNotesDiv = document.getElementById("archivedNotes");
+    const toggleModeButton = document.getElementById("toggleMode");
+
+    let notes = JSON.parse(localStorage.getItem("notes")) || [];
+    let archivedNotes = JSON.parse(localStorage.getItem("archivedNotes")) || [];
+    let darkMode = localStorage.getItem("darkMode") === "true";
+
+    const updateLocalStorage = () => {
+      const notesText = document.querySelectorAll("textarea");
+      const notesData = [];
+
+      notesText.forEach(note => {
+        const title = note.previousElementSibling.value;
+        const color = note.parentElement.style.backgroundColor;
+        const timestamp = new Date().toLocaleString();
+        const pinned = note.parentElement.classList.contains('pinned');
+        notesData.push({ title, content: note.value, color, timestamp, pinned });
+      });
+
+      localStorage.setItem("notes", JSON.stringify(notesData));
+    };
+
+    const updateArchivedStorage = () => {
+      localStorage.setItem("archivedNotes", JSON.stringify(archivedNotes));
+    };
+
+    const addNewNote = (text = "", title = "", color = "#fff", timestamp = "", pinned = false, archived = false) => {
+      const note = document.createElement("div");
+      note.classList.add("note");
+      if (pinned) note.classList.add("pinned");
+      note.style.backgroundColor = color;
+
+      note.innerHTML = `
+        <div class="tools">
+          <button class="pin"><i class="fas fa-thumbtack"></i></button>
+          <input type="color" class="color-picker" value="${color}" />
+          <button class="edit"><i class="fas fa-edit"></i></button>
+          <button class="delete"><i class="fas fa-trash-alt"></i></button>
+          <button class="archive"><i class="fas fa-archive"></i></button>
+        </div>
+        <input type="text" class="title" value="${title}" placeholder="Title" />
+        <div class="main ${text ? "" : "hidden"}"></div>
+        <textarea class="${text ? "hidden" : ""}" maxlength="100"></textarea>
+        <div class="timestamp">${timestamp ? timestamp : new Date().toLocaleString()}</div>
+        <div class="character-count">Characters: 0 / 100</div>`;
+
+      const pinButton = note.querySelector(".pin");
+      const editButton = note.querySelector(".edit");
+      const deleteButton = note.querySelector(".delete");
+      const archiveButton = note.querySelector(".archive");
+      const colorPicker = note.querySelector(".color-picker");
+      const main = note.querySelector(".main");
+      const textArea = note.querySelector("textarea");
+      const titleInput = note.querySelector(".title");
+      const characterCount = note.querySelector(".character-count");
+
+      textArea.value = text;
+      main.innerHTML = marked(text);
+      characterCount.textContent = `Characters: ${textArea.value.length} / 100`;
+
+      pinButton.addEventListener("click", () => {
+        note.classList.toggle("pinned");
+        updateLocalStorage();
+      });
+
+      deleteButton.addEventListener("click", () => {
+        note.remove();
+        updateLocalStorage();
+      });
+
+      editButton.addEventListener("click", () => {
+        main.classList.toggle("hidden");
+        textArea.classList.toggle("hidden");
+      });
+
+      textArea.addEventListener("input", (e) => {
+        const { value } = e.target;
+        main.innerHTML = marked(value);
+        characterCount.textContent = `Characters: ${value.length} / 100`;
+        updateLocalStorage();
+      });
+
+      colorPicker.addEventListener("input", (e) => {
+        const { value } = e.target;
+        note.style.backgroundColor = value;
+        updateLocalStorage();
+      });
+
+      archiveButton.addEventListener("click", () => {
+        archivedNotes.push({ title: titleInput.value, content: textArea.value, color: note.style.backgroundColor, timestamp: new Date().toLocaleString() });
+        note.remove();
+        updateLocalStorage();
+        updateArchivedStorage();
+        displayArchivedNotes();
+      });
+
+      document.body.appendChild(note);
+      updateLocalStorage();
+    };
+
+    const displayArchivedNotes = () => {
+      archivedNotesDiv.innerHTML = "";
+      archivedNotes.forEach((archivedNote) => {
+        const archivedNoteDiv = document.createElement("div");
+        archivedNoteDiv.classList.add("note");
+        archivedNoteDiv.style.backgroundColor = archivedNote.color;
+
+        archivedNoteDiv.innerHTML = `
+          <div class="tools">
+            <button class="unarchive"><i class="fas fa-arrow-up"></i></button>
+            <button class="delete"><i class="fas fa-trash-alt"></i></button>
+          </div>
+          <input type="text" class="title" value="${archivedNote.title}" readonly />
+          <div class="main">${marked(archivedNote.content)}</div>
+          <div class="timestamp">${archivedNote.timestamp}</div>`;
+
+        const unarchiveButton = archivedNoteDiv.querySelector(".unarchive");
+        const deleteButton = archivedNoteDiv.querySelector(".delete");
+
+        unarchiveButton.addEventListener("click", () => {
+          archivedNotes = archivedNotes.filter(note => note !== archivedNote);
+          addNewNote(archivedNote.content, archivedNote.title, archivedNote.color, archivedNote.timestamp);
+          updateArchivedStorage();
+        });
+
+        deleteButton.addEventListener("click", () => {
+          archivedNotes = archivedNotes.filter(note => note !== archivedNote);
+          archivedNoteDiv.remove();
+          updateArchivedStorage();
+        });
+
+        archivedNotesDiv.appendChild(archivedNoteDiv);
+      });
+    };
+
+    addButton.addEventListener("click", () => addNewNote());
+
+    searchBar.addEventListener("input", (e) => {
+      const value = e.target.value.toLowerCase();
+      document.querySelectorAll(".note").forEach(note => {
+        const title = note.querySelector(".title").value.toLowerCase();
+        const content = note.querySelector("textarea").value.toLowerCase();
+        note.style.display = title.includes(value) || content.includes(value) ? "block" : "none";
+      });
+    });
+
+    toggleModeButton.addEventListener("click", () => {
+      document.body.classList.toggle("dark-mode");
+      darkMode = !darkMode;
+      localStorage.setItem("darkMode", darkMode);
+    });
+
+    if (darkMode) document.body.classList.add("dark-mode");
+
+    notes.forEach(note => addNewNote(note.content, note.title, note.color, note.timestamp, note.pinned));
+    displayArchivedNotes();
+  </script>
+</body>
+</html>

@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Simple Note Taking App</title>
+<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+<style>
+    body { padding: 20px; }
+    .note { margin: 10px 0; padding: 10px; background: #f9f9f9; border-left: 5px solid #007bff; }
+    .note button { margin: 5px; }
+</style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Notes App</h1>
+    
+    <!-- Search Input -->
+    <input type="text" id="searchInput" class="form-control mb-3" placeholder="Search notes...">
+
+    <!-- Note Input -->
+    <div class="input-group mb-3">
+        <input type="text" id="noteInput" class="form-control" placeholder="Enter a new note">
+        <div class="input-group-append">
+            <button class="btn btn-primary" onclick="addNote()">Add Note</button>
+        </div>
+    </div>
+
+    <!-- Notes Display -->
+    <div id="notesContainer"></div>
+</div>
+
+<script>
+// JavaScript for Note App functionality
+
+// Store notes in localStorage
+let notes = JSON.parse(localStorage.getItem('notes') || '[]');
+
+function saveNotes() {
+    localStorage.setItem('notes', JSON.stringify(notes));
+}
+
+function renderNotes() {
+    const notesContainer = document.getElementById('notesContainer');
+    notesContainer.innerHTML = '';
+    notes.forEach((note, index) => {
+        const noteElement = document.createElement('div');
+        noteElement.className = 'note';
+        noteElement.innerHTML = `
+            <p>${note.text}</p>
+            <button class="btn btn-info btn-sm" onclick="editNote(${index})">Edit</button>
+            <button class="btn btn-danger btn-sm" onclick="deleteNote(${index})">Delete</button>
+        `;
+        notesContainer.appendChild(noteElement);
+    });
+}
+
+function addNote() {
+    const noteText = document.getElementById('noteInput').value;
+    if (noteText) {
+        notes.push({text: noteText});
+        saveNotes();
+        renderNotes();
+        document.getElementById('noteInput').value = '';
+    }
+}
+
+function editNote(index) {
+    const newText = prompt("Edit your note:", notes[index].text);
+    if (newText !== null) {
+        notes[index].text = newText;
+        saveNotes();
+        renderNotes();
+    }
+}
+
+function deleteNote(index) {
+    notes.splice(index, 1);
+    saveNotes();
+    renderNotes();
+}
+
+function searchNotes() {
+    const searchText = document.getElementById('searchInput').value.toLowerCase();
+    const filteredNotes = notes.filter(note => note.text.toLowerCase().includes(searchText));
+    // Temporarily update the notes array for display
+    const tempNotes = notes;
+    notes = filteredNotes;
+    renderNotes();
+    // Restore original notes array
+    notes = tempNotes;
+}
+
+// Event listener for search
+document.getElementById('searchInput').addEventListener('input', searchNotes);
+
+// Initial render
+renderNotes();
+</script>
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
+</body>
+</html>
