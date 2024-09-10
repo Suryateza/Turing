@@ -1,172 +1,121 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hotel Booking App</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css">
-    <style>
-        body {
-            font-family: 'Arial', sans-serif;
-            background-color: #f4f4f9;
-        }
-        .container {
-            max-width: 1200px;
-        }
-        .card {
-            margin-bottom: 20px;
-            transition: transform .2s;
-        }
-        .card:hover {
-            transform: scale(1.05);
-        }
-        .filter-form, .booking-form {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .price-range {
-            width: 100%;
-        }
-        .btn-primary {
-            background-color: #007bff;
-            border: none;
-        }
-        .btn-primary:hover {
-            background-color: #0056b3;
-        }
-        @media (max-width: 768px) {
-            .card {
-                margin-bottom: 15px;
-            }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GameDev Task Scheduler</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+<style>
+body { font-family: 'Arial', sans-serif; background: linear-gradient(to right, #f0f0f0, #e0e0e0); margin: 0; padding: 0; }
+header { background: #2c3e50; color: white; padding: 15px 0; text-align: center; }
+.task-container { display: flex; justify-content: space-around; padding: 20px; }
+.task-list { background: #fff; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); width: 70%; padding: 20px; }
+.task-item { background: #ecf0f1; margin: 10px 0; padding: 15px; border-left: 5px solid #3498db; cursor: move; transition: transform 0.3s; }
+.task-item:hover { transform: scale(1.02); }
+.controls, .filters { margin-top: 20px; }
+button { background: #3498db; border: none; color: white; padding: 10px 15px; cursor: pointer; }
+button:hover { background: #2980b9; }
+.progress-bar { width: 20%; background: #fff; padding: 20px; border-radius: 8px; }
+@media (max-width: 768px) {
+    .task-container { flex-direction: column; }
+    .task-list, .progress-bar { width: 90%; margin: 10px auto; }
+}
+</style>
 </head>
 <body>
 
-<div class="container mt-4">
-    <h1 class="text-center mb-4">Hotel Booking</h1>
+<header>
+    <h1>GameDev Task Scheduler</h1>
+</header>
 
-    <!-- Search and Filter Form -->
-    <div class="filter-form mb-4">
-        <form id="searchFilterForm">
-            <div class="form-row">
-                <div class="col-md-3">
-                    <label for="checkIn">Check-In</label>
-                    <input type="date" id="checkIn" class="form-control" required>
-                </div>
-                <div class="col-md-3">
-                    <label for="checkOut">Check-Out</label>
-                    <input type="date" id="checkOut" class="form-control" required>
-                </div>
-                <div class="col-md-2">
-                    <label for="priceRange">Price</label>
-                    <input type="range" class="form-control-range price-range" id="priceRange" min="0" max="500" value="250" oninput="this.nextElementSibling.value = this.value">
-                    <output>250</output>
-                </div>
-                <div class="col-md-2">
-                    <label for="bedType">Bed Type</label>
-                    <select id="bedType" class="form-control">
-                        <option value="">Any</option>
-                        <option>Single</option>
-                        <option>Double</option>
-                        <option>Queen</option>
-                        <option>King</option>
-                    </select>
-                </div>
-                <div class="col-md-2 mt-4">
-                    <button type="submit" class="btn btn-primary w-100">Search</button>
-                </div>
-            </div>
-        </form>
+<div class="task-container">
+    <div class="task-list" id="taskList">
+        <!-- Tasks will be dynamically added here -->
     </div>
 
-    <!-- Room Listings -->
-    <div id="roomListings" class="row"></div>
-
-    <!-- Booking Form (Hidden by default) -->
-    <div id="bookingForm" class="booking-form" style="display: none;">
-        <h3>Book Your Room</h3>
-        <form id="bookRoomForm">
-            <!-- Form fields for booking would go here -->
-            <button type="submit" class="btn btn-success">Confirm Booking</button>
-        </form>
+    <div class="progress-bar">
+        <h3>Progress</h3>
+        <div id="gameProgress">Level: 1 - XP: 0/100</div>
+        <!-- Progress visualization will be added here -->
     </div>
-
-    <!-- Booking Summary (Hidden by default) -->
-    <div id="bookingSummary" class="mt-3" style="display: none;"></div>
 </div>
 
+<div class="controls">
+    <button onclick="addTask()">Add Task</button>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.14.0/Sortable.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', (event) => {
-    const rooms = [
-        {id: 1, name: "Luxury Suite", price: 300, bedType: "King", amenities: ["Balcony", "Sea View"], available: true},
-        {id: 2, name: "Standard Room", price: 150, bedType: "Double", amenities: ["WiFi"], available: true},
-        // Add more rooms as needed
-    ];
+    let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+    const taskList = document.getElementById('taskList');
 
-    const searchFilterForm = document.getElementById('searchFilterForm');
-    const roomListings = document.getElementById('roomListings');
-    const bookingForm = document.getElementById('bookingForm');
-    const bookRoomForm = document.getElementById('bookRoomForm');
-    const bookingSummary = document.getElementById('bookingSummary');
+    function saveTasks() {
+        localStorage.setItem('tasks', JSON.stringify(tasks));
+    }
 
-    function displayRooms(roomsToDisplay) {
-        roomListings.innerHTML = '';
-        roomsToDisplay.forEach(room => {
-            if (room.available) {
-                const roomCard = `
-                <div class="col-md-4">
-                    <div class="card">
-                        <img src="room.jpg" class="card-img-top" alt="<INLINE_MATH>{room.name}">
-                        <div class="card-body">
-                            <h5 class="card-title"></INLINE_MATH>${room.name}</h5>
-                            <p class="card-text">Price: $${room.price}/night</p>
-                            <p>Bed: <INLINE_MATH>{room.bedType}</p>
-                            <button onclick="showBookingForm(</INLINE_MATH>{room.id})" class="btn btn-primary">Book Now</button>
-                        </div>
-                    </div>
-                </div>`;
-                roomListings.innerHTML += roomCard;
+    function renderTasks() {
+        taskList.innerHTML = '';
+        tasks.forEach((task, index) => {
+            const taskDiv = document.createElement('div');
+            taskDiv.className = 'task-item';
+            taskDiv.draggable = true;
+            taskDiv.innerHTML = `
+                <h3>${task.title}</h3>
+                <p>${task.description}</p>
+                <small>Deadline: ${task.deadline} - Priority: ${task.priority}</small>
+                <button onclick="editTask(${index})">Edit</button>
+                <button onclick="deleteTask(${index})">Delete</button>
+            `;
+            taskList.appendChild(taskDiv);
+        });
+
+        new Sortable(taskList, {
+            animation: 150,
+            onEnd: (evt) => {
+                const itemEl = evt.item;  // dragged HTMLElement
+                tasks.splice(evt.newIndex, 0, tasks.splice(evt.oldIndex, 1)[0]);
+                saveTasks();
             }
         });
     }
 
-    function filterRooms(formData) {
-        let filteredRooms = rooms;
-        if (formData.get('checkIn') && formData.get('checkOut')) {
-            // Here you would check availability based on check-in and check-out dates
-            // For simplicity, let's assume all rooms are available within the date range
+    function addTask() {
+        const title = prompt("Task Title:");
+        if (title) {
+            tasks.push({
+                title: title,
+                description: prompt("Description:") || "",
+                deadline: prompt("Deadline (YYYY-MM-DD):") || "No deadline",
+                priority: prompt("Priority (1-5):") || "3"
+            });
+            saveTasks();
+            renderTasks();
         }
-        const price = formData.get('priceRange');
-        const bedType = formData.get('bedType');
-        filteredRooms = filteredRooms.filter(room => 
-            room.price <= price && (bedType === '' || room.bedType === bedType)
-        );
-        displayRooms(filteredRooms);
     }
 
-    searchFilterForm.addEventListener('submit', function(e) {
-        e.preventDefault();
-        const formData = new FormData(this);
-        filterRooms(formData);
-    });
-
-    function showBookingForm(roomId) {
-        bookingForm.style.display = 'block';
-        // Here you would pre-fill the form with room details
-        bookRoomForm.onsubmit = function(e) {
-            e.preventDefault();
-            // Handle booking logic here, for now just show summary
-            bookingSummary.innerHTML = `Booking confirmed for Room ID: ${roomId}`;
-            bookingSummary.style.display = 'block';
-            bookingForm.style.display = 'none';
-        };
+    function editTask(index) {
+        const task = tasks[index];
+        const newTitle = prompt("New Task Title:", task.title);
+        if (newTitle !== null) {
+            task.title = newTitle;
+            task.description = prompt("New Description:", task.description) || task.description;
+            task.deadline = prompt("New Deadline (YYYY-MM-DD):", task.deadline) || task.deadline;
+            task.priority = prompt("New Priority (1-5):", task.priority) || task.priority;
+            saveTasks();
+            renderTasks();
+        }
     }
 
-    // Initial display of all rooms
-    displayRooms(rooms);
+    function deleteTask(index) {
+        if (confirm("Are you sure you want to delete this task?")) {
+            tasks.splice(index, 1);
+            saveTasks();
+            renderTasks();
+        }
+    }
+
+    renderTasks();
 });
 </script>
 
