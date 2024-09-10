@@ -1,86 +1,95 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Head or Tail Game</title>
-<style>
-    body {
-        font-family: 'Arial', sans-serif;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-        background-color: #f0f0f0;
-        margin: 0;
-    }
-    #game-container {
-        text-align: center;
-        background: #fff;
-        padding: 20px;
-        border-radius: 10px;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    }
-    #coin {
-        width: 100px;
-        height: 100px;
-        margin: 20px auto;
-        background: url('coin.png') no-repeat center; /* Assume we have a coin image */
-        background-size: contain;
-        transform-style: preserve-3d;
-    }
-    #flip-button {
-        padding: 10px 20px;
-        font-size: 16px;
-        cursor: pointer;
-        background-color: #28a745;
-        color: white;
-        border: none;
-        border-radius: 5px;
-        transition: background-color 0.3s;
-    }
-    #flip-button:hover {
-        background-color: #218838;
-    }
-    #result {
-        margin-top: 20px;
-        font-size: 24px;
-        font-weight: bold;
-    }
-    .spin {
-        animation: flip 0.5s linear;
-    }
-    @keyframes flip {
-        0% { transform: rotateY(0deg); }
-        100% { transform: rotateY(1800deg); }
-    }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Typing Speed Test</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+   <style>body {
+    background-color: #f8f9fa;
+}
+
+#paragraph {
+    background: white;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 18px;
+}
+
+#userInput {
+    resize: none;
+}
+
+#results {
+    font-weight: bold;
+}</style>
 </head>
 <body>
-<div id="game-container">
-    <div id="coin"></div>
-    <button id="flip-button">Flip Coin</button>
-    <div id="result"></div>
-</div>
-
-<script>
-document.getElementById('flip-button').addEventListener('click', function() {
-    const coin = document.getElementById('coin');
-    const resultDiv = document.getElementById('result');
-    
-    // Start spinning animation
-    coin.classList.add('spin');
-    
-    // Simulate flip delay
-    setTimeout(() => {
-        const sides = ['Head', 'Tail'];
-        const result = sides[Math.floor(Math.random() * sides.length)];
+    <div class="container mt-5">
+        <h1>Typing Speed Test</h1>
+        <div id="paragraph" class="mb-3"></div>
+        <textarea id="userInput" rows="5" class="form-control" placeholder="Start typing here..."></textarea>
+        <button id="startBtn" class="btn btn-primary mt-2">Start Test</button>
+        <div id="results" class="mt-3"></div>
+    </div>
+    <script>document.addEventListener('DOMContentLoaded', function() {
+        const paragraph = document.getElementById('paragraph');
+        const userInput = document.getElementById('userInput');
+        const startBtn = document.getElementById('startBtn');
+        const results = document.getElementById('results');
         
-        // Stop spinning and show result
-        coin.classList.remove('spin');
-        resultDiv.textContent = result;
-    }, 500); // Match this with the animation duration
-});
-</script>
+        const sampleParagraphs = [
+            "The quick brown fox jumps over the lazy dog. This sentence contains every letter of the alphabet.",
+            "How razorback-jumping frogs can level six piqued gymnasts!",
+            "Pack my box with five dozen liquor jugs."
+        ];
+        
+        let startTime, endTime, correctWords = 0;
+    
+        function chooseParagraph() {
+            return sampleParagraphs[Math.floor(Math.random() * sampleParagraphs.length)];
+        }
+    
+        function startTest() {
+            userInput.disabled = false;
+            userInput.value = '';
+            paragraph.textContent = chooseParagraph();
+            userInput.focus();
+            startTime = new Date();
+            results.innerHTML = '';
+        }
+    
+        function endTest() {
+            endTime = new Date();
+            const timeTaken = (endTime - startTime) / 1000; // in seconds
+            const words = userInput.value.split(' ').filter(word => word.length > 0);
+            const originalWords = paragraph.textContent.split(' ');
+            
+            correctWords = words.reduce((acc, word, index) => {
+                if (word === originalWords[index]) return acc + 1;
+                return acc;
+            }, 0);
+    
+            const wpm = (words.length / timeTaken) * 60;
+            const accuracy = (correctWords / words.length) * 100 || 0;
+    
+            results.innerHTML = `WPM: ${wpm.toFixed(2)} | Accuracy: ${accuracy.toFixed(2)}%`;
+        }
+    
+        userInput.addEventListener('input', function() {
+            if (!startTime) return;
+            if (userInput.value.trim() === paragraph.textContent) {
+                endTest();
+                userInput.disabled = true;
+            }
+        });
+    
+        startBtn.addEventListener('click', startTest);
+    
+        // Initial state
+        startTest();
+        userInput.disabled = true;
+    });</script>
 </body>
 </html>
