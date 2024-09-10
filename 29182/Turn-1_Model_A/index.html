@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Typing Speed Test</title>
+    <style>body {
+        font-family: 'Arial', sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background-color: #f0f0f0;
+        margin: 0;
+    }
+    
+    .container {
+        text-align: center;
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    
+    #quoteDisplay {
+        margin: 20px 0;
+        font-size: 1.2em;
+        min-height: 100px;
+    }
+    
+    #textInput {
+        width: 100%;
+        height: 100px;
+        padding: 10px;
+        box-sizing: border-box;
+    }
+    
+    #results {
+        margin-top: 20px;
+    }
+    
+    button {
+        margin-top: 10px;
+        padding: 10px 20px;
+        cursor: pointer;
+    }</style>
+<body>
+    <div class="container">
+        <h1>Typing Speed Test</h1>
+        <p id="quoteDisplay"></p>
+        <textarea id="textInput" placeholder="Start typing here when ready..."></textarea>
+        <button id="startBtn">Start</button>
+        <div id="results">
+            <p id="wpm">WPM: </p>
+            <p id="accuracy">Accuracy: </p>
+        </div>
+    </div>
+    <script>const word = document.getElementById('word');
+        const text = document.getElementById('text');
+        const scoreEl = document.getElementById('score');
+        const timeEl = document.getElementById('time');
+        const endgameEl = document.getElementById('end-game-container');
+        const settingsBtn = document.getElementById('settings-btn');
+        const settings = document.getElementById('settings');
+        const settingsForm = document.getElementById('settings-form');
+        const difficultySelect = document.getElementById('difficulty');
+        
+        // List of words for game
+        const words = [
+          'sigh',
+          'tense',
+          'airplane',
+          'ball',
+          'pies',
+          'juice',
+          'warlike',
+          'bad',
+          'north',
+          'dependent',
+          'steer',
+          'silver',
+          'highfalutin',
+          'superficial',
+          'quince',
+          'eight',
+          'feeble',
+          'admit',
+          'drag',
+          'loving'
+        ];
+        
+        // Init word
+        let randomWord;
+        
+        // Init score
+        let score = 0;
+        
+        // Init time
+        let time = 10;
+        
+        // Set difficulty to value in ls or medium
+        let difficulty =
+          localStorage.getItem('difficulty') !== null
+            ? localStorage.getItem('difficulty')
+            : 'medium';
+        
+        // Set difficulty select value
+        difficultySelect.value =
+          localStorage.getItem('difficulty') !== null
+            ? localStorage.getItem('difficulty')
+            : 'medium';
+        
+        // Focus on text on start
+        text.focus();
+        
+        // Start counting down
+        const timeInterval = setInterval(updateTime, 1000);
+        
+        // Generate random word from array
+        function getRandomWord() {
+          return words[Math.floor(Math.random() * words.length)];
+        }
+        
+        // Add word to DOM
+        function addWordToDOM() {
+          randomWord = getRandomWord();
+          word.innerHTML = randomWord;
+        }
+        
+        // Update score
+        function updateScore() {
+          score++;
+          scoreEl.innerHTML = score;
+        }
+        
+        // Update time
+        function updateTime() {
+          time--;
+          timeEl.innerHTML = time + 's';
+        
+          if (time === 0) {
+            clearInterval(timeInterval);
+            // end game
+            gameOver();
+          }
+        }
+        
+        // Game over, show end screen
+        function gameOver() {
+          endgameEl.innerHTML = `
+            <h1>Time ran out</h1>
+            <p>Your final score is ${score}</p>
+            <button onclick="location.reload()">Reload</button>
+          `;
+        
+          endgameEl.style.display = 'flex';
+        }
+        
+        addWordToDOM();
+        
+        // Event listeners
+        
+        // Typing
+        text.addEventListener('input', e => {
+          const insertedText = e.target.value;
+        
+          if (insertedText === randomWord) {
+            addWordToDOM();
+            updateScore();
+        
+            // Clear
+            e.target.value = '';
+        
+            if (difficulty === 'hard') {
+              time += 2;
+            } else if (difficulty === 'medium') {
+              time += 3;
+            } else {
+              time += 5;
+            }
+        
+            updateTime();
+          }
+        });
+        
+        // Settings btn click
+        settingsBtn.addEventListener('click', () => settings.classList.toggle('hide'));
+        
+        // Settings select
+        settingsForm.addEventListener('change', e => {
+          difficulty = e.target.value;
+          localStorage.setItem('difficulty', difficulty);
+        });
+        </script>
+</body>
+</html>

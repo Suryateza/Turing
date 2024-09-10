@@ -2,170 +2,521 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Coin Flip Game</title>
-     <style>/* Import fonts */
-        @import url('https://fonts.googleapis.com/css2?family=Balsamiq+Sans&family=Josefin+Sans:wght@300&family=Kalam&family=Montserrat:wght@100&display=swap');
-        
-        * {
-            padding: 0;
-            margin: 0;
-            box-sizing: border-box;
-            font-family: 'Balsamiq Sans', cursive;
-            background-color: #E7F2F8;
-        }
-        
-        .container {
-            width: 80%;
-            margin: 0 auto;
-            text-align: center;
-        }
-        
-        .title {
-            font-size: 55px;
-            margin-top: 50px;
-            color: #333;
-        }
-        
-        .coin-container {
-            margin: 20px auto;
-            width: 150px;
-            height: 150px;
-            position: relative;
-            perspective: 1000px; /* Add perspective for 3D effect */
-        }
-        
-        .coin {
-            width: 100%;
-            height: 100%;
-            background: url('head.jpg') no-repeat center center;
-            background-size: cover;
-            transition: transform 0.5s ease, background-image 0.5s ease;
-            transform-style: preserve-3d; /* Enable 3D transformations */
-        }
-        
-        .buttons {
-            margin: 20px 0;
-        }
-        
-        .button {
-            width: 120px;
-            height: 50px;
-            font-size: 20px;
-            text-align: center;
-            border: 2px solid #74BDCB;
-            border-radius: 25px;
-            cursor: pointer;
-            background-color: #E7F2F8;
-            margin: 0 10px;
-            transition: background-color 0.3s ease;
-        }
-        
-        .button:hover {
-            background-color: #74BDCB;
-        }
-        
-        .button:active {
-            background-color: #5885AF;
-        }
-        
-        .display {
-            font-size: 20px;
-            margin: 20px 0;
-        }
-        
-        .history, .rewards {
-            margin-top: 30px;
-            font-size: 20px;
-        }
-        
-        ul {
-            list-style-type: none;
-        }
-        
-        ul li {
-            margin: 5px 0;
-        }
-        
-        .coin-flip {
-            margin-top: 20px;
-        }
-        </style>
+   <style>.row {
+    display: grid;
+    grid-template-columns: repeat( auto-fit, minmax(33.33%, 1fr) );
+}
+
+.bank {
+    grid-column: span 1;
+    background-color: #DCDCDC;
+    border: solid;
+    margin: 5px;
+    padding: 100px;
+    border-radius:6px;
+    -moz-border-radius:6px;
+    border-color: #696969;
+}
+
+#bank_title {
+    color: 	#282828;
+}
+
+#balance_info {
+    display: grid;
+    background-color: #DCDCDC;
+    border: solid;
+    justify-content: center;
+    width: 280px;
+    padding: 5px;
+    border-radius:6px;
+    -moz-border-radius:6px;
+    border-color: #696969;
+}
+
+.enter_balance {
+    background: #F5F5F5;
+    border: 1px solid black;
+    border-radius: 5px;
+    padding: 2px;
+    margin: 5px;
+}
+
+#submit_balance {
+    background: #E4E1E1;
+    border: 1px solid black;
+    border-radius: 5px;
+}
+
+table {
+    border-collapse: separate;
+    border: solid black 1px;
+    border-radius: 6px;
+    -moz-border-radius: 6px;
+}
+
+td, th {
+    border-left:solid black 1px;
+    border-top:solid black 1px;
+}
+
+th {
+    background-color: #AEA7A7;
+    border-top: none;
+}
+
+td:first-child, th:first-child {
+     border-left: none;
+}
+
+.trans_type {
+    background: #E4E1E1;
+    border: 1px solid black;
+    border-radius: 5px;
+    padding: 2px;
+    margin: 5px;
+}
+
+.submit_trans {
+    background: #E4E1E1;
+    border: 1px solid black;
+    border-radius: 5px;
+    padding: 5px;
+    margin: 5px;
+    width: 67px;
+}
+
+.transaction {
+    background: #F5F5F5;
+    border: 1px solid black;
+    border-radius: 5px;
+}
+</style>
+    <title>Banking App</title>
 </head>
 <body>
-    <div class="container">
-        <h1 class="title">Coin Flip Game</h1>
-        <div class="coin-container">
-            <div class="coin" id="coin"></div>
+    <h1 id="bank_title">Banking App</h1>
+    <div id="balance_info">
+        <p>Please enter your starting balances below.</p>
+        <form id="balance_form">
+            Checking Balance:<br>
+            <input type="number" name="checking_balance" id="checking_balance" class="enter_balance"><br>
+            Savings Balance:<br>
+            <input type="number" name="savings_balance" id="savings_balance" class="enter_balance"><br><br>
+            <input type="button" value="Submit" id="submit_balance" form="balance_form">
+        </form>
+    </div>
+    <div class="row">
+        <div class="bank" id="checking_info">
+            <h2>Checking Account</h2>
+            <p id="current_checking_balance">Current Balance: </p>
+            <div id="enter_transaction">
+                <form id="transaction_form">
+                    Amount:<br>
+                    <input type="number" name="transaction_amount" id="transaction_amount" class="transaction"><br>
+                    <div id="desc">
+                        Description:<br>
+                        <input type="text" name="transaction_description" id="transaction_description" class="transaction"><br>
+                    </div>
+                    <select name="transaction_type" id="transaction_type" class="trans_type">
+                        <option value="Debit">Debit</option>
+                        <option value="Deposit">Deposit</option>
+                        <option value="Withdraw">Withdraw</option>
+                        <option value="Transfer">Transfer</option>
+                    </select>
+                    <input type="button" value="Submit" id="submit_transaction" form="transaction_form" class="submit_trans">
+                </form>
+                <br>
+            </div>
+            <table id="trans_table">
+                <tr class="top_of_table">
+                    <th>Transaction Type</th>
+                    <th>Descripton</th>
+                    <th>Amount</th>
+                    <th>Balance</th>
+                </tr>
+            </table>
         </div>
-        <div class="buttons">
-            <button class="button" id="flip-button">Flip Coin</button>
-            <button class="button" id="reset-button">Reset</button>
-        </div>
-        <div class="display">
-            <p id="result">Flip the coin to get started!</p>
-        </div>
-        <div class="history">
-            <h2>Play History</h2>
-            <ul id="history-list"></ul>
-        </div>
-        <div class="rewards">
-            <h2>Rewards</h2>
-            <p id="rewards-count">Coins Collected: 0</p>
+            <div class="bank" id="savings_info">
+            <h2>Savings Account</h2>
+            <p id="current_savings_balance">Current Balance: </p>
+            <div id="enter_transaction_savings">
+                <form id="transaction_form_savings">
+                    Amount:<br>
+                    <input type="number" name="transaction_amount" id="transaction_amount_savings" class="transaction"><br>
+                    <select name="transaction_type" id="transaction_type_savings" class="trans_type">
+                        <option value="Deposit">Deposit</option>
+                        <option value="Withdraw">Withdraw</option>
+                        <option value="Transfer">Transfer</option>
+                    </select>
+                    <input type="button" value="Submit" id="submit_transaction_savings" form="transaction_form" class="submit_trans">
+                </form>
+                <br>
+            </div>
+            <table id="trans_table_savings">
+                <tr class="top_of_table">
+                    <th>Transaction Type</th>
+                    <th>Descripton</th>
+                    <th>Amount</th>
+                    <th>Balance</th>
+                </tr>
+            </table>
         </div>
     </div>
-    <script> const resultElement = document.getElementById('result');
-        const coinElement = document.getElementById('coin');
-        const flipButton = document.getElementById('flip-button');
-        const resetButton = document.getElementById('reset-button');
-        const historyList = document.getElementById('history-list');
-        const rewardsCount = document.getElementById('rewards-count');
+    <script>const transactions = document.querySelector("#enter_transaction")
+        const transactionsSavings = document.querySelector("enter_transaction_savings");
+        const transactionType = document.querySelector("#transaction_type") 
+        const transactionTypeSavings = document.querySelector("#transaction_type_savings");
+        const transAmount = document.querySelector("#transaction_amount");
+        const transAmountSavings = document.querySelector("#transaction_amount_savings");
+        const transDescription = document.querySelector("#transaction_description");
+        const table = document.querySelector("#trans_table");
+        const tableSavings =  document.querySelector("#trans_table_savings");
+        const desc = document.querySelector("#desc");
+        const checkingStartingBalance = document.querySelector("#checking_balance");
+        const savingsStartingBalance = document.querySelector("#savings_balance");
+        const balanceInfo = document.querySelector("#balance_info");
         
-        let flipHistory = [];
-        let rewards = 0;
-        const flipSound = new Audio('flip_Sound.mp3');
-        
-        function playSound() {
-            flipSound.play().catch(error => {
-                console.error('Audio playback failed:', error);
-            });
+        let checkingAccount = {
+            // Checking account.
+            name: "checking",
+            balance: 0.00,
+            allTransactions: [],
+            deposit: function (amount) {
+                this.balance += amount;
+                this.allTransactions.push({
+                    type: "deposit",
+                    amount: amount,
+                })
+            },
+            withdraw: function (amount) {
+                this.balance -= amount;
+                this.allTransactions.push({
+                    type: "withdrawal",
+                    amount: amount,
+                })
+            },   
+            debit: function (amount, purpose) {
+                this.balance -= amount;
+                this.allTransactions.push({
+                    type: "debit",
+                    amount: amount,
+                    purpose: purpose,
+                });
+            },
+            transfer: function (amount, transferAccount) {
+                this.balance -= amount;
+                transferAccount.balance += amount;
+                transferAccount.allTransactions.push({
+                    type: "transfer",
+                    amount: amount,
+                    purpose: "transfer",
+                }),
+                this.allTransactions.push({
+                    type: "transfer",
+                    amount: amount,
+                    purpose: "transfer",
+                })
+            }
         }
         
-        function flipCoin() {
-            playSound();
-            const isHeads = Math.random() < 0.5;
-            const result = isHeads ? 'Heads' : 'Tails';
-            const coinImage = isHeads ? 'head.jpg' : 'tail.jpg';
-            
-            coinElement.style.backgroundImage = `url(${coinImage})`;
-            coinElement.style.transform = `rotateY(${Math.random() * 720}deg)`;
-            
-            resultElement.innerHTML = `Result: ${result}`;
-            flipHistory.push(result);
-            updateHistory();
-            updateRewards();
+        let savingsAccount = {
+            // Savings account.
+            name: "savings",
+            balance: 0,
+            allTransactions: [],
+            deposit: function (amount) {
+                this.balance += amount;
+                this.allTransactions.push({
+                    type: "deposit",
+                    amount: amount,
+                })
+            },
+            withdraw: function (amount) {
+                this.balance -= amount;
+                this.allTransactions.push({
+                    type: "withdrawal",
+                    amount: amount,
+                })
+            },   
+            debit: function (amount, purpose) {
+                this.balance -= amount;
+                this.allTransactions.push({
+                    type: "debit",
+                    amount: amount,
+                    purpose: purpose,
+                });
+            },
+            transfer: function (amount, transferAccount) {
+                this.balance -= amount;
+                transferAccount.balance += amount;
+                transferAccount.allTransactions.push({
+                    type: "transfer",
+                    amount: amount,
+                    purpose: "transfer",
+                }),
+                this.allTransactions.push({
+                    type: "transfer",
+                    amount: amount,
+                    purpose: "transfer",
+                })
+            }
         }
         
-        function resetGame() {
-            coinElement.style.backgroundImage = 'url(head.jpg)';
-            resultElement.innerHTML = 'Flip the coin to get started!';
-            flipHistory = [];
-            rewards = 0;
-            updateHistory();
-            updateRewards();
+        hideStartingInfo(); // Call this at start to hide info until we need it.
+        
+        function hideStartingInfo() {
+            // Hides savings/checking info and transaction info.
+            hideToggle(checking_info); 
+            hideToggle(savings_info); 
+            hideToggle(transactions);  
         }
         
-        function updateHistory() {
-            historyList.innerHTML = flipHistory.map(result => `<li>${result}</li>`).join('');
+        function printTable(tableId, account, transferMessage) {
+            // Prints items to table as they are entered.
+            let newRow = tableId.insertRow(-1);5
+            let newCell1 = newRow.insertCell(0);
+            let newCell2 = newRow.insertCell(1);
+            let newCell3 = newRow.insertCell(2);
+            let newCell4 = newRow.insertCell(3);
+            newCell1.innerHTML = account.allTransactions[account.allTransactions.length - 1].type;
+            newCell3.innerHTML = account.allTransactions[account.allTransactions.length - 1].amount;
+            newCell4.innerHTML = account.balance;
+            if (account.allTransactions[account.allTransactions.length - 1].purpose != undefined) {
+                if(account.allTransactions[account.allTransactions.length - 1].purpose === "transfer") {
+                    newCell2.innerHTML = transferMessage;
+                } else {
+                    newCell2.innerHTML = account.allTransactions[account.allTransactions.length - 1].purpose;
+                }
+            } else {
+                newCell2.innerHTML = "";
+            }
         }
         
-        function updateRewards() {
-            rewards += 1;
-            rewardsCount.innerHTML = `Coins Collected: ${rewards}`;
+        function mainBankChecking() {
+            // Checks which transaction button is selected and executes correct function.
+            if (transactionType.value === "Debit") {
+                runDebitChecking();
+                transDescription.value = "";
+                transAmount.value = "";
+            } else if (transactionType.value === "Deposit") {
+                runDepositChecking();
+                transAmount.value = "";
+            } else if (transactionType.value === "Withdraw") {
+                runWithdrawChecking();
+                transAmount.value = "";
+            } else if (transactionType.value === "Transfer") {
+                runTransferChecking();
+                transAmount.value = "";
+            }
         }
         
-        flipButton.addEventListener('click', flipCoin);
-        resetButton.addEventListener('click', resetGame);
-        </script>
+        function mainBankSavings() {
+            // Checks which transaction button is selected and executes correct function.
+            if (transactionTypeSavings.value === "Deposit") {
+                runDepositSavings();
+                transAmountSavings.value = "";
+            } else if (transactionTypeSavings.value === "Withdraw") {
+                runWithdrawSavings();
+                transAmountSavings.value = "";
+            } else if (transactionTypeSavings.value === "Transfer") {
+                runTransferSavings();
+                transAmountSavings.value = "";
+            }
+        }
+        
+        function runDebitChecking() {
+            // Checking debit.
+            let howMuch = Number.parseFloat(transAmount.value);
+            let forWhat = transDescription.value;
+            if (isNaN(howMuch)) {
+                alert("Enter Amount");
+                } else if (howMuch <= 0) {
+                   alert("Enter positive number.");
+                } else {
+                    if (checkingAccount.balance >= howMuch) {
+                        checkingAccount.debit(howMuch, forWhat);
+                        displayAccountBalances();
+                        printTable(table, checkingAccount);
+                    } else {
+                        alert("Not enough funds for transaction.")
+                    }
+                }
+        }
+        
+        function runDepositChecking() {
+            // Checking deposit.
+            let howMuch = Number.parseFloat(transAmount.value);
+            if (isNaN(howMuch)) {
+                alert("Enter Amount");
+                } else if (howMuch <= 0) {
+                    alert("Enter positive number.")
+                } else {
+                    checkingAccount.deposit(howMuch);
+                    displayAccountBalances();
+                    printTable(table, checkingAccount);
+                } 
+        }
+        
+        function runDepositSavings() {
+            // Savings deposit.
+            let howMuch = Number.parseFloat(transAmountSavings.value);
+            if (isNaN(howMuch)) {
+                alert("Enter Amount");
+                } else if (howMuch <= 0) {
+                    alert("Enter positive number.")
+                } else {
+                    savingsAccount.deposit(howMuch);
+                    displayAccountBalances(); 
+                    printTable(tableSavings, savingsAccount);
+                } 
+        }
+        
+        function runWithdrawChecking() {
+            // Checking withdrawal.
+            let howMuch = Number.parseFloat(transAmount.value);
+            if (isNaN(howMuch)) {
+                alert("Enter Amount");
+                } else if (howMuch <= 0) {
+                    alert("Enter positive number.");
+                } else {
+                    if (checkingAccount.balance >= howMuch) {
+                        checkingAccount.withdraw(howMuch);
+                        displayAccountBalances();
+                        printTable(table, checkingAccount);
+                    } else {
+                        alert("Not enough funds for transaction.")
+                    }
+            }  
+        }
+        
+        function runWithdrawSavings() {
+            // Savings withdrawal.
+            let howMuch = Number.parseFloat(transAmountSavings.value);
+            if (isNaN(howMuch)) {
+                alert("Enter Amount");
+                } else if (howMuch <= 0) {
+                    alert("Enter positive number.");
+                } else {
+                    if (savingsAccount.balance >= howMuch) {
+                        savingsAccount.withdraw(howMuch);
+                        displayAccountBalances();
+                        printTable(tableSavings, savingsAccount);
+                    } else {
+                        alert("Not enough funds for transaction.")
+                    }
+            }  
+        }
+        
+        function runTransferChecking() {
+            // Transfer Checking to Savings.
+            let howMuch = Number.parseFloat(transAmount.value);
+            if (isNaN(howMuch)) {
+                alert("Enter Amount");
+                } else if (howMuch <= 0) {
+                    alert("Enter positive number.");
+                } else {
+                    if (checkingAccount.balance >= howMuch) {
+                        checkingAccount.transfer(howMuch, savingsAccount);
+                        displayAccountBalances();
+                        printTable(table, checkingAccount, "Transfer to Savings");
+                        printTable(tableSavings, savingsAccount, "Transfer from Checking");
+                    } else {
+                        alert("Not enough funds for transaction.")
+                    }
+            }  
+        }
+        
+        function runTransferSavings() {
+            // Transfer Savings to Checking.
+            let howMuch = Number.parseFloat(transAmountSavings.value);
+            if (isNaN(howMuch)) {
+                alert("Enter Amount");
+                } else if (howMuch <= 0) {
+                    alert("Enter positive number.");
+                } else {
+                    if (savingsAccount.balance >= howMuch) {
+                        savingsAccount.transfer(howMuch, checkingAccount);
+                        displayAccountBalances();
+                        printTable(tableSavings, savingsAccount, "Transfer to Checking");
+                        printTable(table, checkingAccount, "Transfer from Savings");
+                    } else {
+                        alert("Not enough funds for transaction.")
+                    }
+            }  
+        }
+        
+        function displayAccountBalances () {
+            // Displays current balance of both accounts.
+            document.querySelector("#current_checking_balance").textContent = "Current Balance: $" + checkingAccount.balance;
+            document.querySelector("#current_savings_balance").textContent = "Current Balance: $" + savingsAccount.balance;
+        }
+        
+        function getStartingBalance() {
+            // Get starting balance of both accounts.
+            let checkStart = parseFloat(checkingStartingBalance.value);
+            let saveStart = parseFloat(savingsStartingBalance.value);
+            let checkFixed = parseFloat(checkStart.toFixed(2));
+            let saveFixed = parseFloat(saveStart.toFixed(2));
+            if (isNaN(checkStart) || isNaN(saveStart)) {
+                alert("Enter starting balance.")
+            } else {
+                checkingAccount.balance = checkFixed;
+                savingsAccount.balance = saveFixed;
+                clearBox("balance_info");
+                displayAccountBalances();
+                hideToggle(checking_info);
+                hideToggle(savings_info);
+                hideToggle(transactions);
+                hideToggle(balanceInfo);
+            } 
+        }
+        
+        function clearBox(elementID) {
+            // Clears element html.
+            document.getElementById(elementID).innerHTML = "";
+        }
+        
+        function checkTransType() {
+            // Checks transaction type. If debit it then shows description box. If not debit it hides box.
+            if (transactionType.value === "Debit") {
+                desc.style.display = "block";
+                transDescription.value = "";
+            } else if (transactionType.value === "Deposit") {
+                desc.style.display = "none";
+            } else if (transactionType.value === "Withdraw") {
+                desc.style.display = "none";
+            } else if (transactionType.value === "Transfer") {
+                desc.style.display = "none";
+            }
+        }
+        
+        function hideToggle(itemToHide) {
+            // Toggle to hide items.
+            if (itemToHide.style.display === "none") {
+                itemToHide.style.display = "block";
+            } else {
+                itemToHide.style.display = "none";
+            }
+        }
+        
+        function validate(event) {
+            // Limits input boxes to .00 decimal places. Use this function oninput for input boxess in html.
+            let x = this.value;
+            this.value = (x.indexOf(".") >= 0) ? (x.substr(0, x.indexOf(".")) + x.substr(x.indexOf("."), 3)) : x;
+        }
+        
+        checkingStartingBalance.addEventListener("input", validate);
+        savingsStartingBalance.addEventListener("input", validate);
+        transAmount.addEventListener("input", validate);
+        transAmountSavings.addEventListener("input", validate);
+        document.querySelector("#submit_balance").addEventListener("click", getStartingBalance);
+        document.querySelector("#submit_transaction").addEventListener("click", () => {
+            mainBankChecking();
+        });
+        document.querySelector("#submit_transaction_savings").addEventListener("click", () => {
+            mainBankSavings();
+        });
+        transactionType.addEventListener("click", checkTransType);</script>
 </body>
 </html>
