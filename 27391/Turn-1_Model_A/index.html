@@ -1,111 +1,111 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Book Recommendation Widget</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-    <style>
-        .book-widget {
-            width: 300px;
-            border: 1px solid #ccc;
-            padding: 15px;
-            font-family: Arial, sans-serif;
-        }
-        .book-item {
-            margin: 10px 0;
-            padding: 10px;
-            background: \#f9f9f9;
-            border-left: 5px solid \#007BFF;
-        }
-        .stars {
-            color: gold;
-        }
-        .genre-select {
-            margin-top: 10px;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stack Visualizer</title>
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+<style>
+    #stack-container {
+        height: 300px;
+        border: 2px solid #000;
+        margin-bottom: 20px;
+        position: relative;
+    }
+    .stack-item {
+        width: 50px;
+        background-color: #66ccff;
+        border: 1px solid #000;
+        position: absolute;
+        bottom: 0;
+        transition: all 0.3s;
+        text-align: center;
+    }
+    .tooltip-inner {
+        text-align: left;
+    }
+    #history {
+        height: 150px;
+        overflow-y: auto;
+        border: 1px solid #ccc;
+        padding: 10px;
+    }
+</style>
 </head>
 <body>
 
-<div class="book-widget" id="bookWidget">
-    <h3>Your Recommendations</h3>
-    <div id="bookList"></div>
-    <select id="genrePreference" class="genre-select">
-        <option value="">Choose a genre</option>
-        <!-- Genres would be dynamically added here -->
-    </select>
+<div class="container">
+    <h1>Stack Visualizer</h1>
+    <div id="stack-container"></div>
+    <div>
+        <button class="btn btn-primary" id="push" data-toggle="tooltip" title="Add an element to the top of the stack">Push</button>
+        <button class="btn btn-warning" id="pop" data-toggle="tooltip" title="Remove the top element from the stack">Pop</button>
+        <button class="btn btn-info" id="peek" data-toggle="tooltip" title="View the top element without removing it">Peek</button>
+        <button class="btn btn-danger" id="reset" data-toggle="tooltip" title="Reset the stack">Reset</button>
+    </div>
+    <div id="history"></div>
 </div>
 
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 <script>
-    const widget = document.getElementById('bookWidget');
-    const bookList = document.getElementById('bookList');
-    const genrePreference = document.getElementById('genrePreference');
-    let userPreferences = { ratings: {}, genre: '' };
-    
-    // Mock data for books - this would typically come from an API
-    let books = [];
+    $(function () {
+        let stack = [];
+        let $stackContainer = $('#stack-container');
+        let $history = $('#history');
 
-    // Function to fetch books from an API
-    async function fetchBooks() {
-        try {
-            const response = await fetch('https://api.example.com/books'); // Replace with actual API endpoint
-            books = await response.json();
-            updateRecommendations();
-        } catch (error) {
-            console.error('Failed to fetch books:', error);
+        function updateStackDisplay() {
+            $stackContainer.empty();
+            stack.forEach((value, index) => {
+                let height = 50 + index * 50;
+                let $item = $('<div class="stack-item" style="height: 40px; left: ' + (index * 60) + 'px;">' + value + '</div>');
+                $item.css('bottom', height - 40 + 'px');
+                $stackContainer.append($item);
+            });
         }
-    }
 
-    function rateBook(bookId, stars) {
-        userPreferences.ratings[bookId] = stars;
-        updateRecommendations();
-    }
+        function addToHistory(action, value = '') {
+            $history.append(`<p>${action}: ${value}</p>`);
+        }
 
-    function recommendBooks() {
-        return books.sort((a, b) => {
-            let scoreA = (a.educationalValue * 2) + ((userPreferences.ratings[a.id] || 0) * 3) + (a.genre === userPreferences.genre ? 5 : 0);
-            let scoreB = (b.educationalValue * 2) + ((userPreferences.ratings[b.id] || 0) * 3) + (b.genre === userPreferences.genre ? 5 : 0);
-            return scoreB - scoreA;
+        $('#push').click(function() {
+            let value = prompt('Enter value to push:');
+            if (value !== null) {
+                stack.push(value);
+                addToHistory('Pushed', value);
+                updateStackDisplay();
+            }
         });
-    }
 
-    function updateRecommendations() {
-        const recommendedBooks = recommendBooks().slice(0, 5); // Top 5 books
-        bookList.innerHTML = '';
-        recommendedBooks.forEach(book => {
-            const bookDiv = document.createElement('div');
-            bookDiv.className = 'book-item';
-            bookDiv.innerHTML = `
-                <h4>\${book.title}</h4>
-                <p>Genre: \${book.genre}</p>
-                <div class="stars" data-book-id="\${book.id}">
-                    \${[1,2,3,4,5].map(star => `<i class="fa fa-star" data-value="\${star}" onclick="rateBook('\${book.id}', \${star})"></i>`).join('')}
-                </div>
-            `;
-            bookList.appendChild(bookDiv);
+        $('#pop').click(function() {
+            if (stack.length) {
+                let value = stack.pop();
+                addToHistory('Popped', value);
+                updateStackDisplay();
+            } else {
+                alert('Stack is empty!');
+            }
         });
-    }
 
-    // Populate genres and setup event listeners
-    function setupGenres() {
-        const genres = [...new Set(books.map(book => book.genre))];
-        genres.forEach(genre => {
-            const option = document.createElement('option');
-            option.value = genre;
-            option.textContent = genre;
-            genrePreference.appendChild(option);
+        $('#peek').click(function() {
+            if (stack.length) {
+                alert('Top element: ' + stack[stack.length - 1]);
+                addToHistory('Peeked', stack[stack.length - 1]);
+            } else {
+                alert('Stack is empty!');
+            }
         });
-        genrePreference.onchange = function() {
-            userPreferences.genre = this.value;
-            updateRecommendations();
-        };
-    }
 
-    // Initialize widget
-    fetchBooks().then(() => {
-        setupGenres();
-        updateRecommendations();
+        $('#reset').click(function() {
+            stack = [];
+            $history.empty();
+            updateStackDisplay();
+            addToHistory('Reset');
+        });
+
+        // Initialize tooltips
+        $('[data-toggle="tooltip"]').tooltip();
     });
 </script>
 
