@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>JS Drum Kit</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            background: #2c3e50;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Arial', sans-serif;
+        }
+        .drum-kit {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            width: 600px;
+        }
+        .drum {
+            width: 100px;
+            height: 100px;
+            margin: 10px;
+            background: #3498db;
+            border: 4px solid #2980b9;
+            border-radius: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 2em;
+            cursor: pointer;
+            transition: all 0.1s;
+        }
+        .drum:hover {
+            background: #2980b9;
+        }
+        .drum.active {
+            transform: scale(1.1);
+            border-color: #f39c12;
+            box-shadow: 0 0 10px #f39c12;
+        }
+    </style>
+</head>
+<body>
+
+<div class="drum-kit">
+    <div class="drum" data-key="65">A</div>
+    <div class="drum" data-key="83">S</div>
+    <div class="drum" data-key="68">D</div>
+    <div class="drum" data-key="70">F</div>
+    <div class="drum" data-key="74">J</div>
+    <div class="drum" data-key="75">K</div>
+    <div class="drum" data-key="76">L</div>
+</div>
+
+<script>
+    // Function to play sound and provide visual feedback
+    function playSound(e) {
+        const audio = document.querySelector(`audio[data-key="${e.keyCode || e.target.getAttribute('data-key')}"]`);
+        const key = document.querySelector(`.drum[data-key="${e.keyCode || e.target.getAttribute('data-key')}"]`);
+        if (!audio) return;
+
+        key.classList.add('active');
+        audio.currentTime = 0; // Allows for rapid successive plays
+        audio.play();
+
+        // Remove active state after transition duration
+        setTimeout(() => {
+            key.classList.remove('active');
+        }, 100);
+    }
+
+    // Event listeners for drum elements
+    const drums = document.querySelectorAll('.drum');
+    drums.forEach(drum => drum.addEventListener('click', playSound));
+
+    // Keyboard event listener
+    window.addEventListener('keydown', playSound);
+
+    // Preloading audio files
+    (function preloadAudio() {
+        const keys = [65, 83, 68, 70, 74, 75, 76];
+        keys.forEach(key => {
+            const audio = new Audio(`path_to_sound_file_${key}.mp3`); // Replace with actual path or CDN link
+            audio.setAttribute('data-key', key);
+            document.body.appendChild(audio); // Keep it in DOM but hidden
+        });
+    })();
+</script>
+
+</body>
+</html>
