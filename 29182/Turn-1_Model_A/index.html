@@ -1,134 +1,135 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Typing Speed Test</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css">
-    <style>
-        /* Inline CSS for simplicity */
-        body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            background-color: #f0f0f0;
-        }
-        #game-area {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }
-        #text-display {
-            margin-bottom: 20px;
-            padding: 10px;
-            border: 1px solid #ccc;
-            min-height: 100px;
-            user-select: none;
-        }
-        #text-input {
-            width: 100%;
-            height: 100px;
-            margin-bottom: 10px;
-        }
-    </style>
+<meta charset="UTF-8">
+<title>Word Puzzle</title>
+<style>
+    #puzzle-grid {
+        display: grid;
+        grid-template-columns: repeat(10, 30px); /* Example grid size */
+        gap: 2px;
+    }
+    .cell {
+        width: 30px;
+        height: 30px;
+        border: 1px solid #000;
+        text-align: center;
+        line-height: 30px;
+        user-select: none;
+        transition: background-color 0.5s;
+    }
+    .found {
+        background-color: lightgreen;
+        animation: fadeOut 2s forwards;
+    }
+    @keyframes fadeOut {
+        to { opacity: 0; }
+    }
+</style>
 </head>
 <body>
-    <div id="game-area" class="container">
-        <h1>Typing Speed Test</h1>
-        <div id="text-display"></div>
-        <textarea id="text-input" placeholder="Start typing here when ready..."></textarea>
-        <button id="start-btn" class="btn btn-primary">Start</button>
-        <div id="results">
-            <p>Time: <span id="time">60</span>s</p>
-            <p>Speed: <span id="wpm">0</span> WPM</p>
-            <p>Accuracy: <span id="accuracy">0</span>%</p>
-        </div>
+<div id="puzzle-container">
+    <div id="puzzle-grid"></div>
+    <div id="clue-container" style="display:none;">
+        <p id="clue-text"></p>
+        <img id="clue-image" style="display:none; max-width:200px;">
+        <audio id="clue-sound" style="display:none;"></audio>
     </div>
+</div>
 
-    <script>document.addEventListener('DOMContentLoaded', (event) => {
-        const textDisplay = document.getElementById('text-display');
-        const textInput = document.getElementById('text-input');
-        const startBtn = document.getElementById('start-btn');
-        const timeDisplay = document.getElementById('time');
-        const wpmDisplay = document.getElementById('wpm');
-        const accuracyDisplay = document.getElementById('accuracy');
-    
-        let timeLeft = 60;
-        let timer = null;
-        let isTestActive = false;
-        let originalText = '';
-        const paragraphs = [
-            "The quick brown fox jumps over the lazy dog. This sentence contains every letter of the alphabet.",
-            "To be or not to be, that is the question whether tis nobler in the mind to suffer.",
-            "In a hole in the ground there lived a hobbit. Not a nasty, dirty, wet hole, filled with the ends of worms and an oozy smell.",
-            // Add more paragraphs as needed
-        ];
-    
-        function loadRandomParagraph() {
-            originalText = paragraphs[Math.floor(Math.random() * paragraphs.length)];
-            textDisplay.textContent = originalText;
-            textInput.value = '';
-        }
-    
-        function startGame() {
-            loadRandomParagraph();
-            textInput.disabled = false;
-            textInput.focus();
-            startBtn.disabled = true;
-            isTestActive = true;
-            timeLeft = 60;
-            timeDisplay.textContent = timeLeft;
-            timer = setInterval(countdown, 1000);
-        }
-    
-        function countdown() {
-            if (timeLeft > 0) {
-                timeLeft--;
-                timeDisplay.textContent = timeLeft;
-            } else {
-                endGame();
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+$(document).ready(function() {
+    const gridSize = 10;
+    const words = ['SCIENCE', 'TECHNOLOGY', 'MATHEMATICS'];
+    let grid = [];
+    let selectedCells = [];
+
+    // Initialize grid
+    function initGrid() {
+        grid = Array(gridSize).fill().map(() => Array(gridSize).fill(''));
+        placeWords();
+        for(let i = 0; i < gridSize; i++) {
+            for(let j = 0; j < gridSize; j++) {
+                if(!grid[i][j]) grid[i][j] = String.fromCharCode(65 + Math.floor(Math.random() * 26));
+                let cell = $('<div class="cell"></div>').text(grid[i][j]);
+                cell.on('mousedown', startSelection);
+                $('#puzzle-grid').append(cell);
             }
         }
-    
-        function calculateWPM() {
-            const typedText = textInput.value;
-            const words = typedText.split(' ').filter(word => word !== '').length;
-            // WPM calculation: words typed / minutes (1 minute here)
-            return Math.round(words / 1 * 60);
-        }
-    
-        function calculateAccuracy() {
-            const typedText = textInput.value.split(' ');
-            const originalWords = originalText.split(' ');
-            let correctWords = 0;
-            typedText.forEach((word, index) => {
-                if (word === originalWords[index]) {
-                    correctWords++;
+    }
+
+    // Place words randomly in the grid
+    function placeWords() {
+        words.forEach(word => {
+            let placed = false;
+            while(!placed) {
+                let direction = Math.random() > 0.33 ? (Math.random() > 0.5 ? 'horizontal' : 'vertical') : 'diagonal';
+                let row = Math.floor(Math.random() * gridSize);
+                let col = Math.floor(Math.random() * gridSize);
+                if(checkWordFit(word, row, col, direction)) {
+                    placeWord(word, row, col, direction);
+                    placed = true;
                 }
-            });
-            return Math.round((correctWords / originalWords.length) * 100) || 0;
-        }
-    
-        function endGame() {
-            clearInterval(timer);
-            textInput.disabled = true;
-            startBtn.disabled = false;
-            const wpm = calculateWPM();
-            const accuracy = calculateAccuracy();
-            wpmDisplay.textContent = wpm;
-            accuracyDisplay.textContent = accuracy;
-        }
-    
-        startBtn.addEventListener('click', startGame);
-    
-        textInput.addEventListener('input', () => {
-            if (!isTestActive) return;
-            if (textInput.value === originalText) {
-                endGame();
             }
         });
-    });</script>
+    }
+
+    function checkWordFit(word, row, col, direction) {
+        // Implementation to check if word can fit in chosen direction
+        // ...
+    }
+
+    function placeWord(word, row, col, direction) {
+        // Implementation to place word in grid
+        // ...
+    }
+
+    // Event handling for word selection
+    function startSelection(event) {
+        selectedCells = [{row: $(this).index(), col: $(this).parent().index()}];
+        $(document).on('mousemove', selectCells);
+        $(document).on('mouseup', endSelection);
+    }
+
+    function selectCells(event) {
+        // Logic to handle cell selection
+        // ...
+    }
+
+    function endSelection() {
+        $(document).off('mousemove', selectCells);
+        $(document).off('mouseup', endSelection);
+        checkWord();
+    }
+
+    function checkWord() {
+        let word = selectedCells.map(cell => grid[cell.row][cell.col]).join('');
+        if(words.includes(word)) {
+            revealClue(word);
+            selectedCells.forEach(cell => {
+                $('.cell').eq(cell.row * gridSize + cell.col).addClass('found');
+            });
+            // Trigger custom event
+            $('#puzzle-grid').trigger('WordFound', [word]);
+        }
+        selectedCells = [];
+    }
+
+    function revealClue(word) {
+        // Here you would fetch or reveal clue related to the word
+        $('#clue-text').text(`Fact about ${word}: ...`);
+        $('#clue-container').show();
+    }
+
+    // Event listener for custom event
+    $('#puzzle-grid').on('WordFound', function(event, word) {
+        // Additional animations or actions can be triggered here
+        console.log(`Word found: ${word}`);
+    });
+
+    initGrid();
+});
+</script>
 </body>
 </html>
