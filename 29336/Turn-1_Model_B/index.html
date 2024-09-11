@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Image Search Trends</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css">
+    <style>
+        /* Custom styles for visualization */
+        #trendChart, #categoryChart { 
+            width: 100%; 
+            height: 400px; 
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <h1 class="title">Image Search Trends</h1>
+        <div id="trendChart"></div>
+        <div id="categoryChart"></div>
+    </div>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script>// Assume fetchData is a function that gets data from your server or API
+        function fetchData() {
+            return fetch('/api/searchTrends').then(response => response.json());
+        }
+        
+        function drawTrendChart(data) {
+            const svg = d3.select("#trendChart").append("svg")
+                .attr("width", '100%')
+                .attr("height", '100%');
+        
+            // Process data for time series
+            const parseTime = d3.timeParse("%Y-%m-%d");
+            data.forEach(d => {
+                d.date = parseTime(d.date);
+                d.count = +d.count;
+            });
+        
+            const x = d3.scaleTime()
+                .domain(d3.extent(data, d => d.date))
+                .range([50, 550]);
+            const y = d3.scaleLinear()
+                .domain([0, d3.max(data, d => d.count)])
+                .range([350, 50]);
+        
+            // Draw line
+            const line = d3.line()
+                .x(d => x(d.date))
+                .y(d => y(d.count));
+        
+            svg.append("path")
+               .datum(data)
+               .attr("fill", "none")
+               .attr("stroke", "steelblue")
+               .attr("stroke-width", 1.5)
+               .attr("d", line);
+            
+            // Add axes, labels, etc., for a complete chart
+        }
+        
+        function drawCategoryChart(data) {
+            const svg = d3.select("#categoryChart").append("svg")
+                .attr("width", '100%')
+                .attr("height", '100%');
+        
+            // Simple pie chart for categories
+            const pie = d3.pie().value(d => d.value);
+            const arc = d3.arc().innerRadius(0).outerRadius(200);
+        
+            const arcs = svg.selectAll("arc")
+                .data(pie(data.categories))
+                .enter()
+                .append("g")
+                .attr("transform", "translate(200,200)");
+        
+            arcs.append("path")
+                .attr("d", arc)
+                .attr("fill", d => d3.schemeCategory10[d.index]);
+        
+            // Add labels or tooltips for better user experience
+        }
+        
+        // Initial draw
+        fetchData().then(data => {
+            drawTrendChart(data.trendData);
+            drawCategoryChart({categories: data.categoryData});
+        });
+        
+        // For real-time updates, you might want to set up an interval or use WebSockets
+        function updateCharts() {
+            fetchData().then(data => {
+                // Here, implement logic to update charts without full redraw if possible
+            });
+        }
+        
+        // Example: Update every 5 seconds
+        // setInterval(updateCharts, 5000);</script>
+</body>
+</html>

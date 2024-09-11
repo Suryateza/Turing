@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Image Search Trends</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        canvas {
+            max-width: 100%;
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="trendChart" width="400" height="200"></canvas>
+    <canvas id="categoryChart" width="400" height="200"></canvas>
+
+    <script>
+    async function fetchSearchData() {
+        // Simulate fetching data from an API
+        const response = await fetch('/api/searchTrends');
+        const data = await response.json();
+        return data;
+    }
+
+    function processData(data) {
+        let trendData = {labels: [], datasets: [{label: 'Searches', data: []}]};
+        let categoryData = {labels: [], datasets: [{data: [], backgroundColor: []}]};
+        
+        data.trends.forEach(trend => {
+            trendData.labels.push(trend.date);
+            trendData.datasets[0].data.push(trend.count);
+        });
+
+        data.categories.forEach(category => {
+            categoryData.labels.push(category.name);
+            categoryData.datasets[0].data.push(category.count);
+            categoryData.datasets[0].backgroundColor.push(`#${Math.floor(Math.random()*16777215).toString(16)}`);
+        });
+
+        return {trendData, categoryData};
+    }
+
+    function updateCharts(trendData, categoryData) {
+        new Chart(document.getElementById('trendChart').getContext('2d'), {
+            type: 'line',
+            data: trendData,
+            options: {
+                responsive: true,
+                scales: {
+                    x: {
+                        type: 'time',
+                        time: {
+                            unit: 'day'
+                        }
+                    }
+                }
+            }
+        });
+
+        new Chart(document.getElementById('categoryChart').getContext('2d'), {
+            type: 'pie',
+            data: categoryData,
+            options: {
+                responsive: true,
+            }
+        });
+    }
+
+    // Execution
+    fetchSearchData().then(data => {
+        const processedData = processData(data);
+        updateCharts(processedData.trendData, processedData.categoryData);
+    });
+    </script>
+</body>
+</html>
