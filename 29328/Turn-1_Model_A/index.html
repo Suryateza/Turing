@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Virtual Museum Tour</title>
+    <style>
+        body { margin: 0; overflow: hidden; }
+        #info { position: absolute; top: 10px; width: 100%; text-align: center; color: white; }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128/examples/js/controls/OrbitControls.js"></script>
+</head>
+<body>
+
+<div id="info">Use mouse to interact with artifacts</div>
+<script>
+    // Setup
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
+
+    // Lights
+    const ambientLight = new THREE.AmbientLight(0x404040, 5);
+    scene.add(ambientLight);
+
+    // Controls
+    const controls = new THREE.OrbitControls(camera, renderer.domElement);
+    
+    // Position Camera
+    camera.position.set(0, 2, 5);
+
+    // Load Manager for handling loading progress
+    const manager = new THREE.LoadingManager();
+    manager.onProgress = function (item, loaded, total) {
+        console.log(`Loading: ${loaded}/${total}`);
+    };
+
+    const textureLoader = new THREE.TextureLoader(manager);
+    const gltfLoader = new THREE.GLTFLoader(manager);
+
+    // Function to load and transition artifacts
+    function loadArtifact(url, position = new THREE.Vector3(0, 0, 0)) {
+        gltfLoader.load(url, function(gltf) {
+            scene.add(gltf.scene);
+            // Here you would handle transitions, like fading out the old model and fading in the new one
+            // For simplicity, this example directly adds the model
+        });
+    }
+
+    // Performance optimizations would be implemented here:
+    // - Use of LOD for models
+    // - Implement texture streaming or mipmapping for high-res textures
+    // - Use instancedMesh for similar objects
+
+    // Animation loop
+    function animate() {
+        requestAnimationFrame(animate);
+        controls.update();
+        renderer.render(scene, camera);
+    }
+
+    animate();
+
+    // Initial load of an artifact
+    loadArtifact('path/to/your/firstArtifact.glb');
+
+    // Responsive design
+    window.addEventListener('resize', function() {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+    }, false);
+
+</script>
+</body>
+</html>

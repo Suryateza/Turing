@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Virtual Museum Tour</title>
+    <style>
+        body { margin: 0; overflow: hidden; }
+        canvas { width: 100%; height: 100%; }
+        #ui { position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); z-index: 1; }
+    </style>
+</head>
+<body>
+    <div id="ui">
+        <button onclick="prevArtifact()">Previous</button>
+        <button onclick="nextArtifact()">Next</button>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/OrbitControls.js"></script>
+    <script>
+    // Setup
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
+
+    const controls = new THREE.OrbitControls(camera, renderer.domElement);
+    camera.position.set(0, 1.5, 5);
+    controls.update();
+
+    // Artifact setup (placeholder for actual models)
+    const artifacts = [];
+    const loader = new THREE.GLTFLoader();
+    let currentArtifact = 0;
+
+    // Example loading one artifact, extend this for multiple
+    loader.load('path/to/artifact.gltf', function(gltf) {
+        gltf.scene.position.set(0, 0, 0);
+        artifacts.push(gltf.scene);
+        scene.add(gltf.scene);
+    });
+
+    // UI Functions
+    function nextArtifact() {
+        transitionTo((currentArtifact + 1) % artifacts.length);
+    }
+
+    function prevArtifact() {
+        transitionTo((currentArtifact - 1 + artifacts.length) % artifacts.length);
+    }
+
+    function transitionTo(index) {
+        // Implement smooth transition logic here, e.g., using tween.js for animations
+        currentArtifact = index;
+        // Example: rotate or fade out current, then bring in next
+    }
+
+    // Render Loop
+    function animate() {
+        requestAnimationFrame(animate);
+        controls.update();
+        renderer.render(scene, camera);
+    }
+    animate();
+
+    // Handle resize
+    window.addEventListener('resize', () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    // Basic interaction
+    renderer.domElement.addEventListener('mousedown', () => {
+        // Add logic for zoom or detailed examination on click
+    });
+
+    </script>
+</body>
+</html>
