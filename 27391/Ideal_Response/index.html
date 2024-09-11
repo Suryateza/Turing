@@ -4,12 +4,10 @@
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content
-        ="width=device-width, initial-scale=1.0">
-    <title>
-        Stack Visualizer using HTML CSS & JavaScript
-    </title>
-    <style>@import url("https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stack Visualizer using HTML, CSS & JavaScript</title>
+    <style>
+        @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;700&display=swap");
 
         * {
             margin: 0;
@@ -17,405 +15,278 @@
             box-sizing: border-box;
             font-family: "Poppins", sans-serif;
         }
+
         body {
             height: 100vh;
             width: 100vw;
             display: flex;
-            justify-content: start;
+            justify-content: center;
             align-items: center;
             flex-direction: column;
-            gap: 20px;
-            background-color: rgb(231, 231, 231);
+            background: rgb(2,0,36);
+            background: linear-gradient(90deg, rgb(150, 198, 174) 0%, rgba(9,121,65,1) 35%, rgba(0,212,255,1) 100%);
         }
+
         header {
-            height: 100px;
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-        .heading {
-            color: green;
-        }
-        
-        .container {
-            height: 620px;
-            width: 1000px;
-            background-color: white;
-            box-shadow: 8px 8px 20px rgb(128, 128, 128);
-            position: relative;
-            overflow: hidden;
-            border-radius: 20px;
-        }
-        
-        .container-header {
-            height: 90px;
-            width: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 20px;
+            text-align: center;
             margin-bottom: 20px;
-            margin-top: 10px;
         }
-        
+
+        h1 {
+            color: #0c3732;
+        }
+
+        .container {
+            width: 1000px;
+            padding: 20px;
+            background: rgb(2,0,36);
+            background: rgb(199, 215, 205);
+            background: radial-gradient(rgba(165, 191, 157, 0.059) 100%);
+            border-radius: 20px;
+            box-shadow: 8px 8px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .container-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
         .container-header input {
-            height: 50px;
-            width: 400px;
-            font-size: 25px;
+            width: 200px;
+            height: 40px;
+            padding-left: 15px;
+            font-size: 18px;
             border-radius: 10px;
-            padding-left: 20px;
-            padding-right: 5px;
+            border: 2px solid #2f8f83;
         }
-        
-        .push,
-        .pop,
-        .reset,
-        .box {
-            height: 50px;
+
+        .container-header button {
             width: 140px;
-            font-size: 25px;
-            background-color: green;
+            height: 40px;
+            font-size: 18px;
+            border: none;
+            background-color: #0f2422;
             color: white;
             border-radius: 10px;
             cursor: pointer;
-            transition: 0.2s;
-            border: none;
         }
-        .disable-button {
-            background-color: rgb(0, 59, 0);
-        }
-        
-        .container-header button:active {
-            transform: scale(0.95);
-        }
-        .container-body {
-            width: 1000px;
-            display: flex;
-            justify-content: space-evenly;
-            align-items: center;
-        }
-        
-        .stack {
-            width: 500px;
-            height: 470px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            border-width: 0 3px 0 0;
-            border-color: black;
-            border-style: solid;
-        }
-        
-        .main-stack-bucket {
-            height: 450px;
-            width: 200px;
-            border-width: 0 4px 4px 4px;
-            border-color: black;
-            border-style: solid;
-            border-radius: 0 0 10px 10px;
-            display: flex;
-            justify-content: end;
-            align-items: center;
-            flex-direction: column-reverse;
-            gap: 5px;
-            padding-bottom: 5px;
-        }
-        
-        .ele {
-            height: 80px;
-            width: 170px;
-            background-color: green;
-            color: white;
-            border: 4px black solid;
-            border-radius: 10px;
-            font-size: 25px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        .ele-add {
-            animation: pushAnimation 0.3s infinite linear;
-        }
-        .ele-remove {
-            animation: popAnimation 0.3s infinite linear;
-        }
-        @keyframes pushAnimation {
-            0% {
-                background-color: green;
-            }
-            100% {
-                background-color: rgb(17, 92, 255);
-            }
-        }
-        @keyframes popAnimation {
-            0% {
-                background-color: green;
-            }
-            100% {
-                background-color: rgb(255, 15, 59);
-            }
-        }
-        
-        .info {
-            height: 470px;
-            width: 500px;
-            padding-left: 20px;
-        }
-        
-        [class^="sec"] {
-            display: flex;
-            width: 350px;
-            align-items: center;
-            gap: 10px;
+
+        .slider-container {
             margin-top: 10px;
-            justify-content: space-between;
-        }
-        
-        .massage-box {
-            height: 180px;
-            width: 400px;
-            margin-top: 30px;
-            padding: 10px;
-            border-radius: 10px;
-            background-color: bisque;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-        }
-        
-        .massage-box h2 {
             text-align: center;
-            font-weight: 600;
         }
-        
-        .massage {
-            height: 160px;
+
+        .slider-container input[type=range] {
+            width: 300px;
+        }
+
+        .stack {
             display: flex;
-            align-items: center;
             justify-content: center;
-            font-size: 30px;
+            align-items: end;
+            height: 450px;
+            border: 3px solid #000;
+            border-radius: 10px;
+            overflow: hidden;
         }
-        .error-massage {
-            animation: errorMassage 0.4s infinite linear;
+
+        .ball {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background-color: #1e4a45;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 20px;
+            border: 2px solid #000;
+            margin-bottom: 10px;
+            animation: pushBall 0.5s ease-in-out;
         }
-        @keyframes errorMassage {
+
+        @keyframes pushBall {
             0% {
-                background-color: bisque;
+                transform: translateY(100px); /* Start below the stack */
+                opacity: 0;
             }
             100% {
-                background-color: rgb(255, 15, 59);
+                transform: translateY(0); /* Move to the stack */
+                opacity: 1;
             }
-        }</style>
+        }
+
+        @keyframes popBall {
+            0% {
+                transform: translateY(0); /* Start at the stack */
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100px); /* Move up and fade out */
+                opacity: 0;
+            }
+        }
+
+        .ball.pop {
+            animation: popBall 0.5s forwards;
+        }
+
+        .message {
+            margin-top: 20px;
+            text-align: center;
+            color: red;
+        }
+
+        .info {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+        }
+
+        .info-item {
+            background-color: #f0f0f0;
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+    </style>
 </head>
 
 <body>
     <!-- heading -->
     <header>
-        <h1 class="heading">Stack Visualizer</h1>
+        <h1>Stack Visualizer</h1>
     </header>
 
     <div class="container">
         <div class="container-header">
-            <input type="number" class="text" required>
+            <input type="number" class="text" placeholder="Enter number">
             <button class="push">Push</button>
-            <button class="pop ">Pop</button>
+            <button class="pop">Pop</button>
             <button class="reset">Reset</button>
         </div>
 
-        <div class="container-body">
-            <div class="stack">
-                <div class="main-stack-bucket"></div>
+        <!-- Slider to adjust stack size -->
+        <div class="slider-container">
+            <label for="stackSize">Set Stack Size: </label>
+            <input type="range" id="stackSize" min="3" max="10" value="5">
+            <span id="stackSizeValue">5</span>
+        </div>
+
+        <div class="stack" id="stack"></div>
+
+        <div class="message" id="message"></div>
+
+        <div class="info">
+            <div class="info-item">
+                <h3>Top of Stack</h3>
+                <div id="topElement">-</div>
             </div>
-
-            <div class="info">
-                <div class="sec1">
-                    <h3>Top of the Stack:-</h3>
-                    <button class="box"></button>
-                </div>
-                <div class="sec2">
-                    <h3>Last Pushed Item:-</h3>
-                    <button class="box"></button>
-                </div>
-                <div class="sec3">
-                    <h3>Last Popped Item:-</h3>
-                    <button class="box"></button>
-                </div>
-                <div class="sec3">
-                    <h3>Size of the Stack:-</h3>
-                    <button class="box">5</button>
-                </div>
-
-                <div class="massage-box">
-                    <h2>Massage Box</h2>
-                    <div class="massage"></div>
-                </div>
+            <div class="info-item">
+                <h3>Last Popped Item</h3>
+                <div id="lastPopped">-</div>
             </div>
         </div>
     </div>
 
-    <!-- script -->
-    <script>// Variable Declaration
-        const push = document.querySelector(".push");
-        const pop = document.querySelector(".pop");
-        const reset = document.querySelector(".reset");
-        const bucket = document.querySelector(".main-stack-bucket");
-        const input = document.querySelector(".text");
-        const massage = document.querySelector(".massage");
-        const massageBox = document.querySelector(".massage-box");
-        const box = document.querySelectorAll(".box");
+    <script>
         const stack = [];
-        
-        // Disable all buttons
-        const buttonDisable = () => {
-            push.disabled = true;
-            push.classList.add("disable-button");
-            pop.disabled = true;
-            pop.classList.add("disable-button");
-            reset.disabled = true;
-            reset.classList.add("disable-button");
-            input.disabled = true;
-        };
-        
-        // Enable all buttons
-        const buttonEnable = () => {
-            push.disabled = false;
-            push.classList.remove("disable-button");
-            pop.disabled = false;
-            pop.classList.remove("disable-button");
-            reset.disabled = false;
-            reset.classList.remove("disable-button");
-            input.disabled = false;
-        };
-        
-        // When the push button will be clicked
-        push.addEventListener("click", () => {
-        
-            // If input box is empty
-            if (input.value == "") {
-                massage.innerHTML = "Please Enter a value.";
-                massageBox.classList.add("error-massage");
-                setTimeout(() => {
-                    massageBox.classList.remove("error-massage");
-                }, 1200);
-                return;
-            }
-        
-            // If the stack is full
-            if (stack.length == 5) {
-                input.value = "";
-                massage.innerHTML = "Stack Overflow";
-                massageBox.classList.add("error-massage");
-                setTimeout(() => {
-                    massageBox.classList.remove("error-massage");
-                }, 1200);
-                return;
-            }
-            const itemValue = input.value; // Store the input value
-            stack.push(itemValue); // Push the value into the stack
-        
-            // Creating a new element
-            const element = document.createElement("div");
-            element.classList.add("ele");
-            element.innerText = stack[stack.length - 1];
-            bucket.appendChild(element);
-        
-            // Update the top
-            box[0].innerHTML = stack[stack.length - 1];
-        
-            // Clear the input box
-            input.value = "";
-        
-            // Adding the animation for a new pushed element
-            element.classList.add("ele-add");
-        
-            // Disable all buttons
-            buttonDisable();
-        
-            // After pushing the element
-            setTimeout(() => {
-        
-                // Remove the animation
-                element.classList.remove("ele-add");
-        
-                // Update the Last Pushed Item Value
-                box[1].innerHTML = itemValue;
-        
-                // Display the massage
-                massage.innerHTML = `Item ${stack[stack.length - 1]} is Pushed.`;
-        
-                // Enable all buttons
-                buttonEnable();
-            }, 1500);
+        let maxSize = 5;
+
+        const stackElement = document.getElementById('stack');
+        const topElement = document.getElementById('topElement');
+        const lastPopped = document.getElementById('lastPopped');
+        const message = document.getElementById('message');
+        const stackSizeSlider = document.getElementById('stackSize');
+        const stackSizeValue = document.getElementById('stackSizeValue');
+
+        // Update the stack size when slider is changed
+        stackSizeSlider.addEventListener('input', function () {
+            maxSize = this.value;
+            stackSizeValue.innerHTML = this.value;
+            resetStack(); // Reset the stack when the size changes
         });
-        
-        // When the pop button will be clicked
-        pop.addEventListener("click", () => {
-        
-            // if Stack is Empty
-            if (stack.length == 0) {
-                massageBox.classList.add("error-massage");
-                massage.innerHTML = "Stack Underflow";
-                setTimeout(() => {
-                    massageBox.classList.remove("error-massage");
-                }, 1200);
+
+        document.querySelector('.push').addEventListener('click', () => {
+            const value = document.querySelector('.text').value;
+
+            if (!value) {
+                showMessage('Please enter a value.');
                 return;
             }
-        
-            // Adding the popping animation
-            bucket.lastElementChild.classList.add("ele-remove");
-        
-            // Disable all buttons
-            buttonDisable();
-        
-            // Start popping the element
-            setTimeout(() => {
-        
-                // Delete the element from the bucket
-                bucket.removeChild(bucket.lastElementChild);
-        
-                // Storing the popped value
-                const itemValue = stack.pop();
-        
-                // Updating the last popped item
-                box[2].innerHTML = itemValue;
-        
-                // Updating the Top
-                if (stack.length == 0) {
-                    box[0].innerHTML = "";
-                } else {
-                    box[0].innerHTML = stack[stack.length - 1];
-                }
-        
-                // Adding the massage
-                massage.innerHTML = `Item ${itemValue} is Popped.`;
-        
-                // Enable all buttons
-                buttonEnable();
-            }, 1500);
+
+            if (stack.length >= maxSize) {
+                showMessage('Stack Overflow');
+                return;
+            }
+
+            pushStack(value);
         });
-        
-        // When the reset button will be clicked
-        reset.addEventListener("click", () => {
-        
-            // Clear the full array
-            while (stack.length > 0) {
-                stack.pop();
+
+        document.querySelector('.pop').addEventListener('click', () => {
+            if (stack.length === 0) {
+                showMessage('Stack Underflow');
+                return;
             }
-        
-            // Clear all fields
-            box[0].innerHTML = "";
-            box[1].innerHTML = "";
-            box[2].innerHTML = "";
-            massage.innerHTML = "";
-        
-            // Clear all elements from the bucket
-            while (bucket.firstChild) {
-                bucket.removeChild(bucket.firstChild);
+
+            popStack();
+        });
+
+        document.querySelector('.reset').addEventListener('click', resetStack);
+
+        function pushStack(value) {
+            stack.push(value);
+            const ball = document.createElement('div');
+            ball.classList.add('ball');
+            ball.innerText = value;
+            stackElement.appendChild(ball);
+
+            updateTop();
+            showMessage(`Pushed ${value} onto the stack.`);
+            clearInput();
+        }
+
+        function popStack() {
+            const lastValue = stack.pop();
+            const lastBall = stackElement.lastElementChild;
+
+            if (lastBall) {
+                lastBall.classList.add('pop'); // Add pop animation class
+                setTimeout(() => {
+                    stackElement.removeChild(lastBall); // Remove after animation
+                }, 500); // Match the duration of the pop animation (0.5s)
             }
-        });</script>
+
+            lastPopped.innerText = lastValue || '-';
+            updateTop();
+            showMessage(`Popped ${lastValue} from the stack.`);
+        }
+
+        function updateTop() {
+            topElement.innerText = stack.length > 0 ? stack[stack.length - 1] : '-';
+        }
+
+        function resetStack() {
+            stack.length = 0; // Clear stack array
+            stackElement.innerHTML = ''; // Clear stack visual elements
+            topElement.innerText = '-';
+            lastPopped.innerText = '-';
+            showMessage('Stack has been reset.');
+        }
+
+        function clearInput() {
+            document.querySelector('.text').value = '';
+        }
+
+        function showMessage(text) {
+            message.innerText = text;
+            setTimeout(() => {
+                message.innerText = '';
+            }, 2000);
+        }
+    </script>
 </body>
 
 </html>

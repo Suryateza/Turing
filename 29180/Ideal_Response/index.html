@@ -179,7 +179,7 @@ const updateLocalStorage = () => {
 
     localStorage.setItem("notes", JSON.stringify(notesData));
   } catch (error) {
-    console.error("Error updating localStorage:", error);
+   
   }
 };
 
@@ -187,7 +187,7 @@ const updateArchivedStorage = () => {
   try {
     localStorage.setItem("archivedNotes", JSON.stringify(archivedNotes));
   } catch (error) {
-    console.error("Error updating archived notes storage:", error);
+    
   }
 };
 
