@@ -2,121 +2,203 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GameDev Task Scheduler</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+<title>Brick Breaker Game</title>
 <style>
-body { font-family: 'Arial', sans-serif; background: linear-gradient(to right, #f0f0f0, #e0e0e0); margin: 0; padding: 0; }
-header { background: #2c3e50; color: white; padding: 15px 0; text-align: center; }
-.task-container { display: flex; justify-content: space-around; padding: 20px; }
-.task-list { background: #fff; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); width: 70%; padding: 20px; }
-.task-item { background: #ecf0f1; margin: 10px 0; padding: 15px; border-left: 5px solid #3498db; cursor: move; transition: transform 0.3s; }
-.task-item:hover { transform: scale(1.02); }
-.controls, .filters { margin-top: 20px; }
-button { background: #3498db; border: none; color: white; padding: 10px 15px; cursor: pointer; }
-button:hover { background: #2980b9; }
-.progress-bar { width: 20%; background: #fff; padding: 20px; border-radius: 8px; }
-@media (max-width: 768px) {
-    .task-container { flex-direction: column; }
-    .task-list, .progress-bar { width: 90%; margin: 10px auto; }
-}
+    canvas { 
+        background: #f0f0f0; 
+        display: block; 
+        margin: 0 auto; 
+        border: 1px solid #000; 
+    }
+    body { 
+        margin: 0; 
+        padding: 0; 
+        display: flex; 
+        justify-content: center; 
+        align-items: center; 
+        height: 100vh; 
+        background-color: #333; 
+    }
+    #score, #lives { 
+        position: absolute; 
+        color: white; 
+        font-family: Arial, sans-serif; 
+    }
+    #score { top: 10px; left: 10px; }
+    #lives { top: 10px; right: 10px; }
 </style>
 </head>
 <body>
 
-<header>
-    <h1>GameDev Task Scheduler</h1>
-</header>
+<canvas id="gameCanvas" width="480" height="320"></canvas>
+<div id="score">Score: 0</div>
+<div id="lives">Lives: 3</div>
 
-<div class="task-container">
-    <div class="task-list" id="taskList">
-        <!-- Tasks will be dynamically added here -->
-    </div>
-
-    <div class="progress-bar">
-        <h3>Progress</h3>
-        <div id="gameProgress">Level: 1 - XP: 0/100</div>
-        <!-- Progress visualization will be added here -->
-    </div>
-</div>
-
-<div class="controls">
-    <button onclick="addTask()">Add Task</button>
-</div>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.14.0/Sortable.min.js"></script>
 <script>
-document.addEventListener('DOMContentLoaded', (event) => {
-    let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
-    const taskList = document.getElementById('taskList');
+// Game setup
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+const ballRadius = 10;
+let x = canvas.width/2;
+let y = canvas.height - 30;
+let dx = 2;
+let dy = -2;
+const paddleHeight = 10;
+const paddleWidth = 75;
+let paddleX = (canvas.width-paddleWidth)/2;
+let rightPressed = false;
+let leftPressed = false;
+let bricks = [];
+let brickRowCount = 3;
+let brickColumnCount = 5;
+let brickWidth = 75;
+let brickHeight = 20;
+let brickPadding = 10;
+let brickOffsetTop = 30;
+let brickOffsetLeft = 30;
+let score = 0;
+let lives = 3;
+let level = 1;
 
-    function saveTasks() {
-        localStorage.setItem('tasks', JSON.stringify(tasks));
+function createBricks() {
+    for(let c=0; c<brickColumnCount; c++) {
+        bricks[c] = [];
+        for(let r=0; r<brickRowCount; r++) {
+            bricks[c][r] = { x: 0, y: 0, status: 1 + Math.floor(Math.random() * level) };
+        }
     }
+}
 
-    function renderTasks() {
-        taskList.innerHTML = '';
-        tasks.forEach((task, index) => {
-            const taskDiv = document.createElement('div');
-            taskDiv.className = 'task-item';
-            taskDiv.draggable = true;
-            taskDiv.innerHTML = `
-                <h3>${task.title}</h3>
-                <p>${task.description}</p>
-                <small>Deadline: ${task.deadline} - Priority: ${task.priority}</small>
-                <button onclick="editTask(${index})">Edit</button>
-                <button onclick="deleteTask(${index})">Delete</button>
-            `;
-            taskList.appendChild(taskDiv);
-        });
-
-        new Sortable(taskList, {
-            animation: 150,
-            onEnd: (evt) => {
-                const itemEl = evt.item;  // dragged HTMLElement
-                tasks.splice(evt.newIndex, 0, tasks.splice(evt.oldIndex, 1)[0]);
-                saveTasks();
+function drawBricks() {
+    for(let c=0; c<brickColumnCount; c++) {
+        for(let r=0; r<brickRowCount; r++) {
+            if(bricks[c][r].status > 0) {
+                let brickX = (c*(brickWidth+brickPadding))+brickOffsetLeft;
+                let brickY = (r*(brickHeight+brickPadding))+brickOffsetTop;
+                bricks[c][r].x = brickX;
+                bricks[c][r].y = brickY;
+                ctx.beginPath();
+                ctx.rect(brickX, brickY, brickWidth, brickHeight);
+                ctx.fillStyle = `hsl(${bricks[c][r].status * 30}, 100%, 50%)`;
+                ctx.fill();
+                ctx.closePath();
             }
-        });
+        }
     }
+}
 
-    function addTask() {
-        const title = prompt("Task Title:");
-        if (title) {
-            tasks.push({
-                title: title,
-                description: prompt("Description:") || "",
-                deadline: prompt("Deadline (YYYY-MM-DD):") || "No deadline",
-                priority: prompt("Priority (1-5):") || "3"
-            });
-            saveTasks();
-            renderTasks();
+function collisionDetection() {
+    for(let c=0; c<brickColumnCount; c++) {
+        for(let r=0; r<brickRowCount; r++) {
+            let b = bricks[c][r];
+            if(b.status > 0) {
+                if(x > b.x && x < b.x+brickWidth && y > b.y && y < b.y+brickHeight) {
+                    dy = -dy;
+                    b.status--;
+                    score++;
+                    if(b.status == 0) {
+                        // Play sound for brick destruction
+                        new Audio('brick_hit.mp3').play();
+                    }
+                    if(score === brickRowCount * brickColumnCount * level) {
+                        alert('YOU WIN, CONGRATULATIONS! LEVEL ' + level);
+                        level++;
+                        document.location.reload(); // Reset for next level
+                    }
+                }
+            }
+        }
+    }
+}
+
+function drawBall() {
+    ctx.beginPath();
+    ctx.arc(x, y, ballRadius, 0, Math.PI*2);
+    ctx.fillStyle = "#0095DD";
+    ctx.fill();
+    ctx.closePath();
+}
+
+function drawPaddle() {
+    ctx.beginPath();
+    ctx.rect(paddleX, canvas.height-paddleHeight, paddleWidth, paddleHeight);
+    ctx.fillStyle = "#0095DD";
+    ctx.fill();
+    ctx.closePath();
+}
+
+function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawBricks();
+    drawBall();
+    drawPaddle();
+    collisionDetection();
+    
+    // Ball collision with walls
+    if(x + dx > canvas.width-ballRadius || x + dx < ballRadius) {
+        dx = -dx;
+    }
+    if(y + dy < ballRadius) {
+        dy = -dy;
+    } else if(y + dy > canvas.height-ballRadius) {
+        if(x > paddleX && x < paddleX + paddleWidth) {
+            dy = -dy;
+        } else {
+            lives--;
+            if(!lives) {
+                alert("GAME OVER");
+                document.location.reload();
+            } else {
+                x = canvas.width/2;
+                y = canvas.height-30;
+                dx = 2;
+                dy = -2;
+                paddleX = (canvas.width-paddleWidth)/2;
+            }
         }
     }
 
-    function editTask(index) {
-        const task = tasks[index];
-        const newTitle = prompt("New Task Title:", task.title);
-        if (newTitle !== null) {
-            task.title = newTitle;
-            task.description = prompt("New Description:", task.description) || task.description;
-            task.deadline = prompt("New Deadline (YYYY-MM-DD):", task.deadline) || task.deadline;
-            task.priority = prompt("New Priority (1-5):", task.priority) || task.priority;
-            saveTasks();
-            renderTasks();
-        }
+    // Paddle movement
+    if(rightPressed && paddleX < canvas.width-paddleWidth) {
+        paddleX += 7;
+    }
+    else if(leftPressed && paddleX > 0) {
+        paddleX -= 7;
     }
 
-    function deleteTask(index) {
-        if (confirm("Are you sure you want to delete this task?")) {
-            tasks.splice(index, 1);
-            saveTasks();
-            renderTasks();
-        }
-    }
+    x += dx;
+    y += dy;
 
-    renderTasks();
-});
+    document.getElementById("score").innerHTML = `Score: ${score}`;
+    document.getElementById("lives").innerHTML = `Lives: ${lives}`;
+
+    requestAnimationFrame(draw);
+}
+
+document.addEventListener("keydown", keyDownHandler, false);
+document.addEventListener("keyup", keyUpHandler, false);
+
+function keyDownHandler(e) {
+    if(e.key == "Right" || e.key == "ArrowRight") {
+        rightPressed = true;
+    }
+    else if(e.key == "Left" || e.key == "ArrowLeft") {
+        leftPressed = true;
+    }
+}
+
+function keyUpHandler(e) {
+    if(e.key == "Right" || e.key == "ArrowRight") {
+        rightPressed = false;
+    }
+    else if(e.key == "Left" || e.key == "ArrowLeft") {
+        leftPressed = false;
+    }
+}
+
+// Initialize game
+createBricks();
+draw();
 </script>
 
 </body>
