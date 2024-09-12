@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subscription Optimizer</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { padding-top: 60px; }
+        .card { margin-bottom: 20px; }
+        .graph-container { width: 100%; height: 300px; }
+    </style>
+</head>
+<body>
+    
+<nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top">
+  <a class="navbar-brand" href="#">Subscription Optimizer</a>
+  <div class="collapse navbar-collapse" id="navbarNav">
+    <ul class="navbar-nav">
+      <li class="nav-item"><a class="nav-link" href="#" onclick="showSection('dashboard')">Dashboard</a></li>
+      <li class="nav-item"><a class="nav-link" href="#" onclick="showSection('addSubscription')">Add Subscription</a></li>
+    </ul>
+  </div>
+</nav>
+
+<div class="container" id="app">
+    <!-- Dashboard -->
+    <div id="dashboard">
+        <h2>Dashboard</h2>
+        <div class="row">
+            <div class="col-md-4"><div class="card"><div class="card-body">Total Cost: $<span id="totalCost">0</span></div></div></div>
+            <div class="col-md-8"><div class="card"><div class="card-body">Upcoming Renewals</div></div></div>
+        </div>
+        <div id="expenditureChart" class="graph-container"></div>
+    </div>
+
+    <!-- Add Subscription Form -->
+    <div id="addSubscription" style="display:none;">
+        <h2>Add/Edit Subscription</h2>
+        <form id="subscriptionForm">
+            <!-- Form fields for subscription details -->
+            <button type="submit" class="btn btn-primary">Save</button>
+        </form>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.4"></script>
+<script>
+    function showSection(sectionId) {
+        $('#app > div').hide();
+        $('#' + sectionId).show();
+    }
+
+    $(document).ready(function() {
+        // Initialize with dashboard
+        showSection('dashboard');
+
+        // Load subscriptions from localStorage or initialize
+        let subscriptions = JSON.parse(localStorage.getItem('subscriptions')) || [];
+
+        // Function to update dashboard
+        function updateDashboard() {
+            let total = subscriptions.reduce((sum, sub) => sum + parseFloat(sub.cost), 0);
+            $('#totalCost').text(total.toFixed(2));
+            // Update chart with subscription data
+            // Chart.js initialization would go here
+        }
+
+        // Form submission
+        $('#subscriptionForm').on('submit', function(e) {
+            e.preventDefault();
+            // Handle form data, save to subscriptions array
+            // localStorage.setItem('subscriptions', JSON.stringify(subscriptions));
+            updateDashboard();
+            showSection('dashboard');
+        });
+
+        updateDashboard();
+    });
+</script>
+
+</body>
+</html>
