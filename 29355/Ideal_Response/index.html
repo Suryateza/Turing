@@ -205,73 +205,78 @@
 <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.4"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+
 <script>
+    let subscriptions = JSON.parse(localStorage.getItem('subscriptions')) || [];
+
     function showSection(sectionId) {
         $('#app > div').hide();
         $('#' + sectionId).show();
     }
 
-    $(document).ready(function() {
-        // Initialize with dashboard
-        showSection('dashboard');
+    function updateDashboard() {
+        let total = subscriptions.reduce((sum, sub) => sum + parseFloat(sub.cost), 0);
+        $('#totalCost').text(total.toFixed(2));
 
-        // Load subscriptions from localStorage or initialize
-        let subscriptions = JSON.parse(localStorage.getItem('subscriptions')) || [];
+        // Generate renewal list with delete buttons
+        let renewalList = subscriptions.map((sub, index) => 
+            `<li class="list-group-item d-flex justify-content-between align-items-center">
+                ${sub.name} - Renewal on ${sub.renewalDate}
+                <button class="btn btn-danger btn-sm" onclick="deleteSubscription(${index})">Delete</button>
+            </li>`
+        ).join('');
+        $('#renewalList').html(renewalList);
 
-        // Function to update dashboard
-        function updateDashboard() {
-            let total = subscriptions.reduce((sum, sub) => sum + parseFloat(sub.cost), 0);
-            $('#totalCost').text(total.toFixed(2));
+        // Update chart with subscription data
+        let ctx = document.getElementById('expenditureChart').getContext('2d');
+        let categories = [...new Set(subscriptions.map(sub => sub.category))];
+        let data = categories.map(category => 
+            subscriptions.filter(sub => sub.category === category).reduce((sum, sub) => sum + parseFloat(sub.cost), 0)
+        );
 
-            // Generate renewal list
-            let renewalList = subscriptions.map(sub => `<li class="list-group-item">${sub.name} - Renewal on ${sub.renewalDate}</li>`).join('');
-            $('#renewalList').html(renewalList);
-
-            // Update chart with subscription data
-            let ctx = document.getElementById('expenditureChart').getContext('2d');
-            let categories = [...new Set(subscriptions.map(sub => sub.category))];
-            let data = categories.map(category => 
-                subscriptions.filter(sub => sub.category === category).reduce((sum, sub) => sum + parseFloat(sub.cost), 0)
-            );
-
-            new Chart(ctx, {
-                type: 'pie',
-                data: {
-                    labels: categories,
-                    datasets: [{
-                        data: data,
-                        backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0'],
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    title: {
-                        display: true,
-                        text: 'Spending by Category'
-                    }
+        new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: categories,
+                datasets: [{
+                    data: data,
+                    backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0'],
+                }]
+            },
+            options: {
+                responsive: true,
+                title: {
+                    display: true,
+                    text: 'Spending by Category'
                 }
-            });
-        }
-
-        // Form submission
-        $('#subscriptionForm').on('submit', function(e) {
-            e.preventDefault();
-            let newSubscription = {
-                name: $('#subName').val(),
-                cost: $('#subCost').val(),
-                category: $('#subCategory').val(),
-                renewalDate: $('#subRenewal').val()
-            };
-            subscriptions.push(newSubscription);
-            localStorage.setItem('subscriptions', JSON.stringify(subscriptions));
-            updateDashboard();
-            showSection('dashboard');
+            }
         });
+    }
 
-        // Initialize dashboard
+    function deleteSubscription(index) {
+        subscriptions.splice(index, 1);
+        localStorage.setItem('subscriptions', JSON.stringify(subscriptions));
+        updateDashboard();
+    }
+
+    $('#subscriptionForm').on('submit', function(event) {
+        event.preventDefault();
+        let newSubscription = {
+            name: $('#subName').val(),
+            cost: $('#subCost').val(),
+            category: $('#subCategory').val(),
+            renewalDate: $('#subRenewal').val()
+        };
+
+        subscriptions.push(newSubscription);
+        localStorage.setItem('subscriptions', JSON.stringify(subscriptions));
+        updateDashboard();
+        showSection('dashboard');
+    });
+
+    $(document).ready(function() {
         updateDashboard();
     });
 </script>
-
 </body>
 </html>
