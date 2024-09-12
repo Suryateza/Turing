@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PixSort Studio</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f4f4f4; }
+        #app { max-width: 1200px; margin: 20px auto; padding: 20px; background: white; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        #canvas, #controls { display: block; width: 100%; max-width: 600px; margin: 20px auto; }
+        #controls button, #controls select, #uploadButton { margin: 10px; padding: 10px; }
+        #downloadBtn { display: none; }
+    </style>
+</head>
+<body>
+<div id="app">
+    <h1>PixSort Studio</h1>
+    <input type="file" id="uploadButton" accept="image/*">
+    <div id="controls">
+        <select id="sortMethod">
+            <option value="brightness">Sort by Brightness</option>
+            <option value="hue">Sort by Hue</option>
+            <option value="position">Sort by Position</option>
+        </select>
+        <button onclick="applySort()">Apply Sort</button>
+        <button id="downloadBtn" onclick="downloadImage()">Download Image</button>
+    </div>
+    <canvas id="canvas"></canvas>
+</div>
+
+<script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const uploadButton = document.getElementById('uploadButton');
+    const downloadBtn = document.getElementById('downloadBtn');
+    let imgData;
+
+    // Image upload handling
+    uploadButton.addEventListener('change', function(e) {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            const img = new Image();
+            img.onload = function() {
+                canvas.width = img.width;
+                canvas.height = img.height;
+                ctx.drawImage(img, 0, 0);
+                imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            }
+            img.src = event.target.result;
+        }
+        reader.readAsDataURL(e.target.files[0]);
+    });
+
+    // Pixel sorting logic
+    function applySort() {
+        const method = document.getElementById('sortMethod').value;
+        let sortedData = Array.from(imgData.data);
+
+        for (let y = 0; y < canvas.height; y++) {
+            let row = [];
+            for (let x = 0; x < canvas.width * 4; x += 4) {
+                let index = y * canvas.width * 4 + x;
+                row.push({
+                    r: sortedData[index],
+                    g: sortedData[index + 1],
+                    b: sortedData[index + 2],
+                    a: sortedData[index + 3],
+                    pos: method === 'position' ? x : 0
+                });
+            }
+
+            row.sort((a, b) => {
+                if (method === 'brightness') return (0.299*a.r + 0.587*a.g + 0.114*a.b) - (0.299*b.r + 0.587*b.g + 0.114*b.b);
+                if (method === 'hue') {
+                    let hsvA = rgbToHsv(a.r, a.g, a.b);
+                    let hsvB = rgbToHsv(b.r, b.g, b.b);
+                    return hsvA.h - hsvB.h;
+                }
+                return a.pos - b.pos; // position
+            });
+
+            row.forEach((pixel, x) => {
+                let index = y * canvas.width * 4 + x * 4;
+                sortedData[index] = pixel.r;
+                sortedData[index + 1] = pixel.g;
+                sortedData[index + 2] = pixel.b;
+                sortedData[index + 3] = pixel.a;
+            });
+        }
+
+        ctx.putImageData(new ImageData(new Uint8ClampedArray(sortedData), canvas.width, canvas.height), 0, 0);
+        downloadBtn.style.display = 'inline';
+    }
+
+    // RGB to HSV conversion
+    function rgbToHsv(r, g, b) {
+        r /= 255, g /= 255, b /= 255;
+        let max = Math.max(r, g, b), min = Math.min(r, g, b);
+        let h, s, v = max;
+        let d = max - min;
+        s = max == 0 ? 0 : d / max;
+        if (max == min) h = 0; // achromatic
+        else {
+            switch(max) {
+                case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+                case g: h = (b - r) / d + 2; break;
+                case b: h = (r - g) / d + 4; break;
+            }
+            h /= 6;
+        }
+        return {h, s, v};
+    }
+
+    // Download sorted image
+    function downloadImage() {
+        const link = document.createElement('a');
+        link.download = 'sorted_image.png';
+        link.href = canvas.toDataURL();
+        link.click();
+    }
+</script>
+</body>
+</html>

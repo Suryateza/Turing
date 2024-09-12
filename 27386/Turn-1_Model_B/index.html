@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PixSort Studio</title>
+<style>
+    body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f4f4f4; }
+    .container { width: 80%; margin: 20px auto; text-align: center; }
+    canvas { border: 1px solid #000; max-width: 100%; height: auto; }
+    .controls { margin-top: 20px; }
+    button, input[type="file"] { padding: 10px; margin: 5px; }
+    select { padding: 9px; }
+</style>
+</head>
+<body>
+<div class="container">
+    <h1>PixSort Studio</h1>
+    <input type="file" id="imageLoader" name="imageLoader"/>
+    <canvas id="imageCanvas"></canvas>
+    <div class="controls">
+        <select id="sortType">
+            <option value="brightness">Brightness</option>
+            <option value="hue">Hue</option>
+            <option value="position">Position</option>
+        </select>
+        <button onclick="applySort()">Apply Sort</button>
+        <button onclick="downloadImage()">Download Image</button>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+let canvas = document.getElementById('imageCanvas');
+let ctx = canvas.getContext('2d');
+let img;
+
+// Image upload handler
+const imageLoader = document.getElementById('imageLoader');
+imageLoader.addEventListener('change', handleImage, false);
+
+function handleImage(e) {
+    let reader = new FileReader();
+    reader.onload = function(event) {
+        img = new Image();
+        img.onload = function() {
+            canvas.width = img.width;
+            canvas.height = img.height;
+            ctx.drawImage(img, 0, 0);
+        }
+        img.src = event.target.result;
+    }
+    reader.readAsDataURL(e.target.files[0]);     
+}
+
+// Sorting functions
+function sortByBrightness(pixels) {
+    let d = pixels.data;
+    let temp = [];
+    for (let i = 0; i < d.length; i += 4) {
+        let brightness = 0.34 * d[i] + 0.5 * d[i + 1] + 0.16 * d[i + 2];
+        temp.push({index: i, brightness: brightness});
+    }
+    temp.sort((a, b) => a.brightness - b.brightness);
+    return temp.map(t => t.index);
+}
+
+function sortByHue(pixels) {
+    // Similar approach for hue, converting RGB to HSL then sorting
+}
+
+function sortByPosition(pixels, byRow = true) {
+    // Implement sorting by pixel position, either row or column
+}
+
+function applySort() {
+    let sortType = $('#sortType').val();
+    let pixels = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    let indices;
+    
+    switch(sortType) {
+        case 'brightness':
+            indices = sortByBrightness(pixels);
+            break;
+        case 'hue':
+            indices = sortByHue(pixels);
+            break;
+        case 'position':
+            indices = sortByPosition(pixels);
+            break;
+    }
+
+    let sortedPixels = new ImageData(canvas.width, canvas.height);
+    for (let i = 0; i < indices.length; i++) {
+        let oldIndex = indices[i];
+        sortedPixels.data[i*4] = pixels.data[oldIndex];
+        sortedPixels.data[i*4 + 1] = pixels.data[oldIndex + 1];
+        sortedPixels.data[i*4 + 2] = pixels.data[oldIndex + 2];
+        sortedPixels.data[i*4 + 3] = pixels.data[oldIndex + 3];
+    }
+    
+    ctx.putImageData(sortedPixels, 0, 0);
+}
+
+function downloadImage() {
+    let link = document.createElement('a');
+    link.download = 'sorted_image.png';
+    link.href = canvas.toDataURL();
+    link.click();
+}
+</script>
+</body>
+</html>
