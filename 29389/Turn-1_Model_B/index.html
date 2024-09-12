@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text to Speech Converter</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 500px;
+        }
+        textarea {
+            width: calc(100% - 20px);
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+            resize: vertical;
+        }
+        button {
+            background-color: #5cb85c;
+            border: none;
+            color: white;
+            padding: 15px 32px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #4cae4c;
+        }
+        #status {
+            margin-top: 10px;
+            color: #d9534f;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Text to Speech</h2>
+        <textarea id="textInput" rows="5" placeholder="Enter text to convert to speech..."></textarea>
+        <button onclick="textToSpeech()">Speak</button>
+        <div id="status"></div>
+    </div>
+
+    <script>
+        function textToSpeech() {
+            const text = document.getElementById('textInput').value;
+            const statusDiv = document.getElementById('status');
+            
+            if ('speechSynthesis' in window) {
+                if (text.length === 0) {
+                    statusDiv.textContent = "Please enter some text.";
+                    return;
+                }
+
+                // Speech Synthesis with the Web Speech API
+                let utterance = new SpeechSynthesisUtterance(text);
+                window.speechSynthesis.speak(utterance);
+
+                // Update status
+                statusDiv.textContent = "Speaking...";
+                utterance.onend = function(event) {
+                    statusDiv.textContent = "Finished speaking.";
+                };
+                utterance.onerror = function(event) {
+                    statusDiv.textContent = "Error with speech synthesis.";
+                };
+            } else {
+                statusDiv.textContent = "Sorry, your browser doesn't support text to speech.";
+            }
+        }
+    </script>
+</body>
+</html>
