@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TravelSite</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css">
+<style>
+    .hero { background: url('path/to/hero-image.jpg') center/cover; }
+    .card { margin: 10px; }
+    @media screen and (max-width: 768px) {
+        .hero-body { padding: 1.5rem; }
+        .columns { flex-direction: column; }
+    }
+</style>
+</head>
+<body>
+
+<!-- Navigation -->
+<nav class="navbar" role="navigation" aria-label="main navigation">
+  <div class="navbar-brand">
+    <a class="navbar-item" href="#">TravelSite</a>
+  </div>
+  <div class="navbar-menu">
+    <div class="navbar-end">
+      <a class="navbar-item" href="#login">Login</a>
+      <a class="navbar-item" href="#register">Register</a>
+    </div>
+  </div>
+</nav>
+
+<!-- Hero Section with Search -->
+<section class="hero is-medium">
+  <div class="hero-body">
+    <p class="title">Find Your Next Adventure</p>
+    <div class="field has-addons">
+      <div class="control is-expanded">
+        <input class="input" type="text" placeholder="Where to next?">
+      </div>
+      <div class="control">
+        <a class="button is-info">Search</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Featured Destinations -->
+<section class="section">
+  <div class="container">
+    <h1 class="title">Featured Destinations</h1>
+    <div class="columns">
+      <div class="column">
+        <div class="card">
+          <div class="card-image">
+            <figure class="image is-4by3">
+              <img src="path/to/destination1.jpg" alt="Destination 1">
+            </figure>
+          </div>
+          <div class="card-content">
+            <p class="title is-4">Paris</p>
+            <a class="button is-link" href="#destination">Learn More</a>
+          </div>
+        </div>
+      </div>
+      <!-- More destination cards here -->
+    </div>
+  </div>
+</section>
+
+<!-- Travel Packages -->
+<section class="section">
+  <div class="container">
+    <h1 class="title">Travel Packages</h1>
+    <!-- Package list here -->
+  </div>
+</section>
+
+<!-- Modal for Login/Register -->
+<div id="login" class="modal">
+  <!-- Login form here -->
+</div>
+
+<div id="register" class="modal">
+  <!-- Registration form here -->
+</div>
+
+<!-- Destination Detail, Booking Form would be similar modals or sections -->
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+$(document).ready(function() {
+    // Simple modal activation
+    $('.navbar-item').on('click', function(e) {
+        e.preventDefault();
+        var target = $(this).attr('href');
+        $(target).addClass('is-active');
+    });
+
+    $('.modal-close').on('click', function() {
+        $('.modal').removeClass('is-active');
+    });
+
+    // Here you would also handle form submissions, dynamic content loading etc.
+});
+</script>
+</body>
+</html>
