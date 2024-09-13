@@ -5,19 +5,27 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Infinite Scroll Posts</title>
 <style>
+    /* Define the custom properties (CSS variables) */
+    :root {
+        --main-color: #0f4c81;  /* Primary background color */
+        --light-color: #82c0cc; /* Secondary light color */
+        --dark-color: #ffffff;  /* Text color */
+    }
+
     body {
-          background-color: var(--main-color);
-          background-image: linear-gradient(315deg, var(--main-color) 0%, var(--light-color) 100%);
-          color: var(--dark-color);
-          font-family: "Roboto", sans-serif;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          min-height: 100vh;
-          margin: 0;
-          padding-bottom: 100px;
-        }
+        background-color: var(--main-color);
+        background-image: linear-gradient(315deg, var(--main-color) 0%, var(--light-color) 100%);
+        color: var(--dark-color);
+        font-family: "Roboto", sans-serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        margin: 0;
+        padding-bottom: 100px;
+    }
+
     .posts-container {
         max-width: 1200px;
         margin: 0 auto;
@@ -26,6 +34,7 @@
         gap: 20px;
         padding: 20px;
     }
+
     .post {
         background: white;
         border: 1px solid #ddd;
@@ -33,19 +42,24 @@
         overflow: hidden;
         box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
+
     .post img {
         width: 100%;
         height: 150px;
         object-fit: cover;
     }
+
     .post h2, .post p {
         padding: 0 10px;
+        color: black;
     }
+
     @media (max-width: 600px) {
         .posts-container {
             grid-template-columns: 1fr;
         }
     }
+
     #loading {
         text-align: center;
         padding: 20px;
