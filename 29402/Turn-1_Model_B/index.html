@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Dynamic Grid Experience</title>
+<style>
+  body, html {
+    margin: 0;
+    height: 100%;
+    overflow: hidden;
+    background: linear-gradient(45deg, #ff00ff, #00ffff);
+    animation: gradientBG 10s ease infinite;
+  }
+
+  @keyframes gradientBG {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+
+  .container {
+    perspective: 1000px;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    transform-style: preserve-3d;
+    animation: rotate3D 20s linear infinite;
+  }
+
+  @keyframes rotate3D {
+    from { transform: rotateY(0deg); }
+    to { transform: rotateY(360deg); }
+  }
+
+  .box {
+    width: 100px;
+    height: 100px;
+    background: rgba(255, 255, 255, 0.1);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: all 0.3s;
+    animation: float 3s ease-in-out infinite;
+  }
+
+  .box:hover {
+    background: rgba(255, 255, 255, 0.3);
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
+
+  #magicButton {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    padding: 10px;
+    cursor: pointer;
+    background: #333;
+    color: white;
+    border: none;
+    transition: transform 0.1s;
+  }
+
+  #magicButton:active {
+    transform: scale(0.95);
+  }
+
+  .starfield {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="1" fill="white" opacity="0.5"/></svg>') repeat;
+    pointer-events: none;
+    animation: twinkle 5s infinite;
+  }
+
+  @keyframes twinkle {
+    0%, 100% { opacity: 0.2; }
+    50% { opacity: 0.6; }
+  }
+</style>
+</head>
+<body>
+<div class="starfield"></div>
+<div class="container">
+  <div class="grid" id="grid">
+    <!-- Boxes with GIFs would go here -->
+    <div class="box"></div>
+    <!-- Repeat for other boxes -->
+  </div>
+</div>
+<input type="color" id="bgColorPicker" value="#ff00ff" style="position: absolute; top: 10px; left: 10px;">
+<button id="magicButton">Magic</button>
+
+<script>
+  document.getElementById('magicButton').addEventListener('click', function() {
+    const grid = document.getElementById('grid');
+    grid.style.gridTemplateColumns = grid.style.gridTemplateColumns === 'repeat(4, 1fr)' ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)';
+  });
+
+  document.getElementById('bgColorPicker').addEventListener('change', function(e) {
+    document.body.style.background = e.target.value;
+  });
+
+  // Placeholder for adding GIFs and click events on boxes
+  const boxes = document.querySelectorAll('.box');
+  boxes.forEach(box => {
+    box.addEventListener('click', function() {
+      box.style.animation = 'none';
+      void box.offsetWidth; // Trigger reflow
+      box.style.animation = 'float 3s ease-in-out infinite, bounce 0.5s';
+    });
+  });
+
+  // Simple bounce animation
+  function bounce() {
+    this.style.transform = 'scale(1.1)';
+    setTimeout(() => this.style.transform = 'scale(1)', 500);
+  }
+</script>
+</body>
+</html>
