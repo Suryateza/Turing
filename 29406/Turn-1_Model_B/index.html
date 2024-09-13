@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Gaming Infinite Scroll</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<style>
+  #game-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+    padding: 20px;
+  }
+
+  .game-post {
+    background: #f9f9f9;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    transition: transform 0.3s;
+  }
+
+  .game-post:hover {
+    transform: scale(1.05);
+  }
+
+  .game-image, .game-video {
+    width: 100%;
+    display: block;
+  }
+
+  .loading-spinner {
+    display: none;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  .loading-spinner.show {
+    display: flex;
+  }
+</style>
+</head>
+<body>
+
+<div id="game-grid"></div>
+<div class="loading-spinner">
+  <div class="spinner-border" role="status">
+    <span class="visually-hidden">Loading...</span>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/intersection-observer@0.12.0/intersection-observer.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const gameGrid = document.getElementById('game-grid');
+    const loadingSpinner = document.querySelector('.loading-spinner');
+    let page = 1;
+    const itemsPerPage = 10;
+
+    const observer = new IntersectionObserver(entries => {
+        if (entries[0].isIntersecting) {
+            loadMoreGames();
+        }
+    }, { threshold: 1.0 });
+
+    // Placeholder for sentinel element
+    const sentinel = document.createElement('div');
+    gameGrid.appendChild(sentinel);
+    observer.observe(sentinel);
+
+    function loadMoreGames() {
+        loadingSpinner.classList.add('show');
+        fetch(`/api/games?page=${page}&limit=${itemsPerPage}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.length === 0) {
+                observer.unobserve(sentinel);
+                return;
+            }
+            data.forEach(game => {
+                const post = createGamePost(game);
+                gameGrid.insertBefore(post, sentinel);
+            });
+            page++;
+        })
+        .catch(error => {
+            console.error('Failed to fetch games:', error);
+            // Here you could show an error message to the user
+        })
+        .finally(() => {
+            loadingSpinner.classList.remove('show');
+        });
+    }
+
+    function createGamePost(game) {
+        const post = document.createElement('div');
+        post.className = 'game-post';
+        post.innerHTML = `
+            <img src="${game.image}" alt="${game.title}" class="game-image" loading="lazy">
+            <h3>${game.title}</h3>
+            <p>${game.description}</p>
+            <div class="rating">Rating: ${game.rating}</div>
+            ${game.video ? `<iframe src="${game.video}" class="game-video" allowfullscreen loading="lazy"></iframe>` : ''}
+        `;
+        return post;
+    }
+
+    // Debounce function to limit the rate at which loadMoreGames can be triggered
+    function debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
+    }
+
+    const debouncedLoadMore = debounce(loadMoreGames, 300);
+    window.addEventListener('scroll', () => {
+        if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 500) {
+            debouncedLoadMore();
+        }
+    });
+});
+</script>
+
+</body>
+</html>

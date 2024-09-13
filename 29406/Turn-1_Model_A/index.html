@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gaming Infinite Scroll</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css">
+<style>
+body { font-family: 'Arial', sans-serif; margin: 0; padding: 0; }
+#game-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 20px;
+    padding: 20px;
+}
+.game-post {
+    background: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    overflow: hidden;
+    transition: transform 0.3s;
+}
+.game-post:hover { transform: scale(1.05); }
+.loading, .error {
+    text-align: center;
+    padding: 20px;
+    grid-column: 1 / -1;
+}
+img, iframe {
+    width: 100%;
+    display: block;
+    background: #e0e0e0;
+}
+</style>
+</head>
+<body>
+<div id="game-container"></div>
+<div id="loading" class="loading">Loading...</div>
+<div id="error" class="error" style="display:none;">Failed to load games. <button onclick="retryLoad()">Retry</button></div>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const container = document.getElementById('game-container');
+    const loading = document.getElementById('loading');
+    const errorElement = document.getElementById('error');
+    let page = 1;
+    const itemsPerPage = 10;
+    let isLoading = false;
+
+    const observer = new IntersectionObserver(entries => {
+        if (entries[0].isIntersecting && !isLoading) {
+            loadGames();
+        }
+    }, { threshold: 1.0 });
+
+    observer.observe(loading);
+
+    const lazyLoadObserver = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const lazyElement = entry.target;
+                if (lazyElement.tagName === 'IMG') {
+                    lazyElement.src = lazyElement.dataset.src;
+                } else if (lazyElement.tagName === 'IFRAME') {
+                    lazyElement.src = lazyElement.dataset.src;
+                }
+                lazyElement.onload = () => lazyElement.classList.add('loaded');
+                observer.unobserve(lazyElement);
+            }
+        });
+    });
+
+    function loadGames() {
+        isLoading = true;
+        fetch(`/api/games?page=${page}&limit=${itemsPerPage}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.games.length === 0) {
+                observer.unobserve(loading);
+                loading.textContent = 'No more games to load.';
+                return;
+            }
+            data.games.forEach(game => {
+                const post = document.createElement('div');
+                post.className = 'game-post';
+                post.innerHTML = `
+                    <img data-src="${game.image}" alt="${game.name}" loading="lazy">
+                    <h3>${game.name}</h3>
+                    <p>Rating: ${game.rating}/5</p>
+                    <iframe data-src="${game.video}" title="Gameplay video" allowfullscreen></iframe>
+                `;
+                container.appendChild(post);
+                Array.from(post.children).forEach(child => {
+                    if (child.tagName === 'IMG' || child.tagName === 'IFRAME') {
+                        lazyLoadObserver.observe(child);
+                    }
+                });
+            });
+            page++;
+            isLoading = false;
+        })
+        .catch(error => {
+            console.error('Error loading games:', error);
+            errorElement.style.display = 'block';
+            isLoading = false;
+        });
+    }
+
+    function retryLoad() {
+        errorElement.style.display = 'none';
+        isLoading = false;
+        loadGames();
+    }
+
+    // Debounce function for scroll events
+    function debounce(func, wait = 20, immediate = true) {
+        let timeout;
+        return function() {
+            const context = this, args = arguments;
+            const later = function() {
+                timeout = null;
+                if (!immediate) func.apply(context, args);
+            };
+            const callNow = immediate && !timeout;
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+            if (callNow) func.apply(context, args);
+        };
+    }
+
+    window.addEventListener('scroll', debounce(() => {
+        if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 500 && !isLoading) {
+            loadGames();
+        }
+    }));
+
+    // Initial load
+    loadGames();
+});
+</script>
+</body>
+</html>
