@@ -5,7 +5,8 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Image Search App</title>
-    <style>body {
+    <style>
+      body {
         background-color: #f9f9f9;
         font-family: Arial, Helvetica, sans-serif;
         line-height: 1.6;
@@ -81,6 +82,7 @@
         object-fit: cover;
         transition: transform 0.3s ease-in-out;
       }
+
       .search-result a {
         padding: 10px;
         display: block;
@@ -92,7 +94,7 @@
       .search-result:hover a {
         background-color: rgba(0, 0, 0, 0.1);
       }
-      
+
       #show-more-button {
         background-color: #008cba;
         border: none;
@@ -106,31 +108,44 @@
         transition: background-color 0.3s ease-in-out;
         display: none;
       }
-      
+
       #show-more-button:hover {
         background-color: #0077b5;
       }
-      
+
       @media screen and (max-width: 768px) {
         .search-result {
           width: 45%;
         }
       }
+
       @media screen and (max-width: 480px) {
         .search-result {
           width: 100%;
         }
-      
+
         form {
           flex-direction: column;
         }
-      
+
         #search-input {
           margin-bottom: 20px;
           width: 85%;
         }
       }
-      </style>
+
+      /* Chart container */
+      .chart-container {
+        width: 90%;
+        margin: 50px auto;
+        text-align: center;
+      }
+
+      #searchTrendChart {
+        max-width: 100%;
+        height: 300px;
+      }
+    </style>
   </head>
   <body>
     <h1>Image Search App</h1>
@@ -138,98 +153,119 @@
       <input type="text" id="search-input" placeholder="Search for images..." />
       <button id="search-button">Search</button>
     </form>
+
+    <div class="chart-container">
+      <canvas id="searchTrendChart"></canvas>
+    </div>
+
     <div class="search-results">
-      <div class="search-result">
-        <img
-          src="https://plus.unsplash.com/premium_photo-1664361480561-3bdcd6eb3b6f?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MXx8bmF0dXJlfGVufDB8fDB8fA%3D%3D&auto=format&fit=crop&w=1000&q=60"
-          alt="image"
-        />
-        <a
-          href="https://unsplash.com/photos/g-7X6T7vAI4"
-          target="_blank"
-          rel="noopener noreferrer"
-          >an image of a beach</a
-        >
-      </div>
-      <div class="search-result">
-        <img
-          src="https://plus.unsplash.com/premium_photo-1664361480561-3bdcd6eb3b6f?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MXx8bmF0dXJlfGVufDB8fDB8fA%3D%3D&auto=format&fit=crop&w=1000&q=60"
-          alt="image"
-        />
-        <a
-          href="https://unsplash.com/photos/g-7X6T7vAI4"
-          target="_blank"
-          rel="noopener noreferrer"
-          >an image of a beach</a
-        >
-      </div>
-      <div class="search-result">
-        <img
-          src="https://plus.unsplash.com/premium_photo-1664361480561-3bdcd6eb3b6f?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MXx8bmF0dXJlfGVufDB8fDB8fA%3D%3D&auto=format&fit=crop&w=1000&q=60"
-          alt="image"
-        />
-        <a
-          href="https://unsplash.com/photos/g-7X6T7vAI4"
-          target="_blank"
-          rel="noopener noreferrer"
-          >an image of a beach</a
-        >
-      </div>
+      <!-- Search results will be appended here -->
     </div>
     <button id="show-more-button">Show more</button>
-    <script>const accessKey = "RZEIOVfPhS7vMLkFdd2TSKGFBS4o9_FmcV1Nje3FSjw";
 
-        const formEl = document.querySelector("form");
-        const searchInputEl = document.getElementById("search-input");
-        const searchResultsEl = document.querySelector(".search-results");
-        const showMoreButtonEl = document.getElementById("show-more-button");
-        
-        let inputData = "";
-        let page = 1;
-        
-        async function searchImages() {
-          inputData = searchInputEl.value;
-          const url = `https://api.unsplash.com/search/photos?page=${page}&query=${inputData}&client_id=${accessKey}`;
-        
-          const response = await fetch(url);
-          const data = await response.json();
-          if (page === 1) {
-            searchResultsEl.innerHTML = "";
-          }
-        
-          const results = data.results;
-        
-          results.map((result) => {
-            const imageWrapper = document.createElement("div");
-            imageWrapper.classList.add("search-result");
-            const image = document.createElement("img");
-            image.src = result.urls.small;
-            image.alt = result.alt_description;
-            const imageLink = document.createElement("a");
-            imageLink.href = result.links.html;
-            imageLink.target = "_blank";
-            imageLink.textContent = result.alt_description;
-        
-            imageWrapper.appendChild(image);
-            imageWrapper.appendChild(imageLink);
-            searchResultsEl.appendChild(imageWrapper);
-          });
-        
-          page++;
-        
-          if (page > 1) {
-            showMoreButtonEl.style.display = "block";
-          }
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+      const accessKey = "RZEIOVfPhS7vMLkFdd2TSKGFBS4o9_FmcV1Nje3FSjw";
+      const formEl = document.querySelector("form");
+      const searchInputEl = document.getElementById("search-input");
+      const searchResultsEl = document.querySelector(".search-results");
+      const showMoreButtonEl = document.getElementById("show-more-button");
+      const ctx = document.getElementById('searchTrendChart').getContext('2d');
+
+      let inputData = "";
+      let page = 1;
+
+      let searchTrends = []; // To store search trends dynamically
+
+      // Function to render the chart
+      function updateChart() {
+        const labels = searchTrends.map(item => item.date);
+        const dataPoints = searchTrends.map(item => item.searchVolume);
+
+        // If the chart already exists, we will destroy it to avoid overlapping data
+        if (window.myChart) {
+          window.myChart.destroy();
         }
-        
-        formEl.addEventListener("submit", (event) => {
-          event.preventDefault();
-          page = 1;
-          searchImages();
+
+        // Create a new chart instance
+        window.myChart = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: labels,
+            datasets: [{
+              label: 'Search Trends',
+              data: dataPoints,
+              backgroundColor: 'rgba(75, 192, 192, 0.2)',
+              borderColor: 'rgba(75, 192, 192, 1)',
+              borderWidth: 2
+            }]
+          },
+          options: {
+            scales: {
+              y: {
+                beginAtZero: true
+              }
+            },
+            responsive: true,
+            maintainAspectRatio: false,
+          }
         });
-        
-        showMoreButtonEl.addEventListener("click", () => {
-          searchImages();
-        });</script>
+      }
+
+      async function searchImages() {
+        inputData = searchInputEl.value;
+        const url = `https://api.unsplash.com/search/photos?page=${page}&query=${inputData}&client_id=${accessKey}`;
+
+        const response = await fetch(url);
+        const data = await response.json();
+        if (page === 1) {
+          searchResultsEl.innerHTML = "";
+        }
+
+        const results = data.results;
+
+        results.map((result) => {
+          const imageWrapper = document.createElement("div");
+          imageWrapper.classList.add("search-result");
+
+          const image = document.createElement("img");
+          image.src = result.urls.small;
+          image.alt = result.alt_description;
+
+          const imageLink = document.createElement("a");
+          imageLink.href = result.links.html;
+          imageLink.target = "_blank";
+          imageLink.textContent = result.alt_description;
+
+          imageWrapper.appendChild(image);
+          imageWrapper.appendChild(imageLink);
+          searchResultsEl.appendChild(imageWrapper);
+        });
+
+        // Log the search term and the current timestamp
+        const currentDate = new Date().toISOString().split('T')[0];
+        searchTrends.push({ date: currentDate, searchVolume: searchTrends.length + 1 });
+
+        // Update the chart with the new search trend
+        updateChart();
+
+        page++;
+
+        if (page > 1) {
+          showMoreButtonEl.style.display = "block";
+        }
+      }
+
+      formEl.addEventListener("submit", (event) => {
+        event.preventDefault();
+        page = 1;
+        searchImages();
+      });
+
+      showMoreButtonEl.addEventListener("click", () => {
+        searchImages();
+      });
+
+    </script>
   </body>
 </html>
