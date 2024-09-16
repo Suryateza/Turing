@@ -20,7 +20,7 @@
         overflow: hidden;
         margin: 0;
         transition: background-color 1s ease, background 10s linear infinite;
-        background: linear-gradient(45deg, #ff6f61, #debbf5,#f6e58d);
+        background: linear-gradient(45deg, #ff6f61, #debbf5, #f6e58d);
         background-size: 400% 400%;
       }
 
@@ -62,17 +62,18 @@
         box-shadow: none;
         transform: translateY(2px);
       }
-      .star {
-    position: absolute;
-    background: #fff;
-    border-radius: 50%;
-    animation: twinkle 3s infinite;
-  }
 
-  @keyframes twinkle {
-    0%, 100% { opacity: 0.2; }
-    50% { opacity: 1; }
-  }
+      .star {
+        position: absolute;
+        background: #fff;
+        border-radius: 50%;
+        animation: twinkle 3s infinite;
+      }
+
+      @keyframes twinkle {
+        0%, 100% { opacity: 0.2; }
+        50% { opacity: 1; }
+      }
 
       .boxes {
         display: flex;
@@ -173,7 +174,6 @@
         transform: skewX(45deg);
       }
 
-      /* Starfield effect */
       .starfield {
         position: absolute;
         top: 0;
@@ -189,6 +189,7 @@
   </head>
   <body>
     <button id="btn" class="magic">Magic</button>
+    <input type="color" id="colorPicker" class="color-picker" />
     <div id="boxes" class="boxes big">
       <div class="starfield"></div>
     </div>
