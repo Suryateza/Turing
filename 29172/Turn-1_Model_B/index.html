@@ -2,135 +2,170 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Speed Typing Game</title>
-<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3D Animated Box Game</title>
 <style>
-    body { 
-        font-family: 'Arial', sans-serif; 
-        background: #f4f4f9; 
-    }
-    .game-container {
-        max-width: 600px;
-        margin: 50px auto;
-        padding: 20px;
-        background: white;
-        box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
-    #wordDisplay {
-        font-size: 2em;
-        text-align: center;
-        margin: 20px 0;
-    }
-    #userInput {
-        text-align: center;
-    }
-    #score, #timer {
-        font-weight: bold;
-    }
-    .settings-btn {
-        margin-bottom: 10px;
-    }
+:root {
+    --bg-color-1: #ff6347;
+    --bg-color-2: #47d1ff;
+    --grid-size: 4;
+}
+
+body {
+    margin: 0;
+    overflow: hidden;
+    background: linear-gradient(45deg, var(--bg-color-1), var(--bg-color-2));
+    animation: gradient 15s ease infinite;
+    background-size: 400% 400%;
+}
+
+@keyframes gradient {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+#game-container {
+    display: grid;
+    grid-template-columns: repeat(var(--grid-size), 1fr);
+    gap: 20px;
+    padding: 20px;
+    perspective: 1000px;
+}
+
+.box {
+    width: 100px;
+    height: 100px;
+    background: rgba(255, 255, 255, 0.1);
+    transform-style: preserve-3d;
+    animation: rotate 10s linear infinite, float 5s ease-in-out infinite;
+    cursor: pointer;
+    transition: opacity 0.3s;
+}
+
+.box:hover { opacity: 0.5; }
+
+.box img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+@keyframes rotate {
+    from { transform: rotateY(0deg); }
+    to { transform: rotateY(360deg); }
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0) rotateY(0deg); }
+    50% { transform: translateY(-10px) rotateY(180deg); }
+}
+
+#starfield {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: -1;
+    pointer-events: none;
+}
+
+.star {
+    position: absolute;
+    width: 2px;
+    height: 2px;
+    background: white;
+    animation: twinkle 5s infinite;
+}
+
+@keyframes twinkle {
+    0%, 100% { opacity: 0.2; }
+    50% { opacity: 0.8; }
+}
+
+#color-picker, #magic-button {
+    position: absolute;
+    top: 10px;
+    z-index: 10;
+}
+
+#color-picker {
+    left: 10px;
+}
+
+#magic-button {
+    right: 10px;
+    padding: 10px 20px;
+    background: #fff;
+    border: none;
+    cursor: pointer;
+    transition: background 0.3s, transform 0.1s;
+}
+
+#magic-button:hover { background: #ddd; }
+#magic-button:active { transform: scale(0.95); }
 </style>
 </head>
 <body>
-
-<div class="game-container">
-    <h1 class="text-center">Speed Typing Game</h1>
-    <button class="btn btn-secondary settings-btn" onclick="toggleSettings()">Settings</button>
-    <div id="settings" style="display:none;">
-        <select id="difficulty">
-            <option value="easy">Easy</option>
-            <option value="medium">Medium</option>
-            <option value="hard">Hard</option>
-        </select>
-    </div>
-    <div id="wordDisplay"></div>
-    <input type="text" id="userInput" class="form-control" oninput="checkWord()" autofocus>
-    <p>Time: <span id="timer">60</span>s</p>
-    <p>Score: <span id="score">0</span></p>
-    <div id="gameOver" style="display:none;">
-        <h2>Game Over!</h2>
-        <p>WPM: <span id="wpm"></span></p>
-        <p>Accuracy: <span id="accuracy"></span>%</p>
-    </div>
-</div>
+<div id="game-container"></div>
+<input type="color" id="color-picker" value="#ff6347">
+<button id="magic-button">Magic</button>
+<div id="starfield"></div>
 
 <script>
-    const words = {
-        easy: ['cat', 'dog', 'sun', 'run', 'fun'],
-        medium: ['jacket', 'zephyr', 'quagmire', 'xylophone'],
-        hard: ['antidisestablishmentarianism', 'pneumonoultramicroscopicsilicovolcanoconiosis']
+document.addEventListener('DOMContentLoaded', () => {
+    const container = document.getElementById('game-container');
+    const magicButton = document.getElementById('magic-button');
+    const colorPicker = document.getElementById('color-picker');
+    const root = document.documentElement;
+    let gridSize = 4;
+
+    function createBox() {
+        const box = document.createElement('div');
+        box.className = 'box';
+        const img = document.createElement('img');
+        // Here you would set the src to your GIF. For example:
+        img.src = 'path/to/your/gif.gif';
+        box.appendChild(img);
+        box.onclick = () => box.style.animation = 'none';
+        setTimeout(() => box.style.animation = '', 1000);
+        return box;
+    }
+
+    function populateGrid(size = gridSize) {
+        container.style.setProperty('--grid-size', size);
+        container.innerHTML = '';
+        for(let i = 0; i < size * size; i++) {
+            container.appendChild(createBox());
+        }
+    }
+
+    function createStarfield() {
+        const starfield = document.getElementById('starfield');
+        for(let i = 0; i < 200; i++) {
+            const star = document.createElement('div');
+            star.className = 'star';
+            star.style.left = `${Math.random() * 100}vw`;
+            star.style.top = `${Math.random() * 100}vh`;
+            star.style.animationDelay = `${Math.random() * 5}s`;
+            starfield.appendChild(star);
+        }
+    }
+
+    magicButton.onclick = () => {
+        gridSize = gridSize === 4 ? 6 : 4;
+        populateGrid();
     };
-    let currentWord = '';
-    let score = 0;
-    let timeLeft = 60;
-    let timer;
-    let totalWordsTyped = 0;
-    let correctWords = 0;
-    let difficulty = 'medium';
 
-    function startGame() {
-        document.getElementById('userInput').value = '';
-        pickWord();
-        if (!timer) {
-            timer = setInterval(updateTimer, 1000);
-        }
-    }
+    colorPicker.onchange = (e) => {
+        root.style.setProperty('--bg-color-1', e.target.value);
+        root.style.setProperty('--bg-color-2', e.target.value.replace(/[^,]+(?=\))/, v => parseInt(v, 16) > 0x888888 ? '#000000' : '#ffffff'));
+    };
 
-    function pickWord() {
-        const list = words[difficulty];
-        currentWord = list[Math.floor(Math.random() * list.length)];
-        document.getElementById('wordDisplay').textContent = currentWord;
-    }
-
-    function checkWord() {
-        const input = document.getElementById('userInput').value;
-        if (input === currentWord) {
-            document.getElementById('userInput').value = '';
-            score++;
-            document.getElementById('score').textContent = score;
-            const timeAdd = {easy: 5, medium: 3, hard: 1}[difficulty];
-            timeLeft += timeAdd;
-            pickWord();
-            correctWords++;
-        }
-        totalWordsTyped++;
-    }
-
-    function updateTimer() {
-        timeLeft--;
-        if (timeLeft <= 0) {
-            clearInterval(timer);
-            endGame();
-        } else {
-            document.getElementById('timer').textContent = timeLeft;
-        }
-    }
-
-    function endGame() {
-        const wpm = ((correctWords / (60 - timeLeft)) * 60).toFixed(2);
-        const accuracy = ((correctWords / totalWordsTyped) * 100).toFixed(2);
-        document.getElementById('wpm').textContent = wpm;
-        document.getElementById('accuracy').textContent = accuracy;
-        document.getElementById('gameOver').style.display = 'block';
-        document.getElementById('userInput').disabled = true;
-    }
-
-    function toggleSettings() {
-        const settings = document.getElementById('settings');
-        settings.style.display = settings.style.display === 'none' ? 'block' : 'none';
-    }
-
-    document.getElementById('difficulty').addEventListener('change', function(e) {
-        difficulty = e.target.value;
-        startGame();
-    });
-
-    startGame();
+    populateGrid();
+    createStarfield();
+});
 </script>
-
-<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 </body>
 </html>

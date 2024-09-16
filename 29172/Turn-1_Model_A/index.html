@@ -2,133 +2,147 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Speed Typing Game</title>
+<title>Interactive 3D Box Grid</title>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <style>
 body {
-    font-family: 'Arial', sans-serif;
+    background: linear-gradient(45deg, #ff00cc, #3333ff);
+    background-size: 400% 400%;
+    animation: Gradient 15s ease infinite;
+    margin: 0;
+    overflow: hidden;
+    height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
-    background-color: #f0f0f0;
-    margin: 0;
 }
-.game-container {
-    background: white;
-    padding: 2rem;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    text-align: center;
+
+@keyframes Gradient {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
 }
-#wordDisplay {
-    font-size: 2rem;
-    margin: 1rem 0;
+
+#grid {
+    display: grid;
+    grid-template-columns: repeat(4, 100px);
+    grid-gap: 10px;
+    perspective: 1000px;
 }
-#wordInput {
-    padding: 0.5rem;
-    width: 200px;
-    font-size: 1rem;
+
+.box {
+    width: 100px;
+    height: 100px;
+    transform-style: preserve-3d;
+    animation: float 3s ease-in-out infinite;
 }
-#timer, #score {
-    font-size: 1.2rem;
-    margin: 0.5rem 0;
+
+.box img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    position: absolute;
+    backface-visibility: hidden;
 }
-#difficulty {
-    margin-top: 1rem;
+
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+#starfield {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.1);
+    pointer-events: none;
+    animation: twinkle 3s infinite;
+}
+
+@keyframes twinkle {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 0.1; }
+}
+
+#magicButton {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    padding: 10px 20px;
+    background: #ffdb58;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+#magicButton:hover { 
+    background: #ffd700; 
+    transform: scale(1.05);
+}
+
+#colorPicker {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
 }
 </style>
 </head>
 <body>
-<div class="game-container">
-    <h1>Speed Typing Game</h1>
-    <div id="wordDisplay"></div>
-    <input type="text" id="wordInput" placeholder="Type the word here..." autocomplete="off">
-    <div id="timer">Time: 60</div>
-    <div id="score">Score: 0</div>
-    <div>
-        <select id="difficulty">
-            <option value="easy">Easy</option>
-            <option value="medium">Medium</option>
-            <option value="hard">Hard</option>
-        </select>
-    </div>
-    <div id="endGameMessage"></div>
-</body>
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<div id="starfield"></div>
+<div id="grid"></div>
+<button id="magicButton">Magic</button>
+<input type="color" id="colorPicker" value="#ff00cc">
+
 <script>
-const words = {
-    easy: ['cat', 'dog', 'sun', 'run', 'fun'],
-    medium: ['apple', 'banana', 'cherry', 'dance', 'elephant'],
-    hard: ['quintessential', 'onomatopoeia', 'idiosyncratic', 'indefatigable', 'sesquipedalian']
-};
+$(document).ready(function() {
+    const grid = $('#grid');
+    const magicButton = $('#magicButton');
+    const colorPicker = $('#colorPicker');
+    const body = $('body');
 
-let currentWord = '';
-let score = 0;
-let time = 60;
-let timer;
-let difficulty = 'easy';
-
-function pickWord() {
-    const wordList = words[difficulty];
-    currentWord = wordList[Math.floor(Math.random() * wordList.length)];
-    document.getElementById('wordDisplay').textContent = currentWord;
-}
-
-function updateScore() {
-    score++;
-    document.getElementById('score').textContent = `Score: ${score}`;
-}
-
-function updateTimer() {
-    time--;
-    document.getElementById('timer').textContent = `Time: ${time}`;
-    if (time <= 0) {
-        endGame();
+    // Function to create boxes
+    function createBox() {
+        const box = $('<div class="box"><img src="your-gif-url-here.gif"></div>');
+        box.hover(
+            function() { $(this).css('opacity', '0.5'); },
+            function() { $(this).css('opacity', '1'); }
+        ).click(function() {
+            $(this).css('animation', 'bounce 0.5s');
+            setTimeout(() => $(this).css('animation', 'float 3s ease-in-out infinite'), 500);
+        });
+        return box;
     }
-}
 
-function startTimer() {
-    timer = setInterval(updateTimer, 1000);
-}
-
-function endGame() {
-    clearInterval(timer);
-    const totalWords = score + document.getElementById('wordInput').value.split(' ').length;
-    const accuracy = totalWords > 0 ? (score / totalWords * 100).toFixed(2) : 0;
-    const wpm = Math.floor(score * (60 / 60)); // Assuming game lasts for 60 seconds
-    document.getElementById('endGameMessage').innerHTML = `Game Over!<br>WPM: ${wpm}<br>Accuracy: ${accuracy}%`;
-    document.getElementById('wordInput').disabled = true;
-}
-
-document.getElementById('wordInput').addEventListener('input', function() {
-    if (this.value.trim() === currentWord) {
-        updateScore();
-        this.value = '';
-        pickWord();
-        time += difficulty === 'easy' ? 5 : difficulty === 'medium' ? 3 : 2;
-        document.getElementById('timer').textContent = `Time: ${time}`;
+    // Populate grid
+    function populateGrid(columns, rows) {
+        grid.empty();
+        grid.css('grid-template-columns', `repeat(${columns}, 100px)`);
+        for(let i = 0; i < columns * rows; i++) {
+            grid.append(createBox());
+        }
     }
+
+    // Initial grid
+    populateGrid(4, 4);
+
+    // Magic button functionality
+    let largeGrid = false;
+    magicButton.click(function() {
+        largeGrid = !largeGrid;
+        populateGrid(largeGrid ? 6 : 4, largeGrid ? 6 : 4);
+    });
+
+    // Color picker for background
+    colorPicker.on('input', function() {
+        let color1 = this.value;
+        let color2 = '#3333ff'; // You can change this to another color or make it dynamic
+        body.css('background', `linear-gradient(45deg, ${color1}, ${color2})`);
+    });
 });
-
-document.getElementById('difficulty').addEventListener('change', function() {
-    difficulty = this.value;
-    resetGame();
-});
-
-function resetGame() {
-    clearInterval(timer);
-    time = 60;
-    score = 0;
-    document.getElementById('timer').textContent = `Time: ${time}`;
-    document.getElementById('score').textContent = `Score: ${score}`;
-    document.getElementById('wordInput').disabled = false;
-    document.getElementById('wordInput').value = '';
-    document.getElementById('endGameMessage').textContent = '';
-    pickWord();
-    startTimer();
-}
-
-resetGame();
 </script>
+
+</body>
 </html>
