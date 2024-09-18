@@ -3,106 +3,172 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Subscription Optimizer</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+<title>Advanced Image Comparison Slider</title>
 <style>
-    body { font-family: 'Arial', sans-serif; }
-    .card { margin-bottom: 20px; }
-    .graph-container { width: 100%; height: 400px; }
+body { font-family: Arial, sans-serif; }
+.container { width: 80%; margin: auto; overflow: hidden; }
+#image-container {
+    position: relative; 
+    width: 100%; 
+    height: 400px;
+    overflow: hidden;
+}
+#image1, #image2 {
+    position: absolute; 
+    width: 100%; 
+    height: 100%; 
+    background-size: cover;
+    background-position: center;
+}
+#slider {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    cursor: ew-resize;
+    left: 50%;
+    transform: translateX(-50%);
+}
+.controls, .filters { margin-top: 20px; }
+button, input[type="range"] { margin: 5px; }
+#cropBox {
+    position: absolute;
+    border: 2px dashed white;
+    display: none;
+    cursor: move;
+}
+.handle {
+    position: absolute;
+    background: white;
+    width: 10px;
+    height: 10px;
+    border: 1px solid black;
+}
 </style>
 </head>
 <body>
 
-<nav class="navbar navbar-expand-lg navbar-light bg-light">
-  <div class="container-fluid">
-    <a class="navbar-brand" href="#">SubOpt</a>
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse" id="navbarSupportedContent">
-      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-        <li class="nav-item"><a class="nav-link" href="#dashboard">Dashboard</a></li>
-        <li class="nav-item"><a class="nav-link" href="#manage">Manage</a></li>
-        <li class="nav-item"><a class="nav-link" href="#analyze">Analyze</a></li>
-      </ul>
-    </div>
-  </div>
-</nav>
-
-<div class="container mt-4">
-  <section id="dashboard">
-    <h2>Dashboard</h2>
-    <div class="row">
-      <div class="col-md-4">
-        <div class="card">
-          <div class="card-body">
-            <h5 class="card-title">Total Spend</h5>
-            <p class="card-text" id="totalSpend">$0</p>
-          </div>
+<div class="container">
+    <div id="image-container">
+        <div id="image1" style="background-image: url('https://up.yimg.com/ib/th?id=OIP.Nolz7WP6ihgX54G98AcWnAHaEo&pid=Api&rs=1&c=1&qlt=95&w=187&h=117');"></div>
+        <div id="image2" style="background-image: url('https://up.yimg.com/ib/th?id=OIP.Nolz7WP6ihgX54G98AcWnAHaEo&pid=Api&rs=1&c=1&qlt=95&w=187&h=117');"></div>
+        <div id="slider"></div>
+        <div id="cropBox">
+            <div class="handle" style="bottom: -5px; right: -5px; cursor: se-resize;"></div>
         </div>
-      </div>
-      <!-- Add more dashboard widgets here -->
     </div>
-  </section>
 
-  <section id="manage">
-    <h2>Manage Subscriptions</h2>
-    <button class="btn btn-primary" onclick="showAddSubscriptionForm()">Add Subscription</button>
-    <!-- Subscription list and form will be dynamically added here -->
-  </section>
+    <div class="controls">
+        <button id="swapImages">Swap Images</button>
+        <button id="autoSlide">Auto Slide</button>
+        <button id="resetAll">Reset All</button>
+        <button id="resetCrop">Reset Crop</button>
+    </div>
 
-  <section id="analyze">
-    <h2>Subscription Analysis</h2>
-    <div class="graph-container" id="spendingGraph"></div>
-    <!-- Analysis tools and recommendations will go here -->
-  </section>
+    <div class="filters">
+        <input type="range" id="grayscale" min="0" max="100" value="0"> Grayscale
+        <input type="range" id="sepia" min="0" max="100" value="0"> Sepia
+        <input type="range" id="brightness" min="0" max="200" value="100"> Brightness
+        <input type="range" id="contrast" min="0" max="200" value="100"> Contrast
+        <input type="range" id="saturation" min="0" max="200" value="100"> Saturation
+        <input type="range" id="blur" min="0" max="10" value="0"> Blur (px)
+        <input type="range" id="hueRotate" min="0" max="360" value="0"> Hue Rotate
+        <input type="checkbox" id="invert"> Invert
+    </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@3.5.1"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
-document.addEventListener('DOMContentLoaded', (event) => {
-    let subscriptions = [];
+$(document).ready(function() {
+    let isDragging = false;
+    let isResizing = false;
+    let cropBox = $('#cropBox');
+    let startX, startY, startW, startH;
 
-    function updateDashboard() {
-        const total = subscriptions.reduce((sum, sub) => sum + sub.price, 0);
-        document.getElementById('totalSpend').textContent = `$${total.toFixed(2)}`;
-        // Update other dashboard elements
-    }
-
-    function showAddSubscriptionForm() {
-        // Implement form display logic
-    }
-
-    function addSubscription(name, price, category, renewalDate) {
-        subscriptions.push({name, price, category, renewalDate});
-        updateDashboard();
-        // Refresh subscription list display
-    }
-
-    function renderSpendingGraph() {
-        let ctx = document.getElementById('spendingGraph').getContext('2d');
-        // Assuming categories and their total costs are calculated here
-        new Chart(ctx, {
-            type: 'pie',
-            data: {
-                labels: ['Streaming', 'Software', 'Magazines', 'Other'],
-                datasets: [{
-                    data: [120, 190, 30, 50],
-                    backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0']
-                }]
-            },
-            options: {
-                responsive: true,
-                title: {display: true, text: 'Spending by Category'}
+    // Image comparison slider functionality
+    $('#slider').on('mousedown', function(e) {
+        isDragging = true;
+        $(document).on('mousemove', function(e) {
+            if(isDragging) {
+                let parentOffset = $('#image-container').offset();
+                let relX = e.pageX - parentOffset.left;
+                $('#image2').width(relX);
             }
+        }).on('mouseup', function() {
+            isDragging = false;
         });
+    });
+
+    // Filter controls
+    $('.filters input').on('input', function() {
+        let filter = '';
+        $('.filters input').each(function() {
+            let id = $(this).attr('id');
+            let val = $(this).val();
+            if(id === 'invert') val = $(this).is(':checked') ? '100%' : '0';
+            if(val != $(this).attr('value')) filter += id + '(' + val + $(id === 'hueRotate' ? 'deg' : id === 'blur' ? 'px' : '%') + ') ';
+        });
+        $('#image1, #image2').css('filter', filter);
+    });
+
+    // Crop functionality
+    function startCrop(e) {
+        startX = e.clientX;
+        startY = e.clientY;
+        startW = 0;
+        startH = 0;
+        cropBox.css({left: startX, top: startY, width: 0, height: 0, display: 'block'});
+        isResizing = true;
+        $(document).on('mousemove', doCrop).on('mouseup', endCrop);
     }
 
-    // Initial setup
-    renderSpendingGraph();
+    function doCrop(e) {
+        let w = e.clientX - startX;
+        let h = e.clientY - startY;
+        cropBox.css({width: w, height: h});
+    }
+
+    function endCrop() {
+        $(document).off('mousemove', doCrop).off('mouseup', endCrop);
+        isResizing = false;
+    }
+
+    $('#image-container').on('mousedown', startCrop);
+
+    // Reset functionality
+    $('#resetAll').on('click', function() {
+        $('.filters input').val(function() { return this.defaultValue; }).trigger('input');
+        cropBox.hide().css({width: 0, height: 0});
+    });
+
+    $('#resetCrop').on('click', function() {
+        cropBox.hide().css({width: 0, height: 0});
+    });
+
+    // Swap images
+    $('#swapImages').on('click', function() {
+        let temp = $('#image1').css('background-image');
+        $('#image1').css('background-image', $('#image2').css('background-image'));
+        $('#image2').css('background-image', temp);
+    });
+
+    // Auto slide
+    let autoSlideInterval;
+    $('#autoSlide').on('click', function() {
+        if(autoSlideInterval) {
+            clearInterval(autoSlideInterval);
+            autoSlideInterval = null;
+            $(this).text('Auto Slide');
+        } else {
+            $(this).text('Stop');
+            autoSlideInterval = setInterval(() => {
+                let currentWidth = $('#image2').width();
+                let newWidth = currentWidth > 1 ? 1 : $('#image-container').width();
+                $('#image2').width(newWidth);
+            }, 2000);
+        }
+    });
 });
 </script>
-
 </body>
 </html>

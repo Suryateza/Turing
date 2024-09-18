@@ -1,83 +1,154 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Subscription Optimizer</title>
-    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        body { padding-top: 60px; }
-        .card { margin-bottom: 20px; }
-        .graph-container { width: 100%; height: 300px; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Advanced Image Comparison Slider</title>
+<style>
+    body { font-family: Arial, sans-serif; }
+    .container { position: relative; width: 100%; max-width: 800px; margin: auto; overflow: hidden; }
+    #imageContainer { position: relative; height: 500px; }
+    .image { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }
+    #image1 { clip-path: inset(0 0 0 0); }
+    #image2 { clip-path: inset(0 var(--clip, 50%) 0 0); }
+    .controls { padding: 20px; background: #f0f0f0; }
+    .slider, .filter { width: 100%; margin: 10px 0; }
+    #cropArea { position: absolute; border: 2px dashed #fff; display: none; }
+    button { margin: 5px; }
+</style>
 </head>
 <body>
-    
-<nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top">
-  <a class="navbar-brand" href="#">Subscription Optimizer</a>
-  <div class="collapse navbar-collapse" id="navbarNav">
-    <ul class="navbar-nav">
-      <li class="nav-item"><a class="nav-link" href="#" onclick="showSection('dashboard')">Dashboard</a></li>
-      <li class="nav-item"><a class="nav-link" href="#" onclick="showSection('addSubscription')">Add Subscription</a></li>
-    </ul>
-  </div>
-</nav>
 
-<div class="container" id="app">
-    <!-- Dashboard -->
-    <div id="dashboard">
-        <h2>Dashboard</h2>
-        <div class="row">
-            <div class="col-md-4"><div class="card"><div class="card-body">Total Cost: $<span id="totalCost">0</span></div></div></div>
-            <div class="col-md-8"><div class="card"><div class="card-body">Upcoming Renewals</div></div></div>
-        </div>
-        <div id="expenditureChart" class="graph-container"></div>
+<div class="container">
+    <div id="imageContainer">
+        <img id="image1" class="image" src="https://up.yimg.com/ib/th?id=OIP.Nolz7WP6ihgX54G98AcWnAHaEo&pid=Api&rs=1&c=1&qlt=95&w=187&h=117" alt="Image 1">
+        <img id="image2" class="image" src="https://up.yimg.com/ib/th?id=OIP.Nolz7WP6ihgX54G98AcWnAHaEo&pid=Api&rs=1&c=1&qlt=95&w=187&h=117" alt="Image 2">
+        <div id="cropArea"></div>
     </div>
-
-    <!-- Add Subscription Form -->
-    <div id="addSubscription" style="display:none;">
-        <h2>Add/Edit Subscription</h2>
-        <form id="subscriptionForm">
-            <!-- Form fields for subscription details -->
-            <button type="submit" class="btn btn-primary">Save</button>
-        </form>
+    <div class="controls">
+        <input type="range" id="compareSlider" min="0" max="100" value="50" class="slider">
+        <div id="filters"></div>
+        <button id="resetBtn">Reset All</button>
+        <button id="swapBtn">Swap Images</button>
+        <button id="autoSlideBtn">Auto Slide</button>
+        <button id="resetCropBtn">Reset Crop</button>
     </div>
 </div>
 
-<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.4"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
-    function showSection(sectionId) {
-        $('#app > div').hide();
-        $('#' + sectionId).show();
+document.addEventListener('DOMContentLoaded', function() {
+    const $image1 = $('#image1'), $image2 = $('#image2'), $cropArea = $('#cropArea');
+    let isDragging = false, startX, startY, startWidth, startHeight;
+
+    // Function to apply filters
+    function applyFilters() {
+        const filters = [
+            {name: 'grayscale', unit: '%'},
+            {name: 'sepia', unit: '%'},
+            {name: 'brightness', unit: '%'},
+            {name: 'contrast', unit: '%'},
+            {name: 'saturate', unit: '%'},
+            {name: 'blur', unit: 'px'},
+            {name: 'hue-rotate', unit: 'deg'},
+            {name: 'invert', unit: '%'}
+        ];
+
+        let filterString = '';
+        filters.forEach(filter => {
+            const value = $(`#${filter.name}`).val();
+            filterString += `${filter.name}(${value}${filter.unit}) `;
+        });
+        $image1.css('filter', filterString);
+        $image2.css('filter', filterString); // Assuming both images get the same filters
     }
 
-    $(document).ready(function() {
-        // Initialize with dashboard
-        showSection('dashboard');
-
-        // Load subscriptions from localStorage or initialize
-        let subscriptions = JSON.parse(localStorage.getItem('subscriptions')) || [];
-
-        // Function to update dashboard
-        function updateDashboard() {
-            let total = subscriptions.reduce((sum, sub) => sum + parseFloat(sub.cost), 0);
-            $('#totalCost').text(total.toFixed(2));
-            // Update chart with subscription data
-            // Chart.js initialization would go here
-        }
-
-        // Form submission
-        $('#subscriptionForm').on('submit', function(e) {
-            e.preventDefault();
-            // Handle form data, save to subscriptions array
-            // localStorage.setItem('subscriptions', JSON.stringify(subscriptions));
-            updateDashboard();
-            showSection('dashboard');
-        });
-
-        updateDashboard();
+    // Generate filter controls
+    const $filters = $('#filters');
+    ['grayscale', 'sepia', 'brightness', 'contrast', 'saturate', 'blur', 'hue-rotate', 'invert'].forEach(filter => {
+        $filters.append(`
+            <label>${filter.replace('-', ' ')}:
+                <input type="range" id="${filter}" min="0" max="${filter === 'blur' ? '10' : '100'}" value="0" class="filter">
+            </label><br>
+        `);
     });
+
+    // Event listeners for filters
+    $('.filter').on('input', applyFilters);
+
+    // Slider for image comparison
+    $('#compareSlider').on('input', function() {
+        document.documentElement.style.setProperty('--clip', `${100 - this.value}%`);
+    });
+
+    // Swap images
+    $('#swapBtn').on('click', function() {
+        const tempSrc = $image1.attr('src');
+        $image1.attr('src', $image2.attr('src'));
+        $image2.attr('src', tempSrc);
+    });
+
+    // Auto Slide
+    let autoSlideInterval;
+    $('#autoSlideBtn').on('click', function() {
+        if (autoSlideInterval) {
+            clearInterval(autoSlideInterval);
+            autoSlideInterval = null;
+            this.textContent = 'Auto Slide';
+        } else {
+            autoSlideInterval = setInterval(() => {
+                let val = parseInt($('#compareSlider').val());
+                val = val === 100 ? 0 : val + 1;
+                $('#compareSlider').val(val).trigger('input');
+            }, 50);
+            this.textContent = 'Stop Auto Slide';
+        }
+    });
+
+    // Reset Button
+    $('#resetBtn').on('click', function() {
+        $('.filter').val(0).trigger('input');
+        $('#compareSlider').val(50).trigger('input');
+        if (autoSlideInterval) $('#autoSlideBtn').click();
+        resetCrop();
+    });
+
+    // Crop functionality
+    function startCrop(e) {
+        isDragging = true;
+        const offset = $imageContainer.offset();
+        startX = e.pageX - offset.left;
+        startY = e.pageY - offset.top;
+        startWidth = startHeight = 0;
+        $cropArea.css({left: startX, top: startY, width: 0, height: 0, display: 'block'});
+    }
+
+    function doCrop(e) {
+        if (!isDragging) return;
+        const x = Math.min(Math.max(0, e.pageX - $imageContainer.offset().left), $imageContainer.width());
+        const y = Math.min(Math.max(0, e.pageY - $imageContainer.offset().top), $imageContainer.height());
+        const width = x - startX;
+        const height = y - startY;
+        $cropArea.css({width: Math.abs(width), height: Math.abs(height), left: width > 0 ? startX : x, top: height > 0 ? startY : y});
+    }
+
+    function endCrop() {
+        isDragging = false;
+        // Here you would apply the crop to the image, for now, just hide the crop area
+        $cropArea.css('display', 'none');
+    }
+
+    $imageContainer.on('mousedown', startCrop);
+    $(document).on('mousemove', doCrop).on('mouseup', endCrop);
+
+    // Reset crop
+    $('#resetCropBtn').on('click', resetCrop);
+
+    function resetCrop() {
+        $cropArea.css({display: 'none', width: 0, height: 0});
+        // Reset image to original state, if cropped
+    }
+});
 </script>
 
 </body>

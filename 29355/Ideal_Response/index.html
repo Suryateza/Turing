@@ -1,282 +1,266 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Subscription Optimizer</title>
-    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
         body {
-            font-family: 'Arial', sans-serif;
-            background: #f8f9fa;
-            padding-top: 60px;
+            background-color: #fef9f2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
         }
-
-        .navbar {
-            background: linear-gradient(to right, #007bff, #0056b3);
+        .container {
+            position: relative;
+            width: 60vw;
+            height: 80vh;
+            margin-bottom: 1rem;
+            overflow: hidden;
         }
-
-        .navbar-brand {
-            font-weight: bold;
-            color: #fff !important;
-        }
-
-        .navbar-nav .nav-link {
-            color: #fff !important;
-        }
-
-        .navbar-nav .nav-link:hover {
-            color: #e0e0e0 !important;
-        }
-
-        .card {
-            margin-bottom: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            transition: box-shadow 0.3s ease;
-        }
-
-        .card:hover {
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
-        }
-
-        .card-body {
-            padding: 20px;
-        }
-
-        .graph-container {
+        .img-container {
+            position: absolute;
             width: 100%;
-            height: 300px;
-            border-radius: 10px;
-            background: #fff;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            padding: 20px;
+            height: 100%;
+            overflow: hidden;
         }
-
-        .btn-custom {
+        img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: filter 0.3s ease;
+        }
+        .slider {
+            width: 0.5rem;
+            background: white;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            pointer-events: none;
+        }
+        .controls {
+            display: flex;
+          flex-wrap: wrap;
+            align-items: center;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        .filter-control {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .filter-control label {
+            font-size: 1rem;
+        }
+        .filter-control input[type="range"] {
+            width: 200px;
+        }
+        .filter-control input[type="checkbox"] {
+            margin-left: 0.5rem;
+        }
+        button {
+            padding: 0.5rem 1rem;
+            border: none;
             background-color: #007bff;
-            color: #fff;
-            border-radius: 20px;
-            transition: background-color 0.3s ease;
+            color: white;
+            cursor: pointer;
+            margin: 0.5rem;
         }
-
-        .btn-custom:hover {
+        button:hover {
             background-color: #0056b3;
         }
-
-        .form-control {
-            border-radius: 20px;
-            box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.075);
-            transition: box-shadow 0.2s ease, border-color 0.2s ease;
+        .crop-box {
+            position: absolute;
+            border: 2px dashed #000;
+            pointer-events: none;
+            display: none;
         }
-
-        .form-control:focus {
-            box-shadow: 0 0 0 0.2rem rgba(38, 143, 255, 0.25);
-            border-color: #007bff;
-        }
-
-        .modal-header {
-            background: linear-gradient(to right, #007bff, #0056b3);
-            color: #fff;
-            border-bottom: none;
-        }
-
-        .modal-content {
-            border-radius: 10px;
-        }
-
-        .modal-footer {
-            border-top: none;
-        }
-
-        .list-group-item {
-            border: none;
-            border-radius: 10px;
-            margin-bottom: 10px;
-            background: #fff;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        .list-group-item:last-child {
-            margin-bottom: 0;
-        }
-
-        .list-group-item:hover {
-            background-color: #f1f1f1;
+        .crop-box.active {
+            display: block;
+            cursor: move;
+            pointer-events: auto;
         }
     </style>
+    <title>Advanced Image Comparison Slider with Filters and Crop</title>
 </head>
 <body>
-
-<nav class="navbar navbar-expand-lg navbar-light fixed-top">
-  <a class="navbar-brand" href="#">Subscription Optimizer</a>
-  <div class="collapse navbar-collapse" id="navbarNav">
-    <ul class="navbar-nav">
-      <li class="nav-item"><a class="nav-link" href="#" onclick="showSection('dashboard')">Dashboard</a></li>
-      <li class="nav-item"><a class="nav-link" href="#" onclick="showSection('addSubscription')">Add Subscription</a></li>
-    </ul>
-  </div>
-</nav>
-
-<div class="container mt-4" id="app">
-    <!-- Dashboard -->
-    <div id="dashboard">
-        <h2 class="mb-4">Dashboard</h2>
-        <div class="row">
-            <div class="col-md-4">
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">Total Cost</h5>
-                        <p class="card-text">$<span id="totalCost">0</span></p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-8">
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">Upcoming Renewals</h5>
-                        <ul id="renewalList" class="list-group">
-                            <!-- List of upcoming renewals will go here -->
-                        </ul>
-                    </div>
-                </div>
-            </div>
+    <div class="container">
+        <div class="img-container">
+            <img src="https://images.unsplash.com/photo-1605405748429-cc26b762fa16?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1336&q=80" class="after" />
         </div>
-        <div class="row">
-            <div class="col-md-12">
-                <div class="graph-container">
-                    <canvas id="expenditureChart"></canvas>
-                </div>
-            </div>
+        <div class="img-container">
+            <img src="https://images.unsplash.com/photo-1605405747924-2709f6783d0a?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1336&q=80" class="before" />
+            <div class="crop-box"></div>
         </div>
+        <div class="slider"></div>
     </div>
 
-    <!-- Add Subscription Form -->
-    <div id="addSubscription" style="display:none;">
-        <h2 class="mb-4">Add/Edit Subscription</h2>
-        <form id="subscriptionForm">
-            <div class="form-group">
-                <label for="subName">Name</label>
-                <input type="text" class="form-control" id="subName" required>
-            </div>
-            <div class="form-group">
-                <label for="subCost">Cost</label>
-                <input type="number" class="form-control" id="subCost" step="0.01" required>
-            </div>
-            <div class="form-group">
-                <label for="subCategory">Category</label>
-                <select class="form-control" id="subCategory">
-                    <option>Entertainment</option>
-                    <option>Productivity</option>
-                    <option>News</option>
-                    <option>Other</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="subRenewal">Renewal Date</label>
-                <input type="date" class="form-control" id="subRenewal" required>
-            </div>
-            <button type="submit" class="btn btn-custom">Save</button>
-        </form>
+    <div class="controls">
+        <div class="filter-control">
+            <label for="grayscale">Grayscale</label>
+            <input type="range" id="grayscale" min="0" max="100" value="0" />
+        </div>
+
+        <div class="filter-control">
+            <label for="sepia">Sepia</label>
+            <input type="range" id="sepia" min="0" max="100" value="0" />
+        </div>
+
+        <div class="filter-control">
+            <label for="brightness">Brightness</label>
+            <input type="range" id="brightness" min="0.5" max="2" step="0.1" value="1" />
+        </div>
+
+        <div class="filter-control">
+            <label for="contrast">Contrast</label>
+            <input type="range" id="contrast" min="0.5" max="2" step="0.1" value="1" />
+        </div>
+
+        <div class="filter-control">
+            <label for="saturation">Saturation</label>
+            <input type="range" id="saturation" min="0" max="200" value="100" />
+        </div>
+
+        <div class="filter-control">
+            <label for="blur">Blur</label>
+            <input type="range" id="blur" min="0" max="20" value="0" />
+        </div>
+
+        <div class="filter-control">
+            <label for="hue">Hue Rotation</label>
+            <input type="range" id="hue" min="0" max="360" value="0" />
+        </div>
+
+        <div class="filter-control">
+            <label for="invert">Invert Colors</label>
+            <input type="checkbox" id="invert" />
+        </div>
+
+        <button onclick="reset()">Reset</button>
+        <button onclick="autoSlide()">Auto Slide</button>
+        <button onclick="swapImages()">Swap Images</button>
+        <button onclick="resetCrop()">Reset Crop</button>
     </div>
-</div>
 
-<!-- Modal for Subscription Details -->
-<div class="modal fade" id="detailsModal" tabindex="-1" role="dialog" aria-labelledby="detailsModalLabel" aria-hidden="true">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="detailsModalLabel">Subscription Details</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
-      <div class="modal-body">
-        <!-- Subscription details will be shown here -->
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-      </div>
-    </div>
-  </div>
-</div>
+    <script>
+        const container = document.querySelector(".container");
+        const slider = document.querySelector(".slider");
+        const beforeImg = document.querySelector(".before");
+        const afterImg = document.querySelector(".after");
+        const cropBox = document.querySelector(".crop-box");
 
-<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.4"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
-
-<script>
-    let subscriptions = JSON.parse(localStorage.getItem('subscriptions')) || [];
-
-    function showSection(sectionId) {
-        $('#app > div').hide();
-        $('#' + sectionId).show();
-    }
-
-    function updateDashboard() {
-        let total = subscriptions.reduce((sum, sub) => sum + parseFloat(sub.cost), 0);
-        $('#totalCost').text(total.toFixed(2));
-
-        // Generate renewal list with delete buttons
-        let renewalList = subscriptions.map((sub, index) => 
-            `<li class="list-group-item d-flex justify-content-between align-items-center">
-                ${sub.name} - Renewal on ${sub.renewalDate}
-                <button class="btn btn-danger btn-sm" onclick="deleteSubscription(${index})">Delete</button>
-            </li>`
-        ).join('');
-        $('#renewalList').html(renewalList);
-
-        // Update chart with subscription data
-        let ctx = document.getElementById('expenditureChart').getContext('2d');
-        let categories = [...new Set(subscriptions.map(sub => sub.category))];
-        let data = categories.map(category => 
-            subscriptions.filter(sub => sub.category === category).reduce((sum, sub) => sum + parseFloat(sub.cost), 0)
-        );
-
-        new Chart(ctx, {
-            type: 'pie',
-            data: {
-                labels: categories,
-                datasets: [{
-                    data: data,
-                    backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0'],
-                }]
-            },
-            options: {
-                responsive: true,
-                title: {
-                    display: true,
-                    text: 'Spending by Category'
-                }
-            }
-        });
-    }
-
-    function deleteSubscription(index) {
-        subscriptions.splice(index, 1);
-        localStorage.setItem('subscriptions', JSON.stringify(subscriptions));
-        updateDashboard();
-    }
-
-    $('#subscriptionForm').on('submit', function(event) {
-        event.preventDefault();
-        let newSubscription = {
-            name: $('#subName').val(),
-            cost: $('#subCost').val(),
-            category: $('#subCategory').val(),
-            renewalDate: $('#subRenewal').val()
+        // Filter Controls
+        const controls = {
+            grayscale: document.getElementById("grayscale"),
+            sepia: document.getElementById("sepia"),
+            brightness: document.getElementById("brightness"),
+            contrast: document.getElementById("contrast"),
+            saturation: document.getElementById("saturation"),
+            blur: document.getElementById("blur"),
+            hue: document.getElementById("hue"),
+            invert: document.getElementById("invert")
         };
 
-        subscriptions.push(newSubscription);
-        localStorage.setItem('subscriptions', JSON.stringify(subscriptions));
-        updateDashboard();
-        showSection('dashboard');
-    });
+        function updateFilters() {
+            const { grayscale, sepia, brightness, contrast, saturation, blur, hue, invert } = controls;
+            const filter = `grayscale(${grayscale.value}%) sepia(${sepia.value}%) brightness(${brightness.value}) contrast(${contrast.value}) saturate(${saturation.value}%) blur(${blur.value}px) hue-rotate(${hue.value}deg) ${invert.checked ? 'invert(100%)' : 'none'}`;
+            beforeImg.style.filter = filter;
+        }
 
-    $(document).ready(function() {
-        updateDashboard();
-    });
-</script>
+        document.querySelectorAll(".filter-control input").forEach(input => {
+            input.addEventListener("input", updateFilters);
+        });
+
+        function reset() {
+            document.querySelectorAll(".filter-control input[type='range']").forEach(input => {
+                input.value = input.defaultValue;
+            });
+            controls.invert.checked = false;
+            updateFilters();
+            clearInterval(autoSlideInterval);
+            resetCrop();
+        }
+
+        function autoSlide() {
+            let direction = 1;
+            clearInterval(autoSlideInterval);
+            autoSlideInterval = setInterval(() => {
+                let currentLeft = parseFloat(slider.style.left || '50%');
+                let containerWidth = container.offsetWidth;
+                if (currentLeft <= 0 || currentLeft >= containerWidth) direction *= -1;
+                slider.style.left = `${currentLeft + direction * 5}px`;
+                beforeImg.style.width = `${parseFloat(slider.style.left || '50%')}px`;
+            }, 30);
+        }
+
+        function swapImages() {
+            const tempSrc = beforeImg.src;
+            beforeImg.src = afterImg.src;
+            afterImg.src = tempSrc;
+        }
+
+        let autoSlideInterval;
+        let isCropping = false;
+        let startX, startY;
+
+        cropBox.addEventListener("mousedown", (e) => {
+            isCropping = true;
+            startX = e.clientX - container.getBoundingClientRect().left;
+            startY = e.clientY - container.getBoundingClientRect().top;
+            cropBox.style.left = `${startX}px`;
+            cropBox.style.top = `${startY}px`;
+            cropBox.classList.add("active");
+        });
+
+        document.addEventListener("mousemove", (e) => {
+            if (isCropping) {
+                const x = e.clientX - container.getBoundingClientRect().left;
+                const y = e.clientY - container.getBoundingClientRect().top;
+                cropBox.style.width = `${x - startX}px`;
+                cropBox.style.height = `${y - startY}px`;
+            }
+        });
+
+        document.addEventListener("mouseup", () => {
+            if (isCropping) {
+                isCropping = false;
+                cropBox.classList.remove("active");
+                applyCrop();
+            }
+        });
+
+        function applyCrop() {
+            const cropBoxRect = cropBox.getBoundingClientRect();
+            const containerRect = container.getBoundingClientRect();
+
+            const cropX = (cropBoxRect.left - containerRect.left) / containerRect.width * 100;
+            const cropY = (cropBoxRect.top - containerRect.top) / containerRect.height * 100;
+            const cropWidth = cropBoxRect.width / containerRect.width * 100;
+            const cropHeight = cropBoxRect.height / containerRect.height * 100;
+
+            beforeImg.style.clipPath = `inset(${cropY}% ${100 - (cropX + cropWidth)}% ${100 - (cropY + cropHeight)}% ${cropX}%)`;
+        }
+
+        function resetCrop() {
+            cropBox.style.width = "0";
+            cropBox.style.height = "0";
+            beforeImg.style.clipPath = "none";
+        }
+
+        // Initialize
+        updateFilters();
+        reset();
+    </script>
 </body>
 </html>
