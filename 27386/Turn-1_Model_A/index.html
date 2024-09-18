@@ -3,121 +3,152 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PixSort Studio</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f4f4f4; }
-        #app { max-width: 1200px; margin: 20px auto; padding: 20px; background: white; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-        #canvas, #controls { display: block; width: 100%; max-width: 600px; margin: 20px auto; }
-        #controls button, #controls select, #uploadButton { margin: 10px; padding: 10px; }
-        #downloadBtn { display: none; }
-    </style>
+    <title>StreamFlow - Next Gen Streaming</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css">
+   <style>:root {
+    --bg-color: #ffffff;
+    --text-color: #333333;
+    --accent-color: #007BFF;
+    --gradient-start: #56CCF2;
+    --gradient-end: #2F80ED;
+}
+
+body {
+    font-family: 'Arial', sans-serif;
+    background: var(--bg-color);
+    color: var(--text-color);
+    transition: background 0.4s, color 0.4s;
+    line-height: 1.6;
+}
+
+/* Dark Mode */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --bg-color: #121212;
+        --text-color: #e0e0e0;
+    }
+}
+
+/* Theme Toggle - CSS Only */
+.theme-toggle {
+    position: fixed;
+    right: 20px;
+    top: 20px;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: var(--text-color);
+    cursor: pointer;
+}
+
+#theme-toggle:checked + body {
+    --bg-color: #121212;
+    --text-color: #e0e0e0;
+}
+
+/* Responsive Typography */
+h1 { font-size: clamp(2rem, 5vw, 4rem); }
+h2 { font-size: clamp(1.5rem, 4vw, 3rem); }
+
+/* Complex Gradient Background with 3D Effect */
+.hero {
+    background: linear-gradient(45deg, var(--gradient-start), var(--gradient-end));
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transform-style: preserve-3d;
+    perspective: 1000px;
+}
+
+.hero-content {
+    transform: translateZ(50px);
+}
+
+/* Fluid Grid Layout */
+.features {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+    padding: 2rem;
+}
+
+/* GPU Accelerated Animations */
+@keyframes hoverEffect {
+    0% { transform: translateZ(0); }
+    50% { transform: translateZ(20px); }
+    100% { transform: translateZ(0); }
+}
+
+.feature-item:hover {
+    animation: hoverEffect 1s ease-in-out infinite;
+    will-change: transform;
+}
+
+/* Accessibility */
+a:focus, button:focus, .theme-toggle:focus {
+    outline: 3px solid var(--accent-color);
+    outline-offset: 2px;
+}
+
+/* Smooth Scrolling */
+html {
+    scroll-behavior: smooth;
+}
+
+/* High Performance */
+body, .hero, .feature-item {
+    will-change: background, transform;
+}
+
+/* Ensure all interactive elements are keyboard accessible */
+button, a, .theme-toggle {
+    cursor: pointer;
+}
+
+/* Additional performance optimizations and WCAG 2.1 compliance would continue here, like ensuring sufficient contrast ratios, proper use of ARIA roles, etc. */</style>
 </head>
 <body>
-<div id="app">
-    <h1>PixSort Studio</h1>
-    <input type="file" id="uploadButton" accept="image/*">
-    <div id="controls">
-        <select id="sortMethod">
-            <option value="brightness">Sort by Brightness</option>
-            <option value="hue">Sort by Hue</option>
-            <option value="position">Sort by Position</option>
-        </select>
-        <button onclick="applySort()">Apply Sort</button>
-        <button id="downloadBtn" onclick="downloadImage()">Download Image</button>
-    </div>
-    <canvas id="canvas"></canvas>
-</div>
+    <div class="theme-toggle" id="theme-toggle"></div>
+    <header>
+        <h1>StreamFlow</h1>
+        <nav>
+            <ul>
+                <li><a href="#home">Home</a></li>
+                <li><a href="#features">Features</a></li>
+                <li><a href="#pricing">Pricing</a></li>
+            </ul>
+        </nav>
+    </header>
 
-<script>
-    const canvas = document.getElementById('canvas');
-    const ctx = canvas.getContext('2d');
-    const uploadButton = document.getElementById('uploadButton');
-    const downloadBtn = document.getElementById('downloadBtn');
-    let imgData;
+    <main>
+        <section id="hero" class="hero">
+            <div class="hero-content">
+                <h2>Experience Streaming Like Never Before</h2>
+                <p>Ultra HD, Zero Lag, Infinite Choices</p>
+                <button class="cta-button">Start Watching</button>
+            </div>
+        </section>
 
-    // Image upload handling
-    uploadButton.addEventListener('change', function(e) {
-        const reader = new FileReader();
-        reader.onload = function(event) {
-            const img = new Image();
-            img.onload = function() {
-                canvas.width = img.width;
-                canvas.height = img.height;
-                ctx.drawImage(img, 0, 0);
-                imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-            }
-            img.src = event.target.result;
-        }
-        reader.readAsDataURL(e.target.files[0]);
-    });
+        <section id="features" class="features">
+            <article class="feature-item">
+                <h3>4K Streaming</h3>
+                <p>Crisp visuals that bring stories to life.</p>
+            </article>
+            <!-- More feature items would go here -->
+        </section>
 
-    // Pixel sorting logic
-    function applySort() {
-        const method = document.getElementById('sortMethod').value;
-        let sortedData = Array.from(imgData.data);
+        <section id="pricing" class="pricing">
+            <div class="plan">
+                <h3>Basic</h3>
+                <p>Standard Quality</p>
+            </div>
+            <!-- More pricing plans -->
+        </section>
+    </main>
 
-        for (let y = 0; y < canvas.height; y++) {
-            let row = [];
-            for (let x = 0; x < canvas.width * 4; x += 4) {
-                let index = y * canvas.width * 4 + x;
-                row.push({
-                    r: sortedData[index],
-                    g: sortedData[index + 1],
-                    b: sortedData[index + 2],
-                    a: sortedData[index + 3],
-                    pos: method === 'position' ? x : 0
-                });
-            }
-
-            row.sort((a, b) => {
-                if (method === 'brightness') return (0.299*a.r + 0.587*a.g + 0.114*a.b) - (0.299*b.r + 0.587*b.g + 0.114*b.b);
-                if (method === 'hue') {
-                    let hsvA = rgbToHsv(a.r, a.g, a.b);
-                    let hsvB = rgbToHsv(b.r, b.g, b.b);
-                    return hsvA.h - hsvB.h;
-                }
-                return a.pos - b.pos; // position
-            });
-
-            row.forEach((pixel, x) => {
-                let index = y * canvas.width * 4 + x * 4;
-                sortedData[index] = pixel.r;
-                sortedData[index + 1] = pixel.g;
-                sortedData[index + 2] = pixel.b;
-                sortedData[index + 3] = pixel.a;
-            });
-        }
-
-        ctx.putImageData(new ImageData(new Uint8ClampedArray(sortedData), canvas.width, canvas.height), 0, 0);
-        downloadBtn.style.display = 'inline';
-    }
-
-    // RGB to HSV conversion
-    function rgbToHsv(r, g, b) {
-        r /= 255, g /= 255, b /= 255;
-        let max = Math.max(r, g, b), min = Math.min(r, g, b);
-        let h, s, v = max;
-        let d = max - min;
-        s = max == 0 ? 0 : d / max;
-        if (max == min) h = 0; // achromatic
-        else {
-            switch(max) {
-                case r: h = (g - b) / d + (g < b ? 6 : 0); break;
-                case g: h = (b - r) / d + 2; break;
-                case b: h = (r - g) / d + 4; break;
-            }
-            h /= 6;
-        }
-        return {h, s, v};
-    }
-
-    // Download sorted image
-    function downloadImage() {
-        const link = document.createElement('a');
-        link.download = 'sorted_image.png';
-        link.href = canvas.toDataURL();
-        link.click();
-    }
-</script>
+    <footer>
+        <p>&copy; 2023 StreamFlow. All rights reserved.</p>
+    </footer>
 </body>
 </html>

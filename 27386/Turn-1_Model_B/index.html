@@ -3,111 +3,137 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PixSort Studio</title>
+<title>StreamNow - The Future of Streaming</title>
 <style>
-    body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f4f4f4; }
-    .container { width: 80%; margin: 20px auto; text-align: center; }
-    canvas { border: 1px solid #000; max-width: 100%; height: auto; }
-    .controls { margin-top: 20px; }
-    button, input[type="file"] { padding: 10px; margin: 5px; }
-    select { padding: 9px; }
+:root {
+    --bg-color-light: #f0f0f0;
+    --text-color-light: #333;
+    --bg-color-dark: #121212;
+    --text-color-dark: #ddd;
+    --primary: #6a1b9a;
+    --secondary: #4a148c;
+    --accent: #ff5252;
+}
+
+body {
+    background: var(--bg-color-light);
+    color: var(--text-color-light);
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    transition: background 0.5s, color 0.5s;
+}
+
+body.dark-mode {
+    background: var(--bg-color-dark);
+    color: var(--text-color-dark);
+}
+
+/* Navigation */
+nav {
+    display: flex;
+    justify-content: space-between;
+    padding: 1rem;
+    background: linear-gradient(45deg, var(--primary), var(--secondary));
+}
+
+/* Hero Section */
+.hero {
+    height: 80vh;
+    display: grid;
+    place-items: center;
+    background: 
+        linear-gradient(217deg, rgba(255,0,0,.8), rgba(255,0,0,0) 70.71%),
+        linear-gradient(127deg, rgba(0,255,0,.8), rgba(0,255,0,0) 70.71%),
+        linear-gradient(336deg, rgba(0,0,255,.8), rgba(0,0,255,0) 70.71%);
+    color: white;
+    text-align: center;
+}
+
+/* 3D Button Effect */
+.cta-button {
+    padding: 15px 30px;
+    background: var(--accent);
+    border: none;
+    cursor: pointer;
+    transform-style: preserve-3d;
+    transition: transform 0.3s ease;
+}
+
+.cta-button:hover {
+    transform: translateY(-5px) translateZ(20px);
+}
+
+/* Grid for Features */
+.features {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    padding: 20px;
+}
+
+.feature-item {
+    background: var(--bg-color-light);
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    transform: perspective(1000px) rotateX(0deg) rotateY(0deg);
+    transition: transform 0.3s;
+}
+
+.feature-item:hover {
+    transform: perspective(1000px) rotateX(5deg) rotateY(5deg);
+}
+
+/* Typography */
+h1 {
+    font-size: clamp(2rem, 5vw, 4rem);
+}
+
+/* Dark Mode Toggle */
+#dark-mode-toggle {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1000;
+}
+
+/* Accessibility */
+:focus {
+    outline: 3px dashed var(--accent);
+}
+
+/* Responsive Design */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation: none !important;
+        transition: none !important;
+    }
+}
 </style>
 </head>
 <body>
-<div class="container">
-    <h1>PixSort Studio</h1>
-    <input type="file" id="imageLoader" name="imageLoader"/>
-    <canvas id="imageCanvas"></canvas>
-    <div class="controls">
-        <select id="sortType">
-            <option value="brightness">Brightness</option>
-            <option value="hue">Hue</option>
-            <option value="position">Position</option>
-        </select>
-        <button onclick="applySort()">Apply Sort</button>
-        <button onclick="downloadImage()">Download Image</button>
+<nav>
+    <div>StreamNow</div>
+    <div>Login</div>
+</nav>
+<section class="hero">
+    <div>
+        <h1>Welcome to StreamNow</h1>
+        <p>Experience the next generation of streaming.</p>
+        <button class="cta-button">Start Watching</button>
     </div>
-</div>
-
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</section>
+<section class="features">
+    <div class="feature-item">4K Streaming</div>
+    <div class="feature-item">VR Ready</div>
+    <div class="feature-item">Multi-Device Sync</div>
+    <div class="feature-item">Exclusive Content</div>
+</section>
+<button id="dark-mode-toggle" aria-label="Toggle dark mode">🌙/☀️</button>
 <script>
-let canvas = document.getElementById('imageCanvas');
-let ctx = canvas.getContext('2d');
-let img;
-
-// Image upload handler
-const imageLoader = document.getElementById('imageLoader');
-imageLoader.addEventListener('change', handleImage, false);
-
-function handleImage(e) {
-    let reader = new FileReader();
-    reader.onload = function(event) {
-        img = new Image();
-        img.onload = function() {
-            canvas.width = img.width;
-            canvas.height = img.height;
-            ctx.drawImage(img, 0, 0);
-        }
-        img.src = event.target.result;
-    }
-    reader.readAsDataURL(e.target.files[0]);     
-}
-
-// Sorting functions
-function sortByBrightness(pixels) {
-    let d = pixels.data;
-    let temp = [];
-    for (let i = 0; i < d.length; i += 4) {
-        let brightness = 0.34 * d[i] + 0.5 * d[i + 1] + 0.16 * d[i + 2];
-        temp.push({index: i, brightness: brightness});
-    }
-    temp.sort((a, b) => a.brightness - b.brightness);
-    return temp.map(t => t.index);
-}
-
-function sortByHue(pixels) {
-    // Similar approach for hue, converting RGB to HSL then sorting
-}
-
-function sortByPosition(pixels, byRow = true) {
-    // Implement sorting by pixel position, either row or column
-}
-
-function applySort() {
-    let sortType = $('#sortType').val();
-    let pixels = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    let indices;
-    
-    switch(sortType) {
-        case 'brightness':
-            indices = sortByBrightness(pixels);
-            break;
-        case 'hue':
-            indices = sortByHue(pixels);
-            break;
-        case 'position':
-            indices = sortByPosition(pixels);
-            break;
-    }
-
-    let sortedPixels = new ImageData(canvas.width, canvas.height);
-    for (let i = 0; i < indices.length; i++) {
-        let oldIndex = indices[i];
-        sortedPixels.data[i*4] = pixels.data[oldIndex];
-        sortedPixels.data[i*4 + 1] = pixels.data[oldIndex + 1];
-        sortedPixels.data[i*4 + 2] = pixels.data[oldIndex + 2];
-        sortedPixels.data[i*4 + 3] = pixels.data[oldIndex + 3];
-    }
-    
-    ctx.putImageData(sortedPixels, 0, 0);
-}
-
-function downloadImage() {
-    let link = document.createElement('a');
-    link.download = 'sorted_image.png';
-    link.href = canvas.toDataURL();
-    link.click();
-}
+document.getElementById('dark-mode-toggle').addEventListener('click', function() {
+    document.body.classList.toggle('dark-mode');
+});
 </script>
 </body>
 </html>

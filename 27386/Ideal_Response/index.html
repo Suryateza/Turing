@@ -1,430 +1,505 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;700&display=swap");
 
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width">
-  <title>PixSort Studio</title>
-  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-   <style> ::after,
-    ::before {
-      -webkit-box-sizing: inherit;
-      box-sizing: inherit;
-    }
-    
-    .custom-file-control::after {
-      content: "Choose image...";
-    }
-    
-    .custom-file-control::before {
-      content: "Browse";
-    }
-    
-    .custom-file-control::before {
-      position: absolute;
-      top: -1px;
-      right: -1px;
-      bottom: -1px;
-      z-index: 6;
-      display: block;
-      height: 2.5rem;
-      padding: .5rem 1rem;
-      line-height: 1.5;
-      color: #464a4c;
-      background-color: #eceeef;
-      border: 1px solid rgba(0, 0, 0, .15);
-      border-radius: 0 .25rem .25rem 0;
-    }</style>
-</head>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
 
-<body>
+      html,
+      body {
+        font-family: "Rubik", sans-serif;
+        background-color: #000;
+        color: #fff;
+        line-height: 1.7;
+        overflow-x: hidden;
+      }
 
-  <div class="jumbotron">
-    <div class="container">
-      <h1 class="display-4">Welcome to PixSort Studio</h1>
-      <p class="lead">Explore common sorting algorithms using images as the base.</p>
-    </div>
-  </div>
+      a {
+        color: #fff;
+        text-decoration: none;
+      }
 
-  <div class="container">
-    <div class="row">
-      <div class="col-md-6">
-        <h2>Original</h2>
-        <img id="original-image" style="display: none;"></img>
-        <canvas id="canvas"></canvas>
+      a:hover {
+        color: #ccc;
+      }
+
+      ul {
+        list-style-type: none;
+      }
+
+      img {
+        width: 100%;
+      }
+
+      h3 {
+        font-size: 26px;
+        font-weight: 300;
+      }
+
+      h4 {
+        color: #00ed82;
+        font-size: 13px;
+        text-transform: uppercase;
+      }
+
+      .btn {
+        display: inline-block;
+        background: #fff;
+        color: #333;
+        min-width: 135px;
+        padding: 20px 32px;
+        font-size: 15px;
+        font-weight: 600;
+        line-height: 14px;
+        border: none;
+        border-radius: 5px;
+        letter-spacing: 1px;
+        cursor: pointer;
+        text-transform: uppercase;
+      }
+
+      .btn-cta:hover {
+        opacity: 0.8;
+      }
+
+      .btn-outline {
+        background: none;
+        color: #fff;
+        border: 2px solid #fff;
+      }
+
+      .btn-outline:hover {
+        color: #fff;
+        border-color: #ccc;
+      }
+
+      .btn-dark {
+        color: #fff;
+        background-color: #000;
+      }
+
+      .legal-text {
+        font-size: 10px;
+        color: #ccc;
+        margin-top: 20px;
+      }
+
+      .sub-link {
+        display: block;
+        color: #ccc;
+        font-size: 12px;
+        margin-top: 5px;
+        text-decoration: underline;
+      }
+
+      .text-xl {
+        font-size: 70px;
+        font-weight: bold;
+      }
+
+      .sub-text {
+        max-width: 850px;
+        margin-bottom: 10px;
+        font-size: 24px;
+      }
+
+      /* Header */
+      .header {
+        height: 530px;
+        background: url(https://i.ibb.co/gyT1SQj/header.jpg) no-repeat center
+          center / cover;
+      }
+
+      .header nav {
+        display: flex;
+        justify-content: flex-end;
+        padding: 20px 40px;
+        z-index: 2;
+        position: relative;
+      }
+
+      .header nav .login-btn {
+        cursor: pointer;
+        background: none;
+        border: none;
+        color: #fff;
+        font-weight: bold;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+
+      .header .header-content {
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        align-items: center;
+        margin-top: 30px;
+      }
+
+      .header .logo {
+        width: 270px;
+        margin: 20px 0;
+      }
+
+      .header .header-text-1 {
+        font-size: 22px;
+        font-weight: bold;
+      }
+
+      .header .header-text-2 {
+        font-size: 18px;
+        margin: 25px 0;
+      }
+
+      .header::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 180px;
+        z-index: 1;
+        background: linear-gradient(
+          180deg,
+          rgba(0, 0, 0, 0.76) 15.54%,
+          rgba(0, 0, 0, 0.192) 60.23%,
+          rgba(0, 0, 0, 8e-5) 100%
+        );
+      }
+
+      /* Sub Header */
+      .sub-header {
+        display: grid;
+        grid-template-columns: 2fr 4fr 2fr;
+        gap: 40px;
+        align-items: center;
+        padding: 30px 40px;
+        background: linear-gradient(
+          318.68deg,
+          #0f495c 0%,
+          #0d3640 49.72%,
+          #08141f 100%
+        );
+      }
+
+      .sub-header > div:last-of-type {
+        justify-self: end;
+        align-self: end;
+      }
+
+      .sub-header > div:last-of-type .sub-link {
+        text-align: center;
+      }
+
+      /* Categories */
+      .categories {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 90px 40px;
+      }
+
+      .categories .covers {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 20px;
+        margin-top: 40px;
+      }
+
+      .categories .covers > div {
+        height: 500px;
+        width: 300px;
+        position: relative;
+      }
+
+      .categories .cover-grad {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+            156.82deg,
+            rgba(0, 0, 0, 0.6) 4.58%,
+            rgba(0, 0, 0, 0) 69.61%
+          ),
+          linear-gradient(
+            24.5deg,
+            rgba(0, 0, 0, 0.2) 4.71%,
+            rgba(0, 0, 0, 0) 71.49%
+          );
+      }
+
+      .categories .cover-text {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        text-align: left;
+      }
+
+      .categories .cover-1 {
+        background: url("https://github.com/bradtraversy/hulu-webpage-clone/blob/main/img/cover-1.jpg?raw=true")
+          no-repeat center center / cover;
+      }
+
+      .categories .cover-2 {
+        background: url("https://github.com/bradtraversy/hulu-webpage-clone/blob/main/img/cover-2.jpg?raw=true")
+          no-repeat center center / cover;
+      }
+
+      .categories .cover-3 {
+        background: url("https://github.com/bradtraversy/hulu-webpage-clone/blob/main/img/cover-3.jpg?raw=true")
+          no-repeat center center / cover;
+      }
+
+      .categories .cover-4 {
+        background: url("https://github.com/bradtraversy/hulu-webpage-clone/blob/main/img/cover-4.jpg?raw=true")
+          no-repeat center center / cover;
+      }
+
+      /* Live */
+      .live {
+        background-color: #151516;
+        padding: 40px;
+      }
+
+      .live-border {
+        border: 4px solid #1ce783;
+        border-radius: 16px;
+        padding: 100px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+      }
+
+      .live a {
+        text-transform: uppercase;
+        font-size: 18px;
+        margin-top: 20px;
+        text-decoration: underline;
+      }
+
+      /* Live Sports */
+      .live-sports {
+        background: url("https://github.com/bradtraversy/hulu-webpage-clone/blob/main/img/live-sports.jpg?raw=true")
+          no-repeat center center / cover;
+        height: 800px;
+        position: relative;
+      }
+
+      .live-sports-content {
+        position: absolute;
+        top: 160px;
+        left: 100px;
+        max-width: 550px;
+      }
+
+      .live-sports-logos {
+        width: 300px;
+        margin-top: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .live-sports-logos > div {
+        background: url("https://github.com/bradtraversy/hulu-webpage-clone/blob/main/img/network-logo-bg.png?raw=true")
+          no-repeat center center / cover;
+        height: 60px;
+        width: 60px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .live-sports-logos img {
+        width: 40px;
+      }
+
+      /* Footer */
+      .footer {
+        background: #ebedf2;
+        color: #333;
+      }
+
+      .footer a {
+        color: #333;
+      }
+
+      .footer-container {
+        max-width: 1100px;
+        margin: auto;
+        padding: 40px;
+      }
+
+      .footer-lists {
+        display: flex;
+        justify-content: space-between;
+        padding-bottom: 50px;
+      }
+
+      .footer-list h5 {
+        font-weight: 500;
+        margin-bottom: 10px;
+      }
+
+      .footer-list li {
+        margin-top: 8px;
+        font-size: 14px;
+      }
+
+      .footer-cta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 40px;
+        background-color: #d7d9de;
+        border-radius: 12px;
+        text-align: center;
+      }
+
+      .footer-cta > div {
+        max-width: 250px;
+      }
+
+      .footer-cta a {
+        background-color: #02b775;
+        color: #fff;
+        font-weight: 500;
+        padding: 12px;
+        border-radius: 50px;
+        display: inline-block;
+      }
+
+      .footer-bottom {
+        padding: 30px;
+        text-align: center;
+        font-size: 14px;
+      }
+    </style>
+    <title>Hulu Clone</title>
+  </head>
+  <body>
+    <!-- Header Section -->
+    <header class="header">
+      <nav>
+        <button class="login-btn">Log in</button>
+      </nav>
+
+      <div class="header-content">
+        <img
+          src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR2WpKpJ_FP0pOCRNUlVx-yIxzpYhwX7sNrqJ58ROte78ppyP8SVdDk1Qz5jmg7FDpHTq0&usqp=CAU"
+          alt="Hulu Logo"
+          class="logo"
+        />
+        <h1 class="text-xl">Stream TV and Movies</h1>
+        <h2 class="header-text-1">Live and on demand</h2>
+        <p class="header-text-2">Watch thousands of shows and movies, with plans starting at $6.99/month.</p>
+        <a href="#" class="btn btn-cta">Start your free trial</a>
       </div>
-      <div class="col-md-6">
-        <h2>Sorted</h2>
-        <canvas id="sorting"></canvas>
-      </div>
-    </div>
+    </header>
 
-    <div class="row mt-5">
-      <div class="col-md-6">
-        <div class="form-group">
-          <label for="sorting-algorithm">Choose Sorting Algorithm:</label>
-          <select class="form-control" id="sorting-algorithm">
-            <option value="bubble">Bubble Sort</option>
-            <option value="selection">Selection Sort</option>
-            <option value="insertion">Insertion Sort</option>
-            <option value="merge">Merge Sort</option>
-            <option value="quick" selected>Quick Sort</option>
-          </select>
+    <!-- Sub-Header Section -->
+    <section class="sub-header">
+      <div>
+        <h4>Hulu + Live TV</h4>
+        <h3>Stream Live Sports, News and TV Channels</h3>
+      </div>
+
+      <div>
+        <a href="#" class="btn btn-outline">View Channels</a>
+      </div>
+
+      <div>
+        <a href="#" class="sub-link">View Plans</a>
+      </div>
+    </section>
+
+    <!-- Categories Section -->
+    <section class="categories">
+      <h2>Movies, TV Shows, and More</h2>
+      <div class="covers">
+        <div class="cover-1">
+          <div class="cover-grad"></div>
+          <div class="cover-text">
+            <h4>Featured</h4>
+            <h3>Popular Movies</h3>
+          </div>
+        </div>
+
+        <div class="cover-2">
+          <div class="cover-grad"></div>
+          <div class="cover-text">
+            <h4>Drama</h4>
+            <h3>Thrilling Series</h3>
+          </div>
+        </div>
+
+        <div class="cover-3">
+          <div class="cover-grad"></div>
+          <div class="cover-text">
+            <h4>Comedy</h4>
+            <h3>Laugh Out Loud</h3>
+          </div>
+        </div>
+
+        <div class="cover-4">
+          <div class="cover-grad"></div>
+          <div class="cover-text">
+            <h4>Kids</h4>
+            <h3>Family Friendly</h3>
+          </div>
         </div>
       </div>
-      <div class="col-md-6">
-        <div class="form-group">
-          <label for="image" class="custom-file-label">Choose an Image:</label>
-          <input type="file" id="image" class="custom-file-input" accept=".png, .jpg, .jpeg, image/*">
+    </section>
+
+    <!-- Footer Section -->
+    <footer class="footer">
+      <div class="footer-container">
+        <div class="footer-lists">
+          <div class="footer-list">
+            <h5>About Us</h5>
+            <ul>
+              <li><a href="#">Contact Us</a></li>
+              <li><a href="#">Jobs</a></li>
+              <li><a href="#">Help</a></li>
+            </ul>
+          </div>
+
+          <div class="footer-list">
+            <h5>Connect</h5>
+            <ul>
+              <li><a href="#">Facebook</a></li>
+              <li><a href="#">Twitter</a></li>
+              <li><a href="#">Instagram</a></li>
+            </ul>
+          </div>
+
+          <div class="footer-list">
+            <h5>Legal</h5>
+            <ul>
+              <li><a href="#">Privacy Policy</a></li>
+              <li><a href="#">Terms of Use</a></li>
+              <li><a href="#">Cookie Policy</a></li>
+            </ul>
+          </div>
         </div>
       </div>
-    </div>
-  </div>
 
-  <hr>
-
-  <div class="container">
-    <h3>Notes:</h3>
-    <ul>
-      <li>The speed isn't necessarily true to the actual algorithm speed since some had to be modified to run in a loop
-        with updates in between.</li>
-      <li>Please wait for one operation to finish. It might take some time in few algorithms</li>
-      <li>Merge sort might hang the browser for a bit when first run since it has to create a stack to be used later on.
-      </li>
-    </ul>
-  </div>
-
-  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
-  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-  <script>// Options
-    let sortingAlgorithm = quickSort; // bubbleSort, selectionSort, insertionSort, quickSort, mergeSort
-    let comparison = brightness; // brightness, red, green, blue
-    let imageSize = 250; // Make smaller for faster run time
-    let loops = 100; // # of times sorting algorithm runs before drawing (Higher number means larger changes)
-    let pixelDistance = 4; // Makes interesting visual effects (4 is correct value)
-    
-    let url = 'https://ipfs.io/ipfs/bafybeihxzhlwsu5lkhzqu7sdlb5c43oinebfced5fdtk2zjgi3te2nbpb4/thunderstorm-3625405_1920.jpg';
-    
-    // Global Variables
-    let imageLoaded = false;
-    let imgData;
-    let originalData;
-    
-    let sortingCanvas;
-    let sortingCtx;
-    
-    let imgHeight;
-    let imgWidth;
-    let keepSorting = true;
-    let sorted = false;
-    let animation;
-    let sSortIndex;
-    let stack;
-    
-    let sortingAlgorithms = {
-      'bubble': bubbleSort,
-      'insertion': insertionSort,
-      'selection': selectionSort,
-      'merge': mergeSort,
-      'quick': quickSort
-    }
-    
-    document.addEventListener("DOMContentLoaded", () => {
-      sortingCanvas = document.getElementById('sorting');
-      sortingCtx = sortingCanvas.getContext('2d');
-      function loadImage(url, callback) {
-        let img = new Image();
-        img.crossOrigin = 'Anonymous';
-        img.onload = function() {
-          let canvas = document.getElementById('canvas');
-          let ctx = canvas.getContext('2d');
-          let h = Math.min(imageSize, this.height);
-          let w = Math.round(this.width / this.height * h);
-    
-          canvas.height = h;
-          canvas.width = w;
-          sortingCanvas.height = h;
-          sortingCanvas.width = w;
-          ctx.drawImage(this, 0, 0, w, h);
-          imgData = ctx.getImageData(0, 0, w, h);
-          var dataURI = canvas.toDataURL('png');
-          callback(dataURI, h, w, img);
-        }
-        img.src = url;
-      }
-    
-      function afterLoad(URI, height, width, img) {
-        if (!imageLoaded) {
-          keepSorting = true;
-          imageLoaded = true;
-          img.src = URI;
-          imgHeight = height;
-          imgWidth = width;
-          console.log('Image loaded');
-          animation = window.requestAnimationFrame(draw);
-        }
-      }
-    
-      loadImage(url, afterLoad);
-    
-      document.getElementById('sorting-algorithm').addEventListener('change', (e) => {
-        sSortIndex = undefined
-        sortingAlgorithm = sortingAlgorithms[e.target.value];
-        if (imageLoaded) {
-          window.cancelAnimationFrame(animation)
-          stack = undefined;
-          imageLoaded = false;
-          keepSorting = true;
-          loadImage(url, afterLoad);
-        }
-      })
-      document.getElementById('image').addEventListener('change', (e) => {
-        window.cancelAnimationFrame(animation)
-        sSortIndex = undefined;
-        stack = undefined;
-        imageLoaded = false;
-        let image = e.target.files[0];
-        url = window.URL.createObjectURL(image);
-        document.getElementById('original-image').src = url;
-        loadImage(url, afterLoad);
-      })
-    })
-    
-    function draw() {
-      if (keepSorting) {
-        sortHelper(sortingAlgorithm, imgData.data);
-        sortingCtx.putImageData(imgData, 0, 0);
-        window.requestAnimationFrame(draw);
-      } else {
-        console.log('Done sorting');
-      }
-    }
-    
-    function sortHelper(sorter, array) {
-      switch (sorter.name) {
-        case "quickSort":
-          if (!stack) stack = quickSortHelper(array);
-          sorter(array, stack);
-          break;
-        case "mergeSort":
-          if (!stack) stack = mergeSortHelper(array);
-          sorter(array, stack);
-          break;
-        default:
-          sorter(array);
-      }
-    }
-    
-    function bubbleSort(array) {
-      if (!sSortIndex) sSortIndex = array.length;
-      keepSorting = false;
-      for (let j = 0; j < loops; j++) {
-        for (let i = 0; i < sSortIndex; i += pixelDistance) {
-          if (comparison(array, i) > comparison(array, i + pixelDistance)) {
-            swapPixel(array, i, i + pixelDistance);
-            keepSorting = true;
-          }
-        }
-        sSortIndex -= pixelDistance;
-      }
-      return array;
-    }
-    
-    function selectionSort(array) {
-      if (!sSortIndex) sSortIndex = array.length;
-      for (let j = 0; j < loops; j++) {
-        let max = -Infinity;
-        let ind;
-        for (let i = 0; i < sSortIndex; i += pixelDistance) {
-          if (comparison(array, i) > max) {
-            max = comparison(array, i);
-            ind = i;
-          }
-        }
-        swapPixel(array, ind, sSortIndex);
-        sSortIndex -= pixelDistance;
-      }
-      if (sSortIndex <= 3) keepSorting = false;
-    }
-    
-    function insertionSort(array) {
-      if (!sSortIndex) sSortIndex = pixelDistance;
-      let currentIndex;
-      let newArray = array;
-      for (let i = 0; i < loops; i++) {
-        if (comparison(newArray, sSortIndex) < comparison(newArray, sSortIndex - pixelDistance)) {
-          currentIndex = sSortIndex - pixelDistance;
-          while (comparison(newArray, sSortIndex) < comparison(newArray, currentIndex)) {
-            if (currentIndex < 0) break;
-            currentIndex -= pixelDistance;
-          }
-          newArray = movePixel(newArray, sSortIndex, currentIndex + pixelDistance);
-        }
-        sSortIndex += pixelDistance;
-      }
-      newArray.forEach((e, i) => array[i] = e)
-      return array;
-    }
-    
-    function quickSortHelper(array, qStack) {
-      if (!qStack) {
-        var qStack = [];
-        let splitPoint = split(array, 0, array.length - pixelDistance);
-    
-        qStack.push({
-          split: splitPoint,
-          begin: 0,
-          end: splitPoint - pixelDistance
-        })
-        qStack.push({
-          split: splitPoint,
-          begin: splitPoint + pixelDistance,
-          end: array.length - pixelDistance
-        })
-      }
-      return qStack;
-    }
-    
-    function quickSort(array, qStack) {
-      for (let i = qStack.length - 1; i >= 0; i--) {
-        let q = qStack[i];
-        if (q.begin < q.end && q.begin !== q.split && q.end !== q.split) {
-          let splitPoint = split(array, q.begin, q.end);
-          if (q.begin < splitPoint - pixelDistance)
-            qStack.push({
-              split: splitPoint,
-              begin: q.begin,
-              end: splitPoint - pixelDistance
-            })
-          if (q.begin + pixelDistance < q.end)
-            qStack.push({
-              split: splitPoint,
-              begin: splitPoint + pixelDistance,
-              end: q.end
-            })
-        }
-        qStack.splice(i, 1);
-      }
-      if (!qStack.length && sorted) keepSorting = false;
-      if (!qStack.length && !sorted) {
-        sorted = true;
-        stack = undefined;
-      }
-      return qStack;
-    }
-    
-    function mergeSortHelper(array, s = 0, e = array.length - pixelDistance, mStack = []) {
-      if (s < e) {
-        let mid = floorToFour((e + s) / 2);
-        mergeSortHelper(array, s, mid, mStack);
-        mergeSortHelper(array, mid + pixelDistance, e, mStack);
-        mStack.unshift({
-          start: s,
-          mid: mid,
-          end: e
-        })
-      }
-      return mStack;
-    }
-    
-    function mergeSort(array, mStack) {
-      let i = Math.min(loops, mStack.length);
-      while (i--) {
-        let m = mStack[mStack.length - 1];
-        merge(array, m.start, m.mid, m.end);
-        mStack.length--;
-      }
-      if (mStack.length === 0) keepSorting = false;
-    }
-    
-    function merge(array, s, mid, e) {
-      let left = s,
-        right = mid + pixelDistance,
-        merged = [];
-      while (left <= mid && right <= e) {
-        if (comparison(array, left) < comparison(array, right)) {
-          merged.push(...getPixels(array, left));
-          left += pixelDistance;
-        } else {
-          merged.push(...getPixels(array, right));
-          right += pixelDistance;
-        }
-      }
-      while (left <= mid) {
-        merged.push(...getPixels(array, left));
-        left += pixelDistance;
-      }
-      while (right <= e) {
-        merged.push(...getPixels(array, right));
-        right += pixelDistance;
-      }
-      combine(array, merged, s);
-      return array;
-    }
-    
-    // Helper Functions
-    
-    function combine(array, copy, s) {
-      for (let i = 0; i < copy.length; i++) {
-        array[i + s] = copy[i];
-      }
-      return array;
-    }
-    
-    function split(array, start, end) {
-      let done = false,
-        left = start + pixelDistance,
-        right = end,
-        pivot = comparison(array, start);
-    
-      while (!done) {
-        while (left <= right && comparison(array, left) <= pivot) left += pixelDistance;
-        while (comparison(array, right) >= pivot && right >= left) right -= pixelDistance;
-        if (left >= right) done = true;
-        else swapPixel(array, left, right);
-      }
-      swapPixel(array, start, right);
-      return right;
-    }
-    
-    function swapPixel(array, i1, i2) {
-      for (let i = 0; i < 3; i++) {
-        let t = array[i1 + i];
-        array[i1 + i] = array[i2 + i];
-        array[i2 + i] = t;
-      }
-      return array;
-    }
-    
-    function movePixel(array, initial, end) {
-      let toMove = array.slice(initial, initial + pixelDistance);
-      let newArray;
-      if (initial > end) {
-        newArray = [...array.slice(0, end), ...toMove, ...array.slice(end, initial), ...array.slice(initial + pixelDistance)];
-      } else {
-        newArray = [...array.slice(0, initial), ...array.slice(initial + pixelDistance, end + pixelDistance), ...toMove, ...array.slice(end + pixelDistance)];
-      }
-      return newArray;
-    }
-    
-    function getPixels(array, i) {
-      return [array[i], array[i + 1], array[i + 2], array[i + 3]]
-    }
-    
-    function floorToFour(num) {
-      return Math.floor(num / 4) * 4;
-    }
-    
-    // Comparison functions
-    
-    function brightness(array, index) {
-      return array[index] + array[index + 1] + array[index + 2];
-    }
-    
-    function red(array, index) { return array[index]; }
-    function green(array, index) { return array[index + 1]; }
-    function blue(array, index) { return array[index + 2]; } </script>
-</body>
-
+      <div class="footer-bottom">
+        <p>&copy; 2024 Hulu Clone. All rights reserved.</p>
+      </div>
+    </footer>
+  </body>
 </html>
