@@ -1,78 +1,108 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Meal Finder</title>
-    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        body {
-            background-color: #fff8e7;
-            font-family: 'Arial', sans-serif;
-        }
-        .container {
-            margin-top: 50px;
-        }
-        #mealFinder {
-            background: #ffffff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        }
-        .meal-card {
-            margin: 10px 0;
-            padding: 15px;
-            background: #ffeeba;
-            border-radius: 5px;
-        }
-        .meal-title {
-            color: #856404;
-        }
-    </style>
+<meta charset="UTF-8">
+<title>Enhanced Meal Finder</title>
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+<style>
+    .filter-section {
+        margin-bottom: 20px;
+        padding: 15px;
+        background: #f8f9fa;
+        border-radius: 8px;
+    }
+    .meal-card {
+        margin: 10px 0;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+    }
+</style>
 </head>
 <body>
 
-<div class="container" id="mealFinder">
+<div class="container">
     <h1 class="text-center">Meal Finder</h1>
-    <div class="form-group">
-        <input type="text" id="searchInput" class="form-control" placeholder="Enter ingredients or meal type">
+    
+    <!-- Filter Section -->
+    <div class="filter-section">
+        <div class="form-row">
+            <div class="form-group col-md-4">
+                <label for="category">Category</label>
+                <select id="category" class="form-control">
+                    <option value="">Any</option>
+                    <!-- Options would be dynamically populated -->
+                </select>
+            </div>
+            <div class="form-group col-md-4">
+                <label for="area">Area</label>
+                <select id="area" class="form-control">
+                    <option value="">Any</option>
+                    <!-- Options would be dynamically populated -->
+                </select>
+            </div>
+            <div class="form-group col-md-2">
+                <label for="minCal">Min Calories</label>
+                <input type="number" id="minCal" class="form-control" placeholder="0">
+            </div>
+            <div class="form-group col-md-2">
+                <label for="maxCal">Max Calories</label>
+                <input type="number" id="maxCal" class="form-control" placeholder="Max">
+            </div>
+        </div>
+        <button id="applyFilters" class="btn btn-primary">Apply Filters</button>
     </div>
-    <button onclick="findMeals()" class="btn btn-primary">Find Meals</button>
-    <div id="results" class="mt-4"></div>
+
+    <!-- Existing Search Bar and Random Button -->
+    <!-- ... -->
+
+    <!-- Meal Display Area -->
+    <div id="mealDisplay"></div>
 </div>
-
-<script>
-    function findMeals() {
-        const apiKey = 'YOUR_API_KEY_HERE'; // Replace with your API key
-        const query = document.getElementById('searchInput').value;
-        const resultsDiv = document.getElementById('results');
-        resultsDiv.innerHTML = '<p>Loading...</p>';
-
-        fetch(`https://api.spoonacular.com/recipes/complexSearch?apiKey=${apiKey}&query=${query}&number=5&addRecipeInformation=true`)
-        .then(response => response.json())
-        .then(data => {
-            if (data.results && data.results.length > 0) {
-                resultsDiv.innerHTML = data.results.map(meal => `
-                    <div class="meal-card">
-                        <h5 class="meal-title">${meal.title}</h5>
-                        <img src="${meal.image}" alt="${meal.title}" class="img-fluid">
-                        <p>Ready in ${meal.readyInMinutes} minutes</p>
-                    </div>
-                `).join('');
-            } else {
-                resultsDiv.innerHTML = '<p>No meals found. Try different keywords.</p>';
-            }
-        })
-        .catch(error => {
-            resultsDiv.innerHTML = '<p>Failed to fetch meals. Please try again.</p>';
-            console.error('Error:', error);
-        });
-    }
-</script>
 
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script>
+document.getElementById('applyFilters').addEventListener('click', function() {
+    const category = document.getElementById('category').value;
+    const area = document.getElementById('area').value;
+    const minCal = document.getElementById('minCal').value;
+    const maxCal = document.getElementById('maxCal').value;
+
+    // Fetch meals with filters
+    fetch(`/api/meals?category=${category}&area=${area}&minCal=${minCal}&maxCal=${maxCal}`)
+    .then(response => response.json())
+    .then(data => {
+        let resultHtml = '';
+        data.meals.forEach(meal => {
+            resultHtml += `
+            <div class="meal-card">
+                <h5>${meal.strMeal}</h5>
+                <p>Category: ${meal.strCategory}</p>
+                <p>Area: ${meal.strArea}</p>
+                <p>Calories: ${meal.calories}</p> <!-- Assuming meal object has a calories property -->
+            </div>`;
+        });
+        document.getElementById('mealDisplay').innerHTML = resultHtml || '<p>No meals found with these filters.</p>';
+    });
+});
+
+// Initial load to populate categories and areas
+fetch('/api/options')
+.then(response => response.json())
+.then(data => {
+    ['category', 'area'].forEach(type => {
+        const select = document.getElementById(type);
+        data[type].forEach(option => {
+            const opt = document.createElement('option');
+            opt.value = option;
+            opt.textContent = option;
+            select.appendChild(opt);
+        });
+    });
+});
+</script>
 
 </body>
 </html>

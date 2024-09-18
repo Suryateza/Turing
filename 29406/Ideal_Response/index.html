@@ -5,12 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Infinite Scroll Posts</title>
 <style>
-    /* Define the custom properties (CSS variables) */
     :root {
-        --main-color: #0f4c81;  /* Primary background color */
-        --light-color: #82c0cc; /* Secondary light color */
-        --dark-color: #ffffff;  /* Text color */
-        --text-color: #333333;  /* Dark text color for posts */
+        --main-color: #0f4c81;
+        --light-color: #82c0cc;
+        --dark-color: #ffffff;
+        --text-color: #333333;
     }
 
     body {
@@ -52,7 +51,7 @@
 
     .post h2, .post p {
         padding: 0 10px;
-        color: var(--text-color); /* Use a dark color for readability */
+        color: var(--text-color);
     }
 
     .post h2 {
@@ -75,7 +74,7 @@
         text-align: center;
         padding: 20px;
         display: none;
-        color: var(--text-color); /* Ensure loading text is visible */
+        color: var(--text-color);
     }
 </style>
 </head>
@@ -89,6 +88,7 @@
     const loading = document.getElementById('loading');
     let postCount = 0;
     const postsToLoad = 10;
+    let debounceTimer;
 
     function createPost(id, title, imageUrl, content) {
         const postElement = document.createElement('div');
@@ -103,9 +103,8 @@
 
     function loadMorePosts() {
         loading.style.display = 'block';
-        // Simulating API call delay
         setTimeout(() => {
-            for(let i = 0; i < postsToLoad; i++) {
+            for (let i = 0; i < postsToLoad; i++) {
                 postCount++;
                 const newPost = createPost(
                     postCount, 
@@ -116,7 +115,7 @@
                 postsContainer.appendChild(newPost);
             }
             loading.style.display = 'none';
-        }, 1000); // 1 second delay for demonstration
+        }, 1000);
     }
 
     function isBottom(el) {
@@ -130,9 +129,16 @@
         }
     }
 
-    window.addEventListener('scroll', () => {
+    function debounce(func, delay) {
+        return function() {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(func, delay);
+        }
+    }
+
+    window.addEventListener('scroll', debounce(() => {
         requestAnimationFrame(checkScroll);
-    });
+    }, 200)); // 200ms debounce delay
 
     // Initial load
     loadMorePosts();

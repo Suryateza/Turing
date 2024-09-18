@@ -3,168 +3,114 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Meal Finder</title>
+<title>Enhanced Meal Finder</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
 <style>
-    body {
-        font-family: 'Arial', sans-serif;
-        background: #f4f4f9;
-        margin: 0;
-        padding: 20px;
-    }
-    .container {
-        max-width: 800px;
-        margin: auto;
-        background: white;
-        padding: 20px;
-        box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
-    form {
-        display: flex;
-        gap: 10px;
-        margin-bottom: 20px;
-    }
-    input[type="text"] {
-        flex-grow: 1;
-        padding: 10px;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-    }
-    button {
-        padding: 10px 20px;
-        background-color: #5cb85c;
-        color: white;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-    }
-    .meal-results {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-        gap: 20px;
-    }
-    .meal-card {
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        overflow: hidden;
-        cursor: pointer;
-    }
-    .meal-card img {
-        width: 100%;
-        height: 150px;
-        object-fit: cover;
-    }
-    .meal-card h3 {
-        padding: 10px;
-        margin: 0;
-        text-align: center;
-    }
-    .modal {
-        display: none;
-        position: fixed;
-        z-index: 1;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0,0,0,0.4);
-    }
-    .modal-content {
-        background-color: #fefefe;
-        margin: 15% auto;
-        padding: 20px;
-        border: 1px solid #888;
-        width: 80%;
-        max-width: 600px;
-    }
-    .close {
-        color: #aaa;
-        float: right;
-        font-size: 28px;
-        font-weight: bold;
-        cursor: pointer;
-    }
+    body { font-family: 'Arial', sans-serif; }
+    .filter-section { background: #f8f9fa; padding: 20px; margin-bottom: 20px; }
+    .result-item { margin: 10px 0; padding: 10px; border: 1px solid #ddd; }
 </style>
 </head>
 <body>
-<div class="container">
+
+<div class="container mt-4">
     <h1>Meal Finder</h1>
-    <form id="mealSearchForm">
-        <input type="text" id="searchInput" placeholder="Enter an ingredient or meal name" required>
-        <button type="submit">Search</button>
-    </form>
-    <div id="mealResults" class="meal-results"></div>
-    <div id="mealModal" class="modal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <h2 id="mealTitle"></h2>
-            <p id="mealInstructions"></p>
-        </div>
+    
+    <div class="filter-section">
+        <form id="mealFilterForm">
+            <div class="row">
+                <div class="col-md-3">
+                    <select id="category" class="form-select">
+                        <option value="">Select Category</option>
+                        <!-- Options will be populated dynamically -->
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <select id="area" class="form-select">
+                        <option value="">Select Area</option>
+                        <!-- Options will be populated dynamically -->
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <input type="number" id="minCalories" class="form-control" placeholder="Min Calories">
+                </div>
+                <div class="col-md-3">
+                    <input type="number" id="maxCalories" class="form-control" placeholder="Max Calories">
+                </div>
+            </div>
+            <div class="mt-2">
+                <input type="text" id="searchKeyword" class="form-control" placeholder="Search by meal name...">
+                <button type="submit" class="btn btn-primary mt-2">Search</button>
+                <button id="randomMeal" class="btn btn-secondary mt-2">Random Meal</button>
+            </div>
+        </form>
     </div>
+
+    <div id="results"></div>
 </div>
 
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
-document.addEventListener('DOMContentLoaded', () => {
-    const form = document.getElementById('mealSearchForm');
-    const resultsDiv = document.getElementById('mealResults');
-    const modal = document.getElementById('mealModal');
-    const closeBtn = document.querySelector('.close');
-    const mealTitle = document.getElementById('mealTitle');
-    const mealInstructions = document.getElementById('mealInstructions');
+document.addEventListener('DOMContentLoaded', (event) => {
+    const form = document.getElementById('mealFilterForm');
+    const resultsDiv = document.getElementById('results');
+    const randomBtn = document.getElementById('randomMeal');
 
-    form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const searchTerm = document.getElementById('searchInput').value;
-        resultsDiv.innerHTML = 'Loading...';
+    // Fetch and populate categories and areas
+    async function populateFilters() {
+        const categories = await fetch('https://www.themealdb.com/api/json/v1/1/list.php?c=list').then(res => res.json());
+        const areas = await fetch('https://www.themealdb.com/api/json/v1/1/list.php?a=list').then(res => res.json());
         
-        try {
-            const response = await fetch(`https://api.spoonacular.com/recipes/complexSearch?query=${searchTerm}&apiKey=YOUR_SPOONACULAR_API_KEY`);
-            const data = await response.json();
-            
-            if (data.results.length === 0) {
-                resultsDiv.innerHTML = 'No meals found.';
-                return;
-            }
+        $('#category').append(categories.meals.map(c => `<option value="${c.strCategory}">${c.strCategory}</option>`).join(''));
+        $('#area').append(areas.meals.map(a => `<option value="${a.strArea}">${a.strArea}</option>`).join(''));
+    }
+    
+    populateFilters();
 
-            resultsDiv.innerHTML = '';
-            data.results.forEach(meal => {
-                const mealCard = document.createElement('div');
-                mealCard.className = 'meal-card';
-                mealCard.innerHTML = `
-                    <img src="https://spoonacular.com/recipeImages/${meal.id}-312x231.jpg" alt="${meal.title}">
-                    <h3>${meal.title}</h3>
-                `;
-                mealCard.addEventListener('click', () => showMealDetails(meal.id));
-                resultsDiv.appendChild(mealCard);
-            });
-        } catch (error) {
-            resultsDiv.innerHTML = 'An error occurred while fetching meals.';
-            console.error('Fetch error:', error);
-        }
-    });
+    form.onsubmit = async (e) => {
+        e.preventDefault();
+        const category = document.getElementById('category').value;
+        const area = document.getElementById('area').value;
+        const minCalories = document.getElementById('minCalories').value || 0;
+        const maxCalories = document.getElementById('maxCalories').value || 9999;
+        const keyword = document.getElementById('searchKeyword').value;
 
-    async function showMealDetails(id) {
-        try {
-            const response = await fetch(`https://api.spoonacular.com/recipes/${id}/information?includeNutrition=false&apiKey=YOUR_SPOONACULAR_API_KEY`);
-            const mealData = await response.json();
-            mealTitle.textContent = mealData.title;
-            mealInstructions.innerHTML = mealData.instructions || 'No instructions available.';
-            modal.style.display = "block";
-        } catch (error) {
-            alert('Failed to load meal details.');
-            console.error('Detail fetch error:', error);
-        }
+        let url = 'https://www.themealdb.com/api/json/v1/1/filter.php?';
+        if (category) url += `c=${encodeURIComponent(category)}&`;
+        if (area) url += `a=${encodeURIComponent(area)}&`;
+        if (keyword) url += `i=${encodeURIComponent(keyword)}`;
+
+        const meals = await fetch(url).then(res => res.json());
+        displayResults(meals.meals.filter(meal => {
+            // Here we assume each meal has a calorie count; this might need adjustment based on actual data structure
+            const mealCalories = meal.strMeasure20 ? parseInt(meal.strMeasure20) : 0; 
+            return mealCalories >= minCalories && mealCalories <= maxCalories;
+        }));
+    };
+
+    randomBtn.onclick = async (e) => {
+        e.preventDefault();
+        const meal = await fetch('https://www.themealdb.com/api/json/v1/1/random.php').then(res => res.json());
+        displayResults([meal.meals[0]]);
+    };
+
+    function displayResults(meals) {
+        resultsDiv.innerHTML = meals.map(meal => `
+            <div class="result-item">
+                <h3>${meal.strMeal}</h3>
+                <p>Category: ${meal.strCategory} | Area: ${meal.strArea} | Calories: ${meal.strMeasure20 || 'N/A'}</p>
+                <img src="${meal.strMealThumb}" alt="${meal.strMeal}" style="max-width: 100px;">
+                <button onclick="showMealDetails('${meal.idMeal}')">Details</button>
+            </div>`).join('');
     }
 
-    closeBtn.onclick = function() {
-        modal.style.display = "none";
-    }
-
-    window.onclick = function(event) {
-        if (event.target == modal) {
-            modal.style.display = "none";
-        }
+    // Placeholder for meal details, to be implemented
+    function showMealDetails(id) {
+        console.log(`Show details for meal ID: ${id}`);
+        // Fetch and display meal details
     }
 });
 </script>
+
 </body>
 </html>
