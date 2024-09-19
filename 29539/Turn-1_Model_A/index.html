@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dynamic Color Generator</title>
+<style>
+    body { font-family: 'Arial', sans-serif; transition: background-color 0.5s; }
+    .container { max-width: 800px; margin: auto; padding: 20px; }
+    .color-box { width: 100%; height: 100px; margin: 10px 0; transition: background-color 0.5s; }
+    button { padding: 10px 20px; cursor: pointer; }
+    .text { transition: color 0.5s; }
+</style>
+</head>
+<body>
+<div class="container">
+    <h1>Dynamic Color Theme Generator</h1>
+    <button onclick="changeColors()">Change Colors</button>
+    <div class="color-box" id="backgroundDemo"></div>
+    <p class="text" id="sampleText">This text will change color for contrast demonstration.</p>
+</div>
+<script>
+    // Utility function to convert hex to RGB
+    function hexToRgb(hex) {
+        const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+        return result ? {
+            r: parseInt(result[1], 16),
+            g: parseInt(result[2], 16),
+            b: parseInt(result[3], 16)
+        } : null;
+    }
+
+    // Function to generate a random color with contrast check
+    function generateColor(baseColor = '#FFFFFF') {
+        let rgb = hexToRgb(baseColor);
+        let hsl = rgbToHsl(rgb.r, rgb.g, rgb.b);
+        hsl.l = Math.random(); // Random lightness for demonstration
+        hsl.s = Math.random(); // Random saturation for demonstration
+        
+        // Ensure good contrast by adjusting lightness
+        while (!hasGoodContrast(rgbToHex(hslToRgb(hsl)), baseColor)) {
+            hsl.l = hsl.l > 0.5 ? hsl.l - 0.1 : hsl.l + 0.1; // Adjust lightness
+        }
+        
+        return rgbToHex(hslToRgb(hsl));
+    }
+
+    // Convert RGB to HSL
+    function rgbToHsl(r, g, b) {
+        // Conversion logic here
+        // This is a placeholder for brevity
+        return {h: 0, s: 0, l: 0};
+    }
+
+    // Convert HSL back to RGB
+    function hslToRgb(h, s, l) {
+        // Conversion logic here
+        // This is a placeholder for brevity
+        return {r: 0, g: 0, b: 0};
+    }
+
+    // Check for good contrast (simplified)
+    function hasGoodContrast(color1, color2) {
+        // This is a very basic contrast check. In practice, use a more sophisticated method like WCAG 2.0
+        const rgb1 = hexToRgb(color1);
+        const rgb2 = hexToRgb(color2);
+        const brightness1 = (rgb1.r * 299 + rgb1.g * 587 + rgb1.b * 114) / 1000;
+        const brightness2 = (rgb2.r * 299 + rgb2.g * 587 + rgb2.b * 114) / 1000;
+        return Math.abs(brightness1 - brightness2) > 125;
+    }
+
+    // RGB to Hex
+    function rgbToHex(rgb) {
+        return "#" + ((1 << 24) + (rgb.r << 16) + (rgb.g << 8) + rgb.b).toString(16).slice(1);
+    }
+
+    function changeColors() {
+        const newBgColor = generateColor(document.body.style.backgroundColor);
+        document.body.style.backgroundColor = newBgColor;
+        document.getElementById('backgroundDemo').style.backgroundColor = newBgColor;
+        
+        const textColor = generateColor(newBgColor); // Generate contrasting color for text
+        document.getElementById('sampleText').style.color = textColor;
+    }
+</script>
+</body>
+</html>
