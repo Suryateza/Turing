@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Number Guessing Game</title>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<style>
+    body {
+        font-family: 'Arial', sans-serif;
+        background-color: #f4f4f9;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+    }
+    .game-container {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        text-align: center;
+    }
+    input, button {
+        margin: 10px 0;
+        padding: 10px;
+    }
+    #feedback {
+        margin-top: 20px;
+        font-weight: bold;
+    }
+</style>
+</head>
+<body>
+
+<div class="game-container">
+    <h1>Guess the Number!</h1>
+    <p>Try to guess the number between 1 and 100.</p>
+    <form id="guessForm">
+        <input type="number" id="guessInput" min="1" max="100" required>
+        <button type="submit">Guess</button>
+    </form>
+    <div id="feedback"></div>
+    <p>Attempts left: <span id="attempts">10</span></p>
+    <button id="hintButton" style="display:none;">Get Hint</button>
+    <button id="resetButton" style="display:none;">New Game</button>
+    <button id="quitButton">Quit Game</button>
+</div>
+
+<script>
+$(document).ready(function() {
+    let secretNumber = Math.floor(Math.random() * 100) + 1;
+    let attempts = 10;
+    let hintUsed = false;
+
+    function giveHint() {
+        if (!hintUsed) {
+            let hint;
+            if (secretNumber % 2 === 0) {
+                hint = "The number is even.";
+            } else {
+                hint = "The number is odd.";
+            }
+            $("#feedback").text(hint);
+            hintUsed = true;
+            $('#hintButton').hide();
+        }
+    }
+
+    function checkGuess(guess) {
+        attempts--;
+        $("#attempts").text(attempts);
+        if (guess == secretNumber) {
+            $("#feedback").text("Congratulations! You've guessed it!");
+            endGame(true);
+        } else if (attempts === 0) {
+            $("#feedback").text(`Game Over! The number was ${secretNumber}.`);
+            endGame(false);
+        } else {
+            let message = guess < secretNumber ? "Higher!" : "Lower!";
+            $("#feedback").text(message);
+            if (attempts === 5 && !hintUsed) {
+                $('#hintButton').show();
+            }
+        }
+    }
+
+    function endGame(won) {
+        $('#guessForm, #hintButton').hide();
+        $('#resetButton').show();
+        if (!won) $('#quitButton').hide();
+    }
+
+    $("#guessForm").on('submit', function(e) {
+        e.preventDefault();
+        let guess = parseInt($("#guessInput").val(), 10);
+        checkGuess(guess);
+    });
+
+    $('#resetButton').on('click', function() {
+        location.reload(); // Simple way to reset everything
+    });
+
+    $('#hintButton').on('click', giveHint);
+
+    $('#quitButton').on('click', function() {
+        $('#guessForm, #hintButton, #quitButton').hide();
+        $("#feedback").text("Thanks for playing!");
+    });
+});
+</script>
+
+</body>
+</html>
