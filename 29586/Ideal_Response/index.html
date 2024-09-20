@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Number Guessing Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f4f8;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        
+        .container {
+            text-align: center;
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            color: #333;
+        }
+        
+        button {
+            margin: 10px;
+            padding: 10px 15px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            border-radius: 4px;
+            background-color: #007bff;
+            color: white;
+            transition: background-color 0.3s ease;
+        }
+        
+        button:hover {
+            background-color: #0056b3;
+        }
+        
+        input {
+            padding: 10px;
+            font-size: 16px;
+            margin-top: 10px;
+            border: 2px solid #007bff;
+            border-radius: 4px;
+        }
+        
+        #feedback {
+            margin-top: 20px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        
+        #feedback.correct {
+            color: green;
+        }
+        
+        #feedback.incorrect {
+            color: red;
+        }
+        
+        #hints {
+            color: #ffb74d;
+            margin-top: 10px;
+        }
+        
+        #restart-button {
+            background-color: #ff5722;
+            margin-top: 20px;
+        }
+        
+        #restart-button:hover {
+            background-color: #e64a19;
+        }
+        
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Number Guessing Game</h1>
+        <div id="difficulty-selector">
+            <h2>Select Difficulty Level</h2>
+            <button onclick="startGame('easy')">Easy</button>
+            <button onclick="startGame('medium')">Medium</button>
+            <button onclick="startGame('hard')">Hard</button>
+        </div>
+        <div id="game" style="display: none;">
+            <h2>Guess the Number!</h2>
+            <p id="attempts"></p>
+            <input type="number" id="guess-input" placeholder="Enter your guess">
+            <button onclick="submitGuess()">Submit Guess</button>
+            <p id="feedback"></p>
+            <p id="hints"></p>
+            <button onclick="restartGame()" id="restart-button" style="display: none;">Restart</button>
+        </div>
+    </div>
+    <script>
+        let secretNumber;
+        let attemptsLeft;
+        let difficulty;
+        let incorrectAttempts = 0; // Track incorrect attempts
+
+        function startGame(level) {
+            difficulty = level;
+            attemptsLeft = level === 'easy' ? 10 : level === 'medium' ? 7 : 5;
+            secretNumber = Math.floor(Math.random() * (level === 'easy' ? 50 : level === 'medium' ? 75 : 100)) + 1;
+
+            document.getElementById('difficulty-selector').style.display = 'none';
+            document.getElementById('game').style.display = 'block';
+            document.getElementById('attempts').textContent = `Attempts left: ${attemptsLeft}`;
+            document.getElementById('feedback').textContent = '';
+            document.getElementById('hints').textContent = '';
+            document.getElementById('restart-button').style.display = 'none';
+            incorrectAttempts = 0; // Reset incorrect attempts
+        }
+
+        function submitGuess() {
+            const guess = parseInt(document.getElementById('guess-input').value);
+            let feedback = '';
+
+            if (isNaN(guess)) {
+                feedback = 'Please enter a valid number.';
+            } else if (guess === secretNumber) {
+                feedback = 'Congratulations! You guessed the number!';
+                document.getElementById('restart-button').style.display = 'block';
+            } else {
+                attemptsLeft--;
+                incorrectAttempts++; // Increment incorrect attempts
+
+                if (attemptsLeft > 0) {
+                    feedback = guess > secretNumber ? 'Too high! Try a lower number.' : 'Too low! Try a higher number.';
+
+                    // Provide a hint after the fifth incorrect guess
+                    if (incorrectAttempts === 5) {
+                        const hint = secretNumber > 50 ? 'Hint: The number is greater than 50.' : 'Hint: The number is 50 or less.';
+                        document.getElementById('hints').textContent = hint;
+                    } else if (attemptsLeft === 2) {
+                        const hint = secretNumber % 2 === 0 ? 'Hint: The number is even.' : 'Hint: The number is odd.';
+                        document.getElementById('hints').textContent = hint;
+                    }
+                } else {
+                    feedback = `Game over! The number was ${secretNumber}.`;
+                    document.getElementById('restart-button').style.display = 'block';
+                }
+            }
+
+            document.getElementById('attempts').textContent = `Attempts left: ${attemptsLeft}`;
+            document.getElementById('feedback').textContent = feedback;
+            document.getElementById('guess-input').value = '';
+        }
+
+        function restartGame() {
+            document.getElementById('difficulty-selector').style.display = 'block';
+            document.getElementById('game').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
