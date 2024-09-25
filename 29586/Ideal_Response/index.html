@@ -135,6 +135,21 @@
         padding: 1.5rem;
         font-size: 1.8rem;
       }
+
+      .leaderboard {
+        margin-top: 20px;
+        border-top: 2px solid #eee;
+        padding-top: 20px;
+      }
+
+      .leaderboard h2 {
+        font-size: 2rem;
+        margin-bottom: 10px;
+      }
+
+      .leaderboard ol {
+        font-size: 1.6rem;
+      }
     </style>
     <title>Guess My Number!</title>
   </head>
@@ -154,6 +169,9 @@
         </div>
         <input type="number" class="guess" />
         <button class="btn check">Check!</button>
+
+        <!-- Input for player's name -->
+        <input type="text" class="player-name" placeholder="Enter your name" />
       </section>
       <section class="right">
         <p class="message">Start guessing...</p>
@@ -161,6 +179,12 @@
         <p class="label-highscore">
           🥇 Highscore: <span class="highscore">0</span>
         </p>
+
+        <!-- Leaderboard Section -->
+        <div class="leaderboard">
+          <h2>Leaderboard</h2>
+          <ol class="leaderboard-list"></ol>
+        </div>
       </section>
     </main>
     <script>
@@ -169,6 +193,7 @@
       let highscore = 0;
       let maxRange = 100;
       let difficulty = 'medium';
+      let leaderboard = [];
 
       const displayMessage = function (message) {
         document.querySelector('.message').textContent = message;
@@ -196,6 +221,22 @@
         document.querySelector('.number').style.width = '15rem';
       };
 
+      const updateLeaderboard = function (name, score) {
+        leaderboard.push({ name, score });
+        leaderboard.sort((a, b) => b.score - a.score); // Sort descending by score
+        displayLeaderboard();
+      };
+
+      const displayLeaderboard = function () {
+        const list = document.querySelector('.leaderboard-list');
+        list.innerHTML = ''; // Clear current list
+        leaderboard.slice(0, 5).forEach(player => {
+          const listItem = document.createElement('li');
+          listItem.textContent = `${player.name} - ${player.score}`;
+          list.appendChild(listItem);
+        });
+      };
+
       document.querySelector('.easy').addEventListener('click', function () {
         setDifficulty('easy');
       });
@@ -210,20 +251,23 @@
 
       document.querySelector('.check').addEventListener('click', function () {
         const guess = Number(document.querySelector('.guess').value);
-        console.log(guess, typeof guess);
-
+        const playerName = document.querySelector('.player-name').value.trim();
+        if (!playerName) {
+          displayMessage('⛔️ Please enter your name!');
+          return;
+        }
         if (!guess) {
           displayMessage('⛔️ No number!');
         } else if (guess === secretNumber) {
           displayMessage('🎉 Correct Number!');
           document.querySelector('.number').textContent = secretNumber;
-
           document.querySelector('body').style.backgroundColor = '#187952';
           document.querySelector('.number').style.width = '30rem';
 
           if (score > highscore) {
             highscore = score;
             document.querySelector('.highscore').textContent = highscore;
+            updateLeaderboard(playerName, score);
           }
         } else if (guess !== secretNumber) {
           if (score > 1) {
