@@ -167,7 +167,7 @@
       let secretNumber;
       let score;
       let highscore = 0;
-      let maxRange = 20;
+      let maxRange = 100;
       let difficulty = 'medium';
 
       const displayMessage = function (message) {
@@ -176,13 +176,13 @@
 
       const setDifficulty = function (level) {
         if (level === 'easy') {
-          maxRange = 10;
+          maxRange = 20;
           score = 25;
         } else if (level === 'medium') {
-          maxRange = 20;
+          maxRange = 50;
           score = 20;
         } else if (level === 'difficult') {
-          maxRange = 50;
+          maxRange = 100;
           score = 15;
         }
         difficulty = level;
