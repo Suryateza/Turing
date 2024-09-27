@@ -3,16 +3,17 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Number Guessing Game</title>
+<title>Advanced Number Guessing Game</title>
 <style>
     body {
         font-family: 'Arial', sans-serif;
+        background: #f4f4f9;
         display: flex;
         justify-content: center;
         align-items: center;
         height: 100vh;
-        background-color: #f0f0f0;
         margin: 0;
+        color: #333;
     }
     .game-container {
         background: white;
@@ -21,104 +22,158 @@
         box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         text-align: center;
     }
-    input, button {
-        margin: 10px 0;
-        padding: 10px;
-        font-size: 16px;
-    }
     button {
+        margin: 10px;
+        padding: 10px 20px;
+        font-size: 16px;
         cursor: pointer;
-        background-color: #4CAF50;
-        border: none;
+        background-color: #007BFF;
         color: white;
-        transition: background-color 0.3s;
+        border: none;
+        border-radius: 4px;
     }
     button:hover {
-        background-color: #45a049;
+        background-color: #0056b3;
     }
-    #feedback {
-        color: red;
+    input[type="number"] {
+        padding: 10px;
+        margin: 10px 0;
+        width: 200px;
+        font-size: 16px;
+    }
+    #feedback, #hints {
         font-weight: bold;
     }
-    #attempts {
-        color: #007bff;
+    #hints {
+        color: #ff9800;
+    }
+    #leaderboard {
+        margin-top: 20px;
     }
 </style>
 </head>
 <body>
-
 <div class="game-container">
-    <h1>Number Guessing Game</h1>
-    <p>Guess a number between 1 and 100:</p>
-    <input type="number" id="guessInput" min="1" max="100">
-    <br>
-    <button onclick="checkGuess()">Submit Guess</button>
-    <button onclick="resetGame()">New Game</button>
-    <button onclick="quitGame()">Quit</button>
-    <p id="feedback"></p>
-    <p id="attempts">Attempts left: 10</p>
-    <p id="hint"></p>
+    <h1>Advanced Number Guessing Game</h1>
+    <div id="difficulty">
+        <h2>Choose Difficulty:</h2>
+        <button onclick="setDifficulty('easy')">Easy</button>
+        <button onclick="setDifficulty('medium')">Medium</button>
+        <button onclick="setDifficulty('hard')">Hard</button>
+    </div>
+    <div id="game" style="display: none;">
+        <h2>Guess the Number!</h2>
+        <p id="range"></p>
+        <p id="attempts"></p>
+        <input type="number" id="guess" placeholder="Enter your guess">
+        <button onclick="guessNumber()">Guess</button>
+        <p id="feedback"></p>
+        <p id="hints"></p>
+        <button onclick="resetGame()">Restart</button>
+        <button onclick="quitGame()">Quit</button>
+    </div>
+    <div id="leaderboard" style="display: none;">
+        <h2>Leaderboard</h2>
+        <ul id="scores"></ul>
+    </div>
 </div>
-
 <script>
-    let secretNumber = Math.floor(Math.random() * 100) + 1;
-    let attempts = 10;
-    let hintGiven = false;
+let secretNumber, maxAttempts, range, attemptsLeft = 0, incorrectGuesses = 0;
+const leaderboard = JSON.parse(localStorage.getItem('guessGameLeaderboard')) || [];
 
-    function checkGuess() {
-        const guess = document.getElementById('guessInput').value;
-        const feedback = document.getElementById('feedback');
-        const attemptsDisplay = document.getElementById('attempts');
-        const hint = document.getElementById('hint');
+function setDifficulty(difficulty) {
+    switch(difficulty) {
+        case 'easy': range = 50; maxAttempts = 10; break;
+        case 'medium': range = 100; maxAttempts = 7; break;
+        case 'hard': range = 150; maxAttempts = 5; break;
+    }
+    startGame(range, maxAttempts);
+}
 
-        if (!guess || guess < 1 || guess > 100) {
-            feedback.textContent = "Please enter a valid number between 1 and 100.";
-            return;
-        }
+function startGame(range, attempts) {
+    secretNumber = Math.floor(Math.random() * range) + 1;
+    attemptsLeft = attempts;
+    document.getElementById('difficulty').style.display = 'none';
+    document.getElementById('game').style.display = 'block';
+    document.getElementById('range').textContent = `The number is between 1 and ${range}.`;
+    document.getElementById('attempts').textContent = `Attempts left: ${attemptsLeft}`;
+    document.getElementById('feedback').textContent = '';
+    document.getElementById('hints').textContent = '';
+    document.getElementById('guess').value = '';
+    incorrectGuesses = 0;
+}
 
-        attempts--;
-        attemptsDisplay.textContent = `Attempts left: ${attempts}`;
-
-        if (guess == secretNumber) {
-            feedback.textContent = "Congratulations! You guessed it!";
-            feedback.style.color = "green";
-            disableGame();
+function guessNumber() {
+    const userGuess = parseInt(document.getElementById('guess').value);
+    if (isNaN(userGuess)) {
+        document.getElementById('feedback').textContent = 'Please enter a valid number.';
+        return;
+    }
+    
+    attemptsLeft--;
+    document.getElementById('attempts').textContent = `Attempts left: ${attemptsLeft}`;
+    
+    if (userGuess === secretNumber) {
+        endGame(true);
+    } else {
+        incorrectGuesses++;
+        document.getElementById('feedback').textContent = userGuess > secretNumber ? 'Too high!' : 'Too low!';
+        if (attemptsLeft > 0) {
+            giveHint();
         } else {
-            if (attempts > 0) {
-                feedback.textContent = guess < secretNumber ? "Too low! Try a higher number." : "Too high! Try a lower number.";
-                if (!hintGiven && attempts <= 5) {
-                    hint.textContent = `Hint: The number is ${secretNumber % 2 === 0 ? 'even' : 'odd'}.`;
-                    hintGiven = true;
-                }
-            } else {
-                feedback.textContent = `Game Over! The number was ${secretNumber}.`;
-                disableGame();
-            }
+            endGame(false);
         }
     }
+}
 
-    function resetGame() {
-        secretNumber = Math.floor(Math.random() * 100) + 1;
-        attempts = 10;
-        document.getElementById('attempts').textContent = `Attempts left: ${attempts}`;
-        document.getElementById('feedback').textContent = "";
-        document.getElementById('guessInput').value = '';
-        document.getElementById('hint').textContent = '';
-        hintGiven = false;
-        document.getElementById('guessInput').disabled = false;
-        document.querySelector('button').disabled = false;
+function giveHint() {
+    if (incorrectGuesses === 3) {
+        document.getElementById('hints').textContent = `Hint: The number is ${secretNumber % 2 === 0 ? 'even' : 'odd'}.`;
+    } else if (incorrectGuesses === 5) {
+        document.getElementById('hints').textContent = `Hint: The number is between ${Math.floor(secretNumber/10)*10} and ${Math.floor(secretNumber/10)*10 + 9}.`;
     }
+}
 
-    function quitGame() {
-        document.getElementById('feedback').textContent = "Thanks for playing!";
-        disableGame();
+function endGame(won) {
+    if (won) {
+        document.getElementById('feedback').textContent = `Congratulations! You guessed it! The number was ${secretNumber}.`;
+        addToLeaderboard(maxAttempts - attemptsLeft);
+    } else {
+        document.getElementById('feedback').textContent = `Game Over! The number was ${secretNumber}.`;
     }
+    document.getElementById('game').querySelector('button').disabled = true;
+}
 
-    function disableGame() {
-        document.getElementById('guessInput').disabled = true;
-        document.querySelector('button').disabled = true;
+function addToLeaderboard(attemptsUsed) {
+    const name = prompt("Enter your name for the leaderboard:");
+    leaderboard.push({name, attempts: attemptsUsed});
+    leaderboard.sort((a, b) => a.attempts - b.attempts);
+    localStorage.setItem('guessGameLeaderboard', JSON.stringify(leaderboard));
+    showLeaderboard();
+}
+
+function showLeaderboard() {
+    document.getElementById('leaderboard').style.display = 'block';
+    const scoresList = document.getElementById('scores');
+    scoresList.innerHTML = '';
+    leaderboard.slice(0, 5).forEach((entry, index) => {
+        const li = document.createElement('li');
+        li.textContent = `${index + 1}. ${entry.name} - ${entry.attempts} attempts`;
+        scoresList.appendChild(li);
+    });
+}
+
+function resetGame() {
+    document.getElementById('difficulty').style.display = 'block';
+    document.getElementById('game').style.display = 'none';
+    document.getElementById('leaderboard').style.display = 'none';
+}
+
+function quitGame() {
+    if (confirm('Are you sure you want to quit?')) {
+        resetGame();
     }
+}
 </script>
-
 </body>
 </html>
