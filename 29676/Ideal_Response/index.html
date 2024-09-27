@@ -172,9 +172,11 @@
             if (flippedCards.length < 2 && !this.classList.contains('flipped')) {
                 this.classList.add('flipped');
                 flippedCards.push(this);
-                if (flippedCards.length === 2) {
+                if (flippedCards.length === 1) {
                     moves++;
                     updateMoves();
+                }
+                if (flippedCards.length === 2) {
                     checkMatch();
                 }
             }
