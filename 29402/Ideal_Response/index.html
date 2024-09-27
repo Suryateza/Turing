@@ -9,6 +9,7 @@
       * {
         box-sizing: border-box;
       }
+
       body {
         background: linear-gradient(45deg, #ff6f61, #debbf5, #f6e58d);
         background-size: 400% 400%;
@@ -43,19 +44,15 @@
         letter-spacing: 1px;
         box-shadow: 0 3px rgba(249, 202, 36, 0.5);
         z-index: 100;
-        transition: background-color 0.3s ease;
+        transition: background-color 0.3s ease, transform 0.2s ease;
       }
 
       .magic:hover {
         background-color: #f7b731;
       }
 
-      .color-picker {
-        position: fixed;
-        top: 60px;
-        right: 20px;
-        z-index: 100;
-        font-family: "Poppins", sans-serif;
+      .magic:active {
+        transform: scale(0.95);
       }
 
       .boxes {
@@ -67,6 +64,7 @@
         position: relative;
         transition: 0.4s ease;
         animation: rotateBackground 30s linear infinite;
+        perspective: 800px; /* Added perspective for 3D effect */
       }
 
       .boxes.big {
@@ -76,10 +74,10 @@
 
       @keyframes rotateBackground {
         from {
-          transform: rotate(0deg);
+          transform: rotateY(0deg); /* Rotate in 3D space */
         }
         to {
-          transform: rotate(360deg);
+          transform: rotateY(360deg);
         }
       }
 
@@ -90,8 +88,20 @@
         position: relative;
         height: 125px;
         width: 125px;
-        transition: 0.4s ease, background-color 0.3s ease;
+        transition: transform 0.3s ease, opacity 0.3s ease;
         animation: float 4s ease-in-out infinite;
+        opacity: 0.8; /* Semi-transparency */
+        transform-style: preserve-3d; /* Allow child elements to have 3D effects */
+        border: 10px solid rgba(228, 188, 68, 0.5); /* Semi-transparent white border */
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3); /* Shadow for depth */
+      }
+
+      .box:hover {
+        transform: translateY(-10px) scale(1.05); /* Bounce effect on hover */
+      }
+
+      .box:active {
+        transform: translateY(0) scale(0.95); /* Bounce effect on click */
       }
 
       @keyframes float {
@@ -112,11 +122,11 @@
         border-radius: 50%;
         animation: twinkle 3s infinite;
       }
+
       @keyframes twinkle {
         0%, 100% { opacity: 0.2; }
         50% { opacity: 1; }
       }
-
     </style>
     <title>3D Boxes Background</title>
   </head>
