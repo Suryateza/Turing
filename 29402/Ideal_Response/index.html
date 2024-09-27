@@ -1,177 +1,222 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <style>
-      @import url("https://fonts.googleapis.com/css2?family=Poppins&display=swap");
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hand Cricket Game</title>
+  <style>
+    #header {
+      background-color: black;
+      color: lightgreen;
+    }
+    
+    /* User side CSS */
+    #userchoice, #bowling {
+      border: 5px solid black;
+      height: 400px;
+    }
+    #usercol {
+      border: 1px solid black;
+      height: 300px;
+    }
+    #choice, #delivery {
+      border: 1px solid black;
+      height: 100px;
+    }
+    
+    #choice > button, #delivery > button {
+      display: inline-flex;
+      flex-wrap: wrap;
+      border-radius: 50%;
+      background-color: red;
+      color: white;
+      height: 50px;
+      width: 50px;
+      text-align: center;
+      margin: 5px;
+    }
+    
+    /* Scoreboard CSS */
+    #scoreboard {
+      border: 5px solid black;
+      height: 400px;
+    }
+    
+    /* Computer side CSS */
+    #computerchoice {
+      border: 5px solid black;
+      height: 400px;
+    }
+    
+    /* Commentary section */
+    #commentary {
+      border: 5px solid black;
+      height: 90px;
+      text-align: center;
+    }
+    
+    /* Achievement */
+    #achievement {
+      color: lightgreen;
+      animation: change 1s linear infinite;
+      text-align: center;
+      position: absolute;
+      top: 5px;
+      left: 40%;
+    }
+    
+    @keyframes change {
+      0% {color: lightgreen;}
+      100% {color: orangered;}
+    }
+  </style>
+</head>
+<body>
+  <!-- Latest compiled and minified CSS -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
 
-      * {
-        box-sizing: border-box;
-      }
+  <!-- jQuery library -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
 
-      body {
-        background: linear-gradient(45deg, #ff6f61, #debbf5, #f6e58d);
-        background-size: 400% 400%;
-        animation: gradientShift 10s ease infinite;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        height: 100vh;
-        overflow: hidden;
-        margin: 0;
-      }
-
-      @keyframes gradientShift {
-        0% { background-position: 0% 50%; }
-        50% { background-position: 100% 50%; }
-        100% { background-position: 0% 50%; }
-      }
-
-      .magic {
-        background-color: #f9ca24;
-        color: #fff;
-        font-family: "Poppins", sans-serif;
-        border: 0;
-        border-radius: 3px;
-        font-size: 16px;
-        padding: 12px 20px;
-        cursor: pointer;
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        letter-spacing: 1px;
-        box-shadow: 0 3px rgba(249, 202, 36, 0.5);
-        z-index: 100;
-        transition: background-color 0.3s ease, transform 0.2s ease;
-      }
-
-      .magic:hover {
-        background-color: #f7b731;
-      }
-
-      .magic:active {
-        transform: scale(0.95);
-      }
-
-      .boxes {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: space-around;
-        height: 400px;
-        width: 400px;
-        position: relative;
-        transition: 0.4s ease;
-        animation: rotateBackground 30s linear infinite;
-        perspective: 800px; /* Added perspective for 3D effect */
-      }
-
-      .boxes.big {
-        height: 600px;
-        width: 600px;
-      }
-
-      @keyframes rotateBackground {
-        from {
-          transform: rotateY(0deg); /* Rotate in 3D space */
-        }
-        to {
-          transform: rotateY(360deg);
-        }
-      }
-
-      .box {
-        background-image: url("https://media.giphy.com/media/xYXr3haK7jQN3uGuv7/giphy.gif");
-        background-repeat: no-repeat;
-        background-size: 500px 500px;
-        position: relative;
-        height: 125px;
-        width: 125px;
-        transition: transform 0.3s ease, opacity 0.3s ease;
-        animation: float 4s ease-in-out infinite;
-        opacity: 0.8; /* Semi-transparency */
-        transform-style: preserve-3d; /* Allow child elements to have 3D effects */
-        border: 10px solid rgba(228, 188, 68, 0.5); /* Semi-transparent white border */
-        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3); /* Shadow for depth */
-      }
-
-      .box:hover {
-        transform: translateY(-10px) scale(1.05); /* Bounce effect on hover */
-      }
-
-      .box:active {
-        transform: translateY(0) scale(0.95); /* Bounce effect on click */
-      }
-
-      @keyframes float {
-        0% {
-          transform: translateY(0);
-        }
-        50% {
-          transform: translateY(-10px);
-        }
-        100% {
-          transform: translateY(0);
-        }
-      }
-
-      .star {
-        position: absolute;
-        background: #fff;
-        border-radius: 50%;
-        animation: twinkle 3s infinite;
-      }
-
-      @keyframes twinkle {
-        0%, 100% { opacity: 0.2; }
-        50% { opacity: 1; }
-      }
-    </style>
-    <title>3D Boxes Background</title>
-  </head>
-  <body>
-    <button id="btn" class="magic">Magic</button>
-    <div id="boxes" class="boxes">
-      <div class="starfield"></div>
+  <!-- Latest compiled JavaScript -->
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12" id="header">
+        <header><h1>Hand Cricket</h1></header>
+        <h1 id="achievement"></h1>
+      </div>
     </div>
-
-    <script>
-      const boxesContainer = document.getElementById("boxes");
-      const button = document.getElementById("btn");
-
-      const createBoxes = () => {
-        for (let i = 0; i < 4; i++) {
-          for (let j = 0; j < 4; j++) {
-            const box = document.createElement("div");
-            box.classList.add("box");
-            box.style.backgroundPosition = `${-j * 125}px ${-i * 125}px`;
-            boxesContainer.appendChild(box);
+    
+    <div class="row">
+      <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4" id="userchoice">
+        <div class="row">
+          <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12" id="usercol">
+            <h2>Your Choice:</h2>
+            <h1 id="userchoiceshow"></h1>
+          </div>
+        </div>
+        <div class="row" id="choice">
+          <h3>Batting Options:</h3>
+          <button id="one" onclick="play(1)">1</button>
+          <button id="two" onclick="play(2)">2</button>
+          <button id="three" onclick="play(3)">3</button>
+          <button id="four" onclick="play(4)">4</button>
+          <button id="five" onclick="play(5)">5</button>
+          <button id="six" onclick="play(6)">6</button>
+        </div>
+      </div>
+      
+      <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4" id="scoreboard">
+        <h1>Score:</h1>
+        <h2 id="score">0</h2>
+        <h3 id="ballsLeft">Balls Left: 6</h3>
+      </div>
+      
+      <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4" id="computerchoice">
+        <h2>Computer Choice:</h2>
+        <h1 id="computerchoiceshow"></h1>
+        <h3>Bowling Options:</h3>
+        <div id="delivery">
+          <button onclick="bowl('fast')">Fast</button>
+          <button onclick="bowl('spin')">Spin</button>
+          <button onclick="bowl('medium')">Medium</button>
+        </div>
+      </div>
+    </div>
+    
+    <div class="row">
+      <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12" id="commentary">
+        <h3 id="comments"></h3>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    var tot = 0; // Total score variable
+    var ballsLeft = 6; // Number of balls left
+    var isBatting = true; // Current turn
+    var uchoice; // User choice for runs
+    
+    function updateScore() {
+      document.getElementById('score').innerHTML = tot; // Display total score
+      document.getElementById('ballsLeft').innerHTML = "Balls Left: " + ballsLeft; // Display balls left
+      checkAchievements(); // Check for achievements
+    }
+    
+    function checkAchievements() {
+      var h = "Half Century"; // Achievement for 50 runs
+      var c = "Century"; // Achievement for 100 runs
+      
+      if (tot >= 50 && tot < 100) {
+        document.getElementById('achievement').innerHTML = h;
+      } else if (tot >= 100) {
+        document.getElementById('achievement').innerHTML = c;
+      } else {
+        document.getElementById('achievement').innerHTML = ""; // Clear achievements if not met
+      }
+    }
+    
+    function play(runs) {
+      if (isBatting) {
+        uchoice = runs; // User choice (runs scored)
+        var cchoice = Math.floor(Math.random() * 6) + 1; // Random computer choice
+        document.getElementById("userchoiceshow").innerHTML = uchoice; // Show user choice
+        document.getElementById("computerchoiceshow").innerHTML = cchoice; // Show computer choice
+        
+        if (ballsLeft > 0) {
+          ballsLeft--; // Decrease the number of balls left
+          if (cchoice === runs) {
+            var o = "Out!";
+            document.getElementById("comments").innerHTML = o; // Display out message
+            tot = 0; // Reset score if out
+            isBatting = false; // Switch to bowling
+            resetBalls();
+          } else {
+            var runMessage = (runs === 4 || runs === 6) ? "Perfect timing! Runs: " + runs : "Slightly mistimed! Runs: " + runs;
+            document.getElementById("comments").innerHTML = runMessage; // Display run message
+            tot += runs; // Update score
+            updateScore(); // Refresh score display
           }
+        } else {
+          document.getElementById("comments").innerHTML = "No balls left, turn ends."; // No balls left message
+          isBatting = false; // Switch to bowling
+          resetBalls();
         }
-      };
-
-      createBoxes();
-
-      button.addEventListener("click", () => {
-        boxesContainer.classList.toggle("big");
-      });
-
-      const generateStars = () => {
-        for (let i = 0; i < 100; i++) {
-          const star = document.createElement("div");
-          star.classList.add("star");
-          const size = Math.random() * 3;
-          star.style.width = `${size}px`;
-          star.style.height = `${size}px`;
-          star.style.top = `${Math.random() * 100}vh`;
-          star.style.left = `${Math.random() * 100}vw`;
-          star.style.animationDuration = `${Math.random() * 5 + 2}s`;
-          boxesContainer.appendChild(star);
+      }
+    }
+    
+    function bowl(type) {
+      if (!isBatting) {
+        var cchoice = Math.floor(Math.random() * 6) + 1; // Random computer choice
+        document.getElementById("computerchoiceshow").innerHTML = cchoice; // Show computer choice
+        
+        if (cchoice === 1 && type === 'fast') {
+          var o = "Computer is Out! Bowled!";
+          document.getElementById("comments").innerHTML = o; // Display out message
+          tot = 0; // Reset score if out
+          isBatting = true; // Switch back to batting
+          resetBalls();
+        } else if (cchoice > 1 && type === 'spin' && cchoice < 4) {
+          var o = "Computer mistimed! Caught!";
+          document.getElementById("comments").innerHTML = o; // Display out message
+          tot = 0; // Reset score if out
+          isBatting = true; // Switch back to batting
+          resetBalls();
+        } else {
+          var runMessage = "Computer scored " + cchoice + " runs.";
+          document.getElementById("comments").innerHTML = runMessage; // Display run message
+          tot += cchoice; // Update score
+          updateScore(); // Refresh score display
         }
-      };
+      }
+    }
 
-      generateStars();
-    </script>
-  </body>
+    function resetBalls() {
+      ballsLeft = 6; // Reset the number of balls for next innings
+      updateScore(); // Refresh score display
+    }
+  </script>
+</body>
 </html>
