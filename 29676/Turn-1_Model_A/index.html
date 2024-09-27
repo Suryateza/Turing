@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Memory Puzzle Game</title>
+<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+<style>
+    .game-board {
+        width: 400px;
+        height: 400px;
+        margin: auto;
+        display: flex;
+        flex-wrap: wrap;
+    }
+    .card {
+        width: 90px;
+        height: 90px;
+        margin: 5px;
+        perspective: 1000px;
+    }
+    .card-inner {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        text-align: center;
+        transition: transform 0.6s;
+        transform-style: preserve-3d;
+    }
+    .card.flipped .card-inner {
+        transform: rotateY(180deg);
+    }
+    .card-front, .card-back {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        backface-visibility: hidden;
+        border: 1px solid #ccc;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 24px;
+    }
+    .card-back {
+        background: #007bff;
+        color: white;
+    }
+    .card-front {
+        transform: rotateY(180deg);
+        background: #f8f9fa;
+    }
+</style>
+</head>
+<body>
+
+<div class="container mt-5">
+    <h1 class="text-center">Memory Puzzle</h1>
+    <div id="game-dashboard" class="mb-3">
+        <span>Time: <span id="timer">0</span>s</span> | 
+        <span>Moves: <span id="moves">0</span></span> | 
+        <span>Best Time: <span id="bestTime">--</span>s</span> | 
+        <span>Best Moves: <span id="bestMoves">--</span></span>
+        <button onclick="resetGame()" class="btn btn-secondary">Reset Game</button>
+    </div>
+    <div id="game-board" class="game-board"></div>
+</div>
+
+<script>
+    const cards = document.querySelectorAll('.card');
+    let hasFlippedCard = false;
+    let lockBoard = false;
+    let firstCard, secondCard;
+    let moves = 0, seconds = 0, bestTime = localStorage.getItem('bestTime') || '--', bestMoves = localStorage.getItem('bestMoves') || '--';
+    let timerInterval;
+
+    function flipCard() {
+        if (lockBoard) return;
+        if (this === firstCard) return;
+
+        this.classList.add('flipped');
+        if (!hasFlippedCard) {
+            hasFlippedCard = true;
+            firstCard = this;
+            return;
+        }
+
+        secondCard = this;
+        checkForMatch();
+        document.getElementById('moves').textContent = ++moves;
+    }
+
+    function checkForMatch() {
+        let isMatch = firstCard.dataset.number === secondCard.dataset.number;
+        isMatch ? disableCards() : unflipCards();
+        if (isMatch) checkGameOver();
+    }
+
+    function disableCards() {
+        firstCard.removeEventListener('click', flipCard);
+        secondCard.removeEventListener('click', flipCard);
+        resetBoard();
+    }
+
+    function unflipCards() {
+        lockBoard = true;
+        setTimeout(() => {
+            firstCard.classList.remove('flipped');
+            secondCard.classList.remove('flipped');
+            resetBoard();
+        }, 1000);
+    }
+
+    function resetBoard() {
+        [hasFlippedCard, lockBoard] = [false, false];
+        [firstCard, secondCard] = [null, null];
+    }
+
+    function shuffle() {
+        cards.forEach(card => {
+            let randomPos = Math.floor(Math.random() * 16);
+            card.style.order = randomPos;
+        });
+    }
+
+    function startTimer() {
+        timerInterval = setInterval(() => {
+            document.getElementById('timer').textContent = ++seconds;
+        }, 1000);
+    }
+
+    function checkGameOver() {
+        if ([...cards].every(card => !card.classList.contains('flipped'))) {
+            clearInterval(timerInterval);
+            if (bestTime === '--' || seconds < bestTime) {
+                localStorage.setItem('bestTime', seconds);
+                bestTime = seconds;
+            }
+            if (bestMoves === '--' || moves < bestMoves) {
+                localStorage.setItem('bestMoves', moves);
+                bestMoves = moves;
+            }
+            updateBestScores();
+        }
+    }
+
+    function updateBestScores() {
+        document.getElementById('bestTime').textContent = bestTime;
+        document.getElementById('bestMoves').textContent = bestMoves;
+    }
+
+    function resetGame() {
+        clearInterval(timerInterval);
+        seconds = 0; moves = 0;
+        document.getElementById('timer').textContent = '0';
+        document.getElementById('moves').textContent = '0';
+        cards.forEach(card => {
+            card.classList.remove('flipped');
+            card.addEventListener('click', flipCard);
+        });
+        resetBoard();
+        shuffle();
+        setTimeout(startTimer, 100); // Slight delay to ensure cards are visible before timing starts
+    }
+
+    // Initialize game
+    (function initGame() {
+        let numbers = [...Array(8).keys()].concat([...Array(8).keys()]).map(i => i + 1);
+        numbers.sort(() => Math.random() - 0.5);
+        cards.forEach((card, index) => {
+            card.dataset.number = numbers[index];
+            card.innerHTML = `<div class="card-inner"><div class="card-front">${numbers[index]}</div><div class="card-back"></div></div>`;
+            card.addEventListener('click', flipCard);
+        });
+        updateBestScores();
+        startTimer();
+    })();
+</script>
+</body>
+</html>
