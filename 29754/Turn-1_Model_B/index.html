@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Bingo Game</title>
+<style>
+    body { font-family: 'Arial', sans-serif; background: #f4f4f4; text-align: center; }
+    #bingoCard { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; margin: 20px auto; width: 300px; }
+    .cell { background: white; border: 1px solid #000; padding: 10px; cursor: pointer; }
+    .marked { background-color: #aaffaa; }
+    .free { background-color: #ddd; }
+    #drawnNumbers { margin-top: 20px; font-size: 20px; }
+    #controls button { margin: 10px; padding: 10px 20px; }
+    #leaderboard { margin-top: 30px; }
+</style>
+</head>
+<body>
+
+<div id="gameContainer">
+    <h1>Bingo Game</h1>
+    <button id="startGame">Start Game</button>
+    <div id="bingoCard"></div>
+    <div id="drawnNumbers">Drawn Numbers: </div>
+    <button id="drawNumber">Draw Number</button>
+    <div id="powerUps">
+        <button id="autoMark">Auto Mark</button>
+        <!-- Add more power-ups here -->
+    </div>
+    <div id="leaderboard">
+        <h2>Leaderboard</h2>
+        <ul id="leaderboardList"></ul>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+$(document).ready(function() {
+    let cardNumbers = [];
+    let drawnNumbers = [];
+    let markedNumbers = new Set();
+    const BINGO_SIZE = 5;
+    const MAX_NUMBER = 75;
+
+    function generateCard() {
+        cardNumbers = Array.from({length: BINGO_SIZE * BINGO_SIZE - 1}, () => Math.floor(Math.random() * MAX_NUMBER) + 1);
+        cardNumbers.splice(Math.floor(cardNumbers.length / 2), 0, 'FREE'); // Free space in center
+        $("#bingoCard").empty();
+        cardNumbers.forEach((num, index) => {
+            let cell = $('<div class="cell">' + (num === 'FREE' ? 'FREE' : num) + '</div>');
+            cell.on('click', () => toggleMark(index));
+            $("#bingoCard").append(cell);
+        });
+    }
+
+    function drawNumber() {
+        if (drawnNumbers.length >= MAX_NUMBER) return;
+        let num;
+        do {
+            num = Math.floor(Math.random() * MAX_NUMBER) + 1;
+        } while (drawnNumbers.includes(num));
+        drawnNumbers.push(num);
+        $("#drawnNumbers").text("Drawn Numbers: " + drawnNumbers.join(', '));
+        checkForBingo();
+    }
+
+    function toggleMark(index) {
+        let cell = $("#bingoCard .cell").eq(index);
+        if (!cell.hasClass('marked')) {
+            cell.addClass('marked');
+            markedNumbers.add(cardNumbers[index]);
+        } else {
+            cell.removeClass('marked');
+            markedNumbers.delete(cardNumbers[index]);
+        }
+        checkForBingo();
+    }
+
+    function checkForBingo() {
+        // Check rows, columns, and diagonals for bingo
+        // Implementation needed for checking bingo conditions
+        // Alert 'Bingo!' when conditions are met
+    }
+
+    $("#startGame").on('click', generateCard);
+    $("#drawNumber").on('click', drawNumber);
+    // Power-up functionalities to be implemented here
+});
+</script>
+</body>
+</html>

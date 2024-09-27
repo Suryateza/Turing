@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Bingo Game</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        #bingoCard {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 5px;
+            width: 300px;
+            margin: 20px auto;
+        }
+        .cell {
+            border: 1px solid black;
+            text-align: center;
+            padding: 20px 0;
+            font-size: 20px;
+            cursor: pointer;
+        }
+        .marked {
+            background-color: yellow;
+        }
+        #powerUps, #leaderboard {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1 class="text-center">Bingo Game</h1>
+    <button id="startGame" class="btn btn-primary">Start Game</button>
+    <div id="bingoCard"></div>
+    <div id="drawnNumbers"></div>
+    <div id="powerUps" class="btn-group">
+        <button class="btn btn-secondary" id="powerUpClear">Clear One</button>
+        <button class="btn btn-secondary" id="powerUpChance">Extra Chance</button>
+    </div>
+    <div id="leaderboard" class="table-responsive">
+        <table class="table table-striped">
+            <thead><tr><th>Player</th><th>Wins</th></tr></thead>
+            <tbody id="leaderboardBody"></tbody>
+        </table>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script>
+$(document).ready(function() {
+    let bingoCard = [];
+    let drawnNumbers = [];
+    let currentNumber;
+    const BINGO_NUMBERS = 75;
+    const CARD_SIZE = 25; // 5x5 grid
+
+    function generateCard() {
+        bingoCard = [];
+        let numbers = Array.from({length: BINGO_NUMBERS}, (_, i) => i + 1);
+        for (let i = 0; i < CARD_SIZE; i++) {
+            let rand = Math.floor(Math.random() * numbers.length);
+            bingoCard.push(numbers.splice(rand, 1)[0]);
+        }
+        renderCard();
+    }
+
+    function renderCard() {
+        $('#bingoCard').empty();
+        bingoCard.forEach(num => {
+            $('#bingoCard').append(`<div class="cell">${num}</div>`);
+        });
+    }
+
+    function drawNumber() {
+        if (drawnNumbers.length === BINGO_NUMBERS) return;
+        do {
+            currentNumber = Math.ceil(Math.random() * BINGO_NUMBERS);
+        } while (drawnNumbers.includes(currentNumber));
+        drawnNumbers.push(currentNumber);
+        $('#drawnNumbers').text(`Drawn Number: ${currentNumber}`);
+        checkBingo();
+    }
+
+    function checkBingo() {
+        // This function would check rows, columns, and diagonals for a win condition
+        // Implementation omitted for brevity but would involve checking for 5 consecutive marked numbers
+    }
+
+    function markNumber(num) {
+        let index = bingoCard.indexOf(num);
+        if (index > -1) {
+            $('.cell').eq(index).addClass('marked');
+        }
+    }
+
+    $('#startGame').on('click', function() {
+        generateCard();
+        drawnNumbers = []; // Reset drawn numbers for new game
+        $('#drawnNumbers').text('Drawn Number:');
+        $('.cell').removeClass('marked');
+    });
+
+    $('#bingoCard').on('click', '.cell', function() {
+        if (!currentNumber) return; // No number drawn yet
+        let num = parseInt($(this).text(), 10);
+        if (num === currentNumber) {
+            markNumber(num);
+        }
+    });
+
+    // Power-ups functionality would go here
+    $('#powerUpClear').on('click', function() {
+        // Logic to clear one number on the card
+    });
+
+    $('#powerUpChance').on('click', function() {
+        // Logic for extra chance
+    });
+
+    // Simulate number drawing
+    setInterval(drawNumber, 5000); // Draws a new number every 5 seconds
+});
+</script>
+</body>
+</html>

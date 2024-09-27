@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link href='https://fonts.googleapis.com/css?family=Cambay' rel='stylesheet' type='text/css'>
+  <link href='https://fonts.googleapis.com/css?family=Roboto:300' rel='stylesheet' type='text/css'>
+  <meta charset="utf-8" />
+  <title>Bingo</title>
+  <style>
+    body {
+      background: #1abc9c;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      align-content: center;
+      justify-content: center;
+      align-items: center;
+    }
+
+    h1, p {
+      font-family: 'Roboto', sans-serif; 
+      font-size: 20pt;
+      font-weight: 600;
+      margin: 0 auto;
+      text-align: center;
+      padding: 30px;
+      color: white;
+    }
+
+    p a {
+      text-decoration: none;
+      color: #f1c40f;
+    }
+
+    #squarefree {
+      font-family: Helvetica;
+      margin: 0 auto;
+      background: #5dc4de;
+      text-align: center;
+      font-weight: 600;
+      font-size: 15pt;
+    }
+
+    #bingotable {
+      margin: 0 auto;
+      text-align: center;
+      width: 400px;
+      height: 400px;
+      border-collapse: collapse;
+      background: white;
+    }
+
+    th, td {
+      font-family: Helvetica;
+      margin: 0 auto;
+      text-align: center;
+      border: 3px solid black;
+      width: 20%;
+      height: 20%;
+      cursor: pointer; /* Makes squares clickable */
+    }
+
+    .orange {
+      background: #9b59b6;
+    }
+
+    .marked {
+      background: #f39c12; /* Color for marked squares */
+    }
+
+    #instructions {
+      background: #5dc4de;
+      border-radius: 10px;
+      padding: 20px;
+      margin-top: 20px;
+      color: #fff;
+    }
+
+    #drawnNumber {
+      font-size: 24pt;
+      color: #f1c40f;
+      margin: 20px;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="container">
+    <div id="header">
+      <h1>Create a BINGO Card</h1>
+    </div>
+    <div id="content">
+      <table id="bingotable">
+        <tr>
+          <th class="orange">B</th>
+          <th class="orange">I</th>
+          <th class="orange">N</th>
+          <th class="orange">G</th>
+          <th class="orange">O</th>
+        </tr>
+        <tr>
+          <td id="square0" onclick="markSquare(0)"> &nbsp;</td>
+          <td id="square1" onclick="markSquare(1)"> &nbsp;</td>
+          <td id="square2" onclick="markSquare(2)"> &nbsp;</td>
+          <td id="square3" onclick="markSquare(3)"> &nbsp;</td>
+          <td id="square4" onclick="markSquare(4)"> &nbsp;</td>
+        </tr>
+        <tr>
+          <td id="square5" onclick="markSquare(5)"> &nbsp;</td>
+          <td id="square6" onclick="markSquare(6)"> &nbsp;</td>
+          <td id="square7" onclick="markSquare(7)"> &nbsp;</td>
+          <td id="square8" onclick="markSquare(8)"> &nbsp;</td>
+          <td id="square9" onclick="markSquare(9)"> &nbsp;</td>
+        </tr>
+        <tr>
+          <td id="square10" onclick="markSquare(10)"> &nbsp;</td>
+          <td id="square11" onclick="markSquare(11)"> &nbsp;</td>
+          <td id="squarefree"> FREE</td>
+          <td id="square12" onclick="markSquare(12)"> &nbsp;</td>
+          <td id="square13" onclick="markSquare(13)"> &nbsp;</td>
+        </tr>
+        <tr>
+          <td id="square14" onclick="markSquare(14)"> &nbsp;</td>
+          <td id="square15" onclick="markSquare(15)"> &nbsp;</td>
+          <td id="square16" onclick="markSquare(16)"> &nbsp;</td>
+          <td id="square17" onclick="markSquare(17)"> &nbsp;</td>
+          <td id="square18" onclick="markSquare(18)"> &nbsp;</td>
+        </tr>
+        <tr>
+          <td id="square19" onclick="markSquare(19)"> &nbsp;</td>
+          <td id="square20" onclick="markSquare(20)"> &nbsp;</td>
+          <td id="square21" onclick="markSquare(21)"> &nbsp;</td>
+          <td id="square22" onclick="markSquare(22)"> &nbsp;</td>
+          <td id="square23" onclick="markSquare(23)"> &nbsp;</td>
+        </tr>
+      </table>
+    </div>
+
+    <button onclick="startGame()">Start Game</button>
+    <div id="drawnNumber"></div>
+    <p><a href="#" onclick="anotherCard()">Click here</a> to create a new card</p>
+
+    
+    <script>
+      var usedNums = new Array(76);
+      var drawnNumbers = [];
+      var isGameActive = false;
+
+      function startGame() {
+        resetGame();
+        newCard();
+        drawNumbers();
+      }
+
+      function resetGame() {
+        for(var i=1; i<usedNums.length; i++) {
+          usedNums[i] = false;
+        }
+        drawnNumbers = [];
+        isGameActive = true;
+        document.getElementById("drawnNumber").innerText = "";
+      }
+
+      function drawNumbers() {
+        if (!isGameActive) return;
+
+        var newNum = getNewNum();
+        drawnNumbers.push(newNum);
+        document.getElementById("drawnNumber").innerText = "Drawn Number: " + newNum;
+
+        // Check if the number is on the card
+        for (let i = 0; i < 24; i++) {
+          if (document.getElementById("square" + i).innerText == newNum) {
+            markSquare(i);
+          }
+        }
+
+        setTimeout(drawNumbers, 2000); // Draw a new number every 2 seconds
+      }
+
+      function newCard() {
+        //Starting loop through each square card
+        for(var i=0; i < 24; i++) {
+          setSquare(i);
+        }
+      }
+
+      function setSquare(thisSquare) {
+        var currSquare = "square"+thisSquare;
+        var newNum;
+
+        var colPlace = new Array(0,1,2,3,4,0,1,2,3,4,0,1,3,4,0,1,2,3,4,0,1,2,3,4);
+
+        do {
+          newNum =(colPlace[thisSquare] * 15) + getNewNum() + 1;
+        }
+        while (usedNums[newNum]);
+
+        usedNums[newNum] = true;
+        document.getElementById(currSquare).innerHTML = newNum;
+      }
+
+      function getNewNum() {
+        return Math.floor(Math.random() * 75);
+      }
+
+      function anotherCard() {
+        resetGame();
+        newCard();
+      }
+
+      function markSquare(squareIndex) {
+        var square = document.getElementById("square" + squareIndex);
+        if (square.classList.contains('marked')) {
+          square.classList.remove('marked');
+        } else {
+          square.classList.add('marked');
+        }
+        checkBingo();
+      }
+
+      function checkBingo() {
+    // Check rows
+    for (let row = 0; row < 5; row++) {
+        let markedCount = 0;
+        for (let col = 0; col < 5; col++) {
+            const squareId = "square" + (row * 5 + col);
+            const square = document.getElementById(squareId);
+            if (square && square.classList.contains('marked')) {
+                markedCount++;
+            }
+        }
+        if (markedCount === 5) {
+            alert("Bingo! You got a row!");
+            isGameActive = false; // Stop the game
+            return;
+        }
+    }
+
+    // Check columns
+    for (let col = 0; col < 5; col++) {
+        let markedCount = 0;
+        for (let row = 0; row < 5; row++) {
+            const squareId = "square" + (row * 5 + col);
+            const square = document.getElementById(squareId);
+            if (square && square.classList.contains('marked')) {
+                markedCount++;
+            }
+        }
+        if (markedCount === 5) {
+            alert("Bingo! You got a column!");
+            isGameActive = false; // Stop the game
+            return;
+        }
+    }
+
+    // Check diagonals
+    let markedCount = 0;
+    for (let i = 0; i < 5; i++) {
+        const squareId = "square" + (i * 5 + i);
+        const square = document.getElementById(squareId);
+        if (square && square.classList.contains('marked')) {
+            markedCount++;
+        }
+    }
+    if (markedCount === 5) {
+        alert("Bingo! You got a diagonal!");
+        isGameActive = false; // Stop the game
+        return;
+    }
+
+    markedCount = 0;
+    for (let i = 0; i < 5; i++) {
+        const squareId = "square" + (i * 5 + (4 - i));
+        const square = document.getElementById(squareId);
+        if (square && square.classList.contains('marked')) {
+            markedCount++;
+        }
+    }
+    if (markedCount === 5) {
+        alert("Bingo! You got a diagonal!");
+        isGameActive = false; // Stop the game
+        return;
+    }
+}
+
+    </script>
+  </div>
+</body>
+</html>
