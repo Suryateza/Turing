@@ -129,7 +129,6 @@
     <script>
       const boxesContainer = document.getElementById("boxes");
       const button = document.getElementById("btn");
-      const colorPicker = document.getElementById("colorPicker");
 
       const createBoxes = () => {
         for (let i = 0; i < 4; i++) {
@@ -146,10 +145,6 @@
 
       button.addEventListener("click", () => {
         boxesContainer.classList.toggle("big");
-      });
-
-      colorPicker.addEventListener("input", (e) => {
-        document.body.style.backgroundColor = e.target.value;
       });
 
       const generateStars = () => {
